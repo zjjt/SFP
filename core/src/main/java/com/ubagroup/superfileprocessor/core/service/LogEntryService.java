@@ -51,16 +51,19 @@ public class LogEntryService implements LogEntryInterface {
     }
 
     @Override
-    public List<LogEntry> getLogsBefore(String who, String what, Date when) {
+    public List<LogEntry> getLogsBefore(String who, String what, Date when) throws IllegalArgumentException{
+        if(when==null){
+            throw new IllegalArgumentException("please fill out the period of time to do the checking");
+        }
         List<LogEntry> logs=new ArrayList<>();
         //here we check arguments for building the query
-        if(who !=null && what!=null && when!=null){
+        if(who !=null && what!=null ){
             //getlogs for who and what before when
             logs=logEntryRepository.findByWhoAndWhatBefore(who,what,when);
-        }else if(who==null && what!=null && when!=null){
+        }else if(who==null && what!=null ){
             //getlogs for what before when
             logs=logEntryRepository.findByWhatBefore(what,when);
-        }else if(who!=null && what==null && when!=null){
+        }else if(who!=null && what==null ){
             //getlogs for who before when
             logs=logEntryRepository.findByWhoBefore(who,when);
         }
@@ -68,16 +71,19 @@ public class LogEntryService implements LogEntryInterface {
     }
 
     @Override
-    public List<LogEntry> getLogsAfter(String who, String what, Date when) {
+    public List<LogEntry> getLogsAfter(String who, String what, Date when)throws IllegalArgumentException {
+        if(when==null){
+            throw new IllegalArgumentException("please fill out the period of time to do the checking");
+        }
         List<LogEntry> logs=new ArrayList<>();
         //here we check arguments for building the query
-        if(who !=null && what!=null && when!=null){
+        if(who !=null && what!=null){
             //getlogs for who and what after when
             logs=logEntryRepository.findByWhoAndWhatAfter(who,what,when);
-        }else if(who==null && what!=null && when!=null){
+        }else if(who==null && what!=null){
             //getlogs for what after when
             logs=logEntryRepository.findByWhatAfter(what,when);
-        }else if(who!=null && what==null && when!=null){
+        }else if(who!=null && what==null ){
             //getlogs for who after when
             logs=logEntryRepository.findByWhoAfter(who,when);
         }
@@ -95,7 +101,7 @@ public class LogEntryService implements LogEntryInterface {
         }
     }
 
-    public boolean saveLog(List<LogEntry> logs){
+    public boolean saveLogs(List<LogEntry> logs){
         //saving all the logs
         return false;
     }

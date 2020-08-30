@@ -10,4 +10,7 @@ public interface LogEntryInterface {
     List<LogEntry> getLogsBefore(String who,String what, Date when);
     List<LogEntry> getLogsAfter(String who,String what, Date when);
     List<LogEntry> getLogsBetween (String who,String what, Date one,Date two);
+    boolean saveLogs(List<LogEntry> logs);
+    LogEntry delete(LogEntry log);
+    boolean delete(List<LogEntry> logs);
 }
