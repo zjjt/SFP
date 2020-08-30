@@ -59,13 +59,13 @@ public class LogEntryService implements LogEntryInterface {
         //here we check arguments for building the query
         if(who !=null && what!=null ){
             //getlogs for who and what before when
-            logs=logEntryRepository.findByWhoAndWhatBefore(who,what,when);
+            logs=logEntryRepository.findByWhoAndWhatAndWhenIsBefore(who,what,when);
         }else if(who==null && what!=null ){
             //getlogs for what before when
-            logs=logEntryRepository.findByWhatBefore(what,when);
+            logs=logEntryRepository.findByWhatAndWhenIsBefore(what,when);
         }else if(who!=null && what==null ){
             //getlogs for who before when
-            logs=logEntryRepository.findByWhoBefore(who,when);
+            logs=logEntryRepository.findByWhoAndWhenIsBefore(who,when);
         }
         return logs;
     }
@@ -79,13 +79,13 @@ public class LogEntryService implements LogEntryInterface {
         //here we check arguments for building the query
         if(who !=null && what!=null){
             //getlogs for who and what after when
-            logs=logEntryRepository.findByWhoAndWhatAfter(who,what,when);
+            logs=logEntryRepository.findByWhoAndWhatAndWhenIsAfter(who,what,when);
         }else if(who==null && what!=null){
             //getlogs for what after when
-            logs=logEntryRepository.findByWhatAfter(what,when);
+            logs=logEntryRepository.findByWhatAndWhenIsAfter(what,when);
         }else if(who!=null && what==null ){
             //getlogs for who after when
-            logs=logEntryRepository.findByWhoAfter(who,when);
+            logs=logEntryRepository.findByWhoAndWhenIsAfter(who,when);
         }
         return logs;
     }
@@ -97,20 +97,31 @@ public class LogEntryService implements LogEntryInterface {
             throw new IllegalArgumentException("please fill out the period of time to do the checking");
         }
         if(who!=null&&what!=null){
-
+            logs=logEntryRepository.findByWhoAndWhatAndWhenIsBetween(who,what,one,two);
+        }else if(who==null && what!=null){
+            logs=logEntryRepository.findByWhatAndWhenIsBetween(what,one,two);
+        }else if(who!=null&&what==null){
+            logs=logEntryRepository.findByWhoAndWhenIsBetween(who,one,two);
         }
+        return logs;
     }
 
     public boolean saveLogs(List<LogEntry> logs){
         //saving all the logs
+        var l=logEntryRepository.saveAll(logs);
+        if(l!=null && !l.isEmpty()){
+            return true;
+        }
         return false;
     }
     public LogEntry delete(LogEntry log){
+        logEntryRepository.delete(log);
         return log;
     }
     //bulk delete
-    public boolean delete(List<LogEntry> log){
-        return false;
+    public boolean delete(List<LogEntry> logs){
+        logEntryRepository.deleteAll(logs);
+        return true;
     }
 
 }
