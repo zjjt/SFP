@@ -105,7 +105,7 @@ public class LogEntryService implements LogEntryInterface {
         }
         return logs;
     }
-
+    //the logs are built and stored
     public boolean saveLogs(List<LogEntry> logs){
         //saving all the logs
         var l=logEntryRepository.saveAll(logs);

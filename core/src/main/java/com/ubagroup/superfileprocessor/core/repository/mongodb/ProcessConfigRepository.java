@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ProcessConfigRepository extends MongoRepository<ProcessConfig,String> {
     //SELECT
-    public List<ProcessConfig> findByConfigName(String configName);
+     ProcessConfig findFirstByConfigName(String configName);
     //DELETE
-    public void deleteByConfigName(String configName);
+     void deleteByConfigName(String configName);
 }
