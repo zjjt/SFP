@@ -8,8 +8,18 @@ import java.util.List;
 
 public interface ProcessedFileRepository extends MongoRepository<ProcessedFile,String> {
     //SELECT
-    public List<ProcessedFile> findByDateProcessed(Date date);
-    public List<ProcessedFile> findByDateProcessedBetween(Date one,Date two);
+     List<ProcessedFile> findByDateProcessed(Date date);
+    List<ProcessedFile> findByUserIdAndDateProcessed(String userId,Date date);
+    List<ProcessedFile> findByUserIdAndProcessingStatus(String userId,boolean processingStatus);
+    List<ProcessedFile> findByConfigNameAndProcessingStatus(String userId,boolean processingStatus);
+     List<ProcessedFile> findByUserIdAndConfigName(String uid,String configName);
+    List<ProcessedFile> findByUserIdAndConfigNameAndDateProcessedIsBetween(String uid,String configName,Date one,Date two);
+     List<ProcessedFile> findByDateProcessedBetween(Date one,Date two);
+     List<ProcessedFile> findByProcessingStatus(boolean processingStatus);
     //DELETE
-    public void deleteByDateProcessedAndUserId(Date date,String userId);
+     void deleteByDateProcessedAndUserId(Date date,String userId);
+     void deleteAllByUserId(String userId);
+     void deleteAllByProcessingStatus(boolean processingStatus);
+     void deleteAllByDateProcessed(Date date);
+     void deleteAllByUserIdAndProcessingStatus(String userId,boolean processingStatus);
 }

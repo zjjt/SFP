@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ProcessConfigService implements ProcessConfigInterface {
     @Autowired
-    ProcessConfigRepository processConfigRepository;
+    private ProcessConfigRepository processConfigRepository;
     @Override
     public List<ProcessConfig> getAll() {
         return processConfigRepository.findAll();

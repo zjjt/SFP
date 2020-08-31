@@ -7,9 +7,8 @@ import java.util.List;
 
 public interface ProcessTypeRepository extends MongoRepository<ProcessType,String> {
     //SELECT
-    public List<ProcessType> findByTypeLike(String type);
-    public ProcessType findFirstByType(String type);
+     ProcessType findFirstByType(String type);
     //DELETE
-    public void deleteByType(String type);
+     void deleteByType(String type);
 
 }

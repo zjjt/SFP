@@ -19,18 +19,30 @@ public class ProcessedFile {
     @Indexed(unique = true)
     private JSONObject outFile;
     private String userId;
+    private String configName;
+    private boolean processingStatus;
     private Date dateProcessed;
 
-    public ProcessedFile( JSONObject inFile, JSONObject outFile, String userId, Date dateProcessed) {
+    public ProcessedFile(JSONObject inFile, JSONObject outFile, String userId, String configName, boolean processingStatus, Date dateProcessed) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
+        this.configName = configName;
+        this.processingStatus = processingStatus;
         this.dateProcessed = dateProcessed;
     }
 
     @Override
     public String toString() {
         return String.format("ProcessedFiles[id=%s\ninFile=%s\noutFile=%s]",id,inFile,outFile);
+    }
+
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
     }
 
     public String getId() {
