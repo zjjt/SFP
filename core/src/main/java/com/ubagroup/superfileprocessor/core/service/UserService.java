@@ -3,11 +3,12 @@ package com.ubagroup.superfileprocessor.core.service;
 import com.ubagroup.superfileprocessor.core.entity.User;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Service
 public class UserService implements UserInterface {
     @Autowired
     private UserRepository userRepository;

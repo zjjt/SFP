@@ -3,11 +3,13 @@ package com.ubagroup.superfileprocessor.core.service;
 import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.ProcessedFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class ProcessedFileService implements ProcessedFileInterface {
     @Autowired
     private ProcessedFileRepository processedFileRepository;

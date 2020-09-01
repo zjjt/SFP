@@ -3,9 +3,11 @@ package com.ubagroup.superfileprocessor.core.service;
 import com.ubagroup.superfileprocessor.core.entity.ProcessValidation;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.ProcessValidationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ProcessValidationService implements ProcessValidationInterface {
     @Autowired
     private ProcessValidationRepository processValidationRepository;

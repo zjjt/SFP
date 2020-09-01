@@ -27,4 +27,45 @@ public class ProcessingSteps {
     public String toString() {
         return String.format("ProcessingSteps:[stepNo:%d,stepName:%s,apiEndpoint:%s,httpVerb:%s,apiParameters:%s]",stepNumber,stepName,apiEndpoint,httpverb, apiParameters);
     }
+
+    public int getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(int stepNumber) {
+        this.stepNumber = stepNumber;
+    }
+
+    public String getStepName() {
+        return stepName;
+    }
+
+    public void setStepName(String stepName) {
+        this.stepName = stepName;
+    }
+
+    public String getApiEndpoint() {
+        return apiEndpoint;
+    }
+
+    public void setApiEndpoint(String apiEndpoint) {
+        this.apiEndpoint = apiEndpoint;
+    }
+
+    public String getHttpverb() {
+        return httpverb;
+    }
+
+    public void setHttpverb(String httpverb) {
+        this.httpverb = httpverb;
+    }
+
+    public Map<String, ApiParameterConstraints> getApiParameters() {
+        return apiParameters;
+    }
+
+    public void setApiParameters(Map<String, ApiParameterConstraints> apiParameters) {
+        this.apiParameters = apiParameters;
+    }
 }
+

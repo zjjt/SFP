@@ -15,8 +15,9 @@ public class ApiParameterConstraints {
     private boolean shouldBeEmail;
     private boolean shouldBeArray;
     private boolean shouldBeMap;
+    private boolean shouldBeFile;
 
-    public ApiParameterConstraints(boolean shouldNotBeNull, boolean shouldNotBeEmpty, boolean shouldBeNumeric, int maxSizeInMB, int maxLength, int minLength, boolean shouldBeEmail, boolean shouldBeArray, boolean shouldBeMap) {
+    public ApiParameterConstraints(boolean shouldNotBeNull, boolean shouldNotBeEmpty, boolean shouldBeNumeric, int maxSizeInMB, int maxLength, int minLength, boolean shouldBeEmail, boolean shouldBeArray, boolean shouldBeMap,boolean shouldBeFile) {
         this.shouldNotBeNull = shouldNotBeNull;
         this.shouldNotBeEmpty = shouldNotBeEmpty;
         this.shouldBeNumeric = shouldBeNumeric;
@@ -26,6 +27,7 @@ public class ApiParameterConstraints {
         this.shouldBeEmail = shouldBeEmail;
         this.shouldBeArray = shouldBeArray;
         this.shouldBeMap = shouldBeMap;
+        this.shouldBeFile=shouldBeFile;
     }
 
     public boolean isShouldNotBeNull() {
@@ -82,5 +84,29 @@ public class ApiParameterConstraints {
 
     public void setMaxSizeInMB(int maxSizeInMB) {
         this.maxSizeInMB = maxSizeInMB;
+    }
+
+    public boolean isShouldBeArray() {
+        return shouldBeArray;
+    }
+
+    public void setShouldBeArray(boolean shouldBeArray) {
+        this.shouldBeArray = shouldBeArray;
+    }
+
+    public boolean isShouldBeMap() {
+        return shouldBeMap;
+    }
+
+    public void setShouldBeMap(boolean shouldBeMap) {
+        this.shouldBeMap = shouldBeMap;
+    }
+
+    public boolean isShouldBeFile() {
+        return shouldBeFile;
+    }
+
+    public void setShouldBeFile(boolean shouldBeFile) {
+        this.shouldBeFile = shouldBeFile;
     }
 }

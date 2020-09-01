@@ -7,6 +7,6 @@ import java.util.List;
 public interface ProcessConfigInterface  {
     List<ProcessConfig> getAll();
     ProcessConfig get(String configName);
-    boolean updateConfig(String configName,ProcessConfig config);
+    boolean saveConfig(ProcessConfig config);
     void deleteConfig(String configName);
 }

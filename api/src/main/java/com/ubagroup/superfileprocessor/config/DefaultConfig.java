@@ -48,42 +48,44 @@ public class DefaultConfig {
         if(configName=="CANAL+"){
             switch(step){
                 case 1:
-                    apiParams.put("file",new ApiParameterConstraints(true,false,false,10,0,0,false, false, false));
+                    apiParams.put("file",new ApiParameterConstraints(true,false,false,10,0,0,false, false, false,true));
                     break;
                 case 2:
-                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
+                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
                     break;
                 case 3:
                     //here we store the user configuration for file splitting and the default positions of values in this file
-                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
-                    apiParams.put("filemapping1",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
-                    apiParams.put("filemapping2",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
-                    apiParams.put("filemapping3",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
-                    apiParams.put("filemapping4",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
+                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
+                    apiParams.put("filemapping1",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
+                    apiParams.put("filemapping2",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
+                    apiParams.put("filemapping3",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
+                    apiParams.put("filemapping4",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
                     break;
                 case 4:
-                    apiParams.put("fileid",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
+                    apiParams.put("fileid",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
 
 
             }
         }else if(configName=="PAYSEND"){
             switch(step){
                 case 1:
-                    apiParams.put("file",new ApiParameterConstraints(true,false,false,10,0,0,false, false, false));
+                    apiParams.put("file",new ApiParameterConstraints(true,false,false,10,0,0,false, false, false,true));
                     break;
                 case 2:
-                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
+                    apiParams.put("configName",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
                     break;
                 case 3:
-                    apiParams.put("validators",new ApiParameterConstraints(true,true,false,0,0,0,false, true, false));
+                    apiParams.put("validators",new ApiParameterConstraints(true,true,false,0,0,0,false, true, false,false));
                     break;
                 case 4:
-                    apiParams.put("subject",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
-                    apiParams.put("to",new ApiParameterConstraints(true,true,false,0,0,0,true, true, false));
-                    apiParams.put("from",new ApiParameterConstraints(true,true,false,0,0,0,true, false, false));
-                    apiParams.put("cci",new ApiParameterConstraints(false,false,false,0,0,0,true, true, false));
-                    apiParams.put("bci",new ApiParameterConstraints(false,false,false,0,0,0,true, true, false));
-                    apiParams.put("attachment",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false));
+                    apiParams.put("subject",new ApiParameterConstraints(true,true,false,0,0,0,false, false, false,false));
+                    apiParams.put("to",new ApiParameterConstraints(true,true,false,0,0,0,true, true, false,false));
+                    apiParams.put("from",new ApiParameterConstraints(true,true,false,0,0,0,true, false, false,false));
+                    apiParams.put("cci",new ApiParameterConstraints(false,false,false,0,0,0,true, true, false,false));
+                    apiParams.put("bci",new ApiParameterConstraints(false,false,false,0,0,0,true, true, false,false));
+                    apiParams.put("attachments",new ApiParameterConstraints(true,true,false,0,0,0,false, true, false,true));
+                    apiParams.put("body",new ApiParameterConstraints(true,true,false,0,0,0,false, true, false,false));
+
                     break;
             }
         }
