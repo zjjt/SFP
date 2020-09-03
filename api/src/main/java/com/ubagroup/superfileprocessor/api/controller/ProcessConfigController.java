@@ -50,8 +50,8 @@ public class ProcessConfigController {
 
     }
     //PROCESSING
-    @PostMapping("/processing/file-upload")
-    public Map<String,Object> fileUpload(@RequestParam("file")MultipartFile[] file){
-
-    }
+//    @PostMapping("/processing/file-upload")
+//    public Map<String,Object> fileUpload(@RequestParam("file")MultipartFile[] file){
+//
+//    }
 }

@@ -1,11 +1,13 @@
 package com.ubagroup.superfileprocessor.core.entity;
 
+import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import org.json.JSONObject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * ProcessedFiles represents how the files are kept into the DB
@@ -22,14 +24,16 @@ public class ProcessedFile {
     private String configName;
     private boolean processingStatus;
     private Date dateProcessed;
+    private List<Line> fileLines;
 
-    public ProcessedFile(JSONObject inFile, JSONObject outFile, String userId, String configName, boolean processingStatus, Date dateProcessed) {
+    public ProcessedFile(JSONObject inFile, JSONObject outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
         this.configName = configName;
         this.processingStatus = processingStatus;
         this.dateProcessed = dateProcessed;
+        this.fileLines = fileLines;
     }
 
     @Override
@@ -83,5 +87,21 @@ public class ProcessedFile {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public List<Line> getFileLines() {
+        return fileLines;
+    }
+
+    public void setFileLines(List<Line> fileLines) {
+        this.fileLines = fileLines;
+    }
+
+    public boolean isProcessingStatus() {
+        return processingStatus;
+    }
+
+    public void setProcessingStatus(boolean processingStatus) {
+        this.processingStatus = processingStatus;
     }
 }

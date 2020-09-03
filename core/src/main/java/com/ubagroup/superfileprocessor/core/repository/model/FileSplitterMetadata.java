@@ -14,7 +14,17 @@ public class FileSplitterMetadata {
      * the dbFields list is to be mapped with custom config inserted by the user
      */
     private List<String> dbFields;
-
+    /**
+     * the executionperiod defines the day the cron job should start and the day it should stop.If we set if to [1;1]
+     * it would mean we ought to execute everyday infinitely.
+     * if we set it to [0;0] it should be executed only once
+     */
+    private List<Integer> executionPeriod;
+    /**
+     * the number of elements in this list defines the number of execution per day of a cron job
+     * in the form of a cron syntax * * * * *
+     */
+    private List<String> executionTimesInADay;
     /**
      * the custom config will be mapped to the dbFields and their onscreen translation item and stored in a DbFieldsTranslation instance
      */
@@ -22,8 +32,10 @@ public class FileSplitterMetadata {
 
     private Map<String,List<Integer>> positions;
 
-    public FileSplitterMetadata(List<String> dbFields, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
+    public FileSplitterMetadata(List<String> dbFields, List<Integer> executionPeriod, List<String> executionTimesInADay, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
         this.dbFields = dbFields;
+        this.executionPeriod = executionPeriod;
+        this.executionTimesInADay = executionTimesInADay;
         this.mapToDbFields = mapToDbFields;
         this.positions = positions;
     }
@@ -58,5 +70,17 @@ public class FileSplitterMetadata {
 
     public void setPositions(Map<String, List<Integer>> positions) {
         this.positions = positions;
+    }
+
+    public List<Integer> getExecutionPeriod() {
+        return executionPeriod;
+    }
+
+    public List<String> getExecutionTimesInADay() {
+        return executionTimesInADay;
+    }
+
+    public void setExecutionTimesInADay(List<String> executionTimesInADay) {
+        this.executionTimesInADay = executionTimesInADay;
     }
 }

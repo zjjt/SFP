@@ -136,7 +136,7 @@ public class DefaultConfig {
 
 
         if(userRepository.count()==0){
-            userRepository.save(new User(username, password, "ADMIN"));
+            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020", "ADMIN"));
             System.out.println("Admin user inserted in user collection");
 
         }
@@ -174,7 +174,7 @@ public class DefaultConfig {
                 }
             }
 
-            var canalMeta=new FileSplitterMetadata(canalDbFields,canalDefaultMapToDbField,null);
+            var canalMeta=new FileSplitterMetadata(canalDbFields, executionPeriod, executionTimesInADay, canalDefaultMapToDbField,null);
             /* here we define CANAL+ default configuration processing steps API
                 Each processing steps is linked to a functionality type and should be sequentially inserted into the list
                 with the id of each step so that the UI can properly build the forms and call the correct API endpoint when a submit

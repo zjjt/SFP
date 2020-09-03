@@ -21,7 +21,7 @@ public class UserService implements UserInterface {
     public List<User> get(String mailourole) {
         List<User> l=new ArrayList<>();
         if(mailourole.contains("@")) {
-            l.add(userRepository.findFirstByMail(mailourole));
+            l.add(userRepository.findFirstByUsername(mailourole));
             return l;
         }
         return userRepository.findByRole(mailourole);

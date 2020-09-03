@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/screens/screens.dart';
@@ -12,23 +14,55 @@ class SplashScreenIntro extends StatefulWidget {
   _SplashScreenIntroState createState() => _SplashScreenIntroState();
 }
 
-class _SplashScreenIntroState extends State<SplashScreenIntro> {
+class _SplashScreenIntroState extends State<SplashScreenIntro>
+    with SingleTickerProviderStateMixin {
+  Animation _fadeOut;
+  AnimationController _fadeCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+        duration: Duration(milliseconds: 1000), vsync: this);
+    _fadeOut = Tween<double>(begin: 1.0, end: 0.0)
+        .animate(CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
+    Timer(Duration(seconds: 2), () {
+      _fadeCtrl.forward();
+    });
+  }
+
+  @override
+  dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SplashScreen(
-      seconds: 10,
-      navigateAfterSeconds: LoginScreen(),
-      title: Text(
-        "Brought to you by the IT and OPS team\n UBA CI",
-        style: const TextStyle(
-          color: Assets.ubaRedColor,
-          fontSize: 16.0,
-          fontWeight: FontWeight.w600,
+    return Container(
+      color: Colors.white,
+      child: FadeTransition(
+        opacity: _fadeOut,
+        child: SplashScreen(
+          seconds: 3,
+          navigateAfterSeconds: HomeScreen(),
+          title: Text(
+            "\n\nSuper File Processor\n\n\nBrought to you by the IT and OPS team\n UBA CI",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Assets.ubaRedColor,
+              fontSize: 16.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          image: Image.asset(
+            Assets.ubaRedLogoT,
+            fit: BoxFit.cover,
+          ),
+          photoSize: 100.0,
+          loaderColor: Assets.ubaRedColor,
         ),
       ),
-      image: Image.asset(Assets.ubaRedLogoT),
-      photoSize: 100.0,
-      loaderColor: Assets.ubaRedColor,
     );
   }
 }

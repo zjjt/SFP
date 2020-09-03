@@ -8,6 +8,6 @@ import java.util.List;
 public interface UserRepository extends MongoRepository<User,String> {
     //SELECT
     public List<User> findByRole(String role);
-    public User findFirstByMail(String mail);
+    public User findFirstByUsername(String mail);
 
 }

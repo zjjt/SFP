@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sfp/assets.dart';
 import 'package:sfp/screens/screens.dart';
 
 void main() {
@@ -10,15 +9,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      color: Colors.white,
       title: 'Super File Processor',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          primarySwatch: Assets.ubaRedColor,
+          //this is done to disable the transition caused after the splashscreen navigation
+          pageTransitionsTheme: PageTransitionsTheme(
+            builders: {
+              TargetPlatform.windows: null,
+            },
+          ),
+          primarySwatch: Colors.red,
           visualDensity: VisualDensity.adaptivePlatformDensity,
           scaffoldBackgroundColor: Colors.white),
       initialRoute: SplashScreenIntro.route,
       routes: {
         SplashScreenIntro.route: (context) => SplashScreenIntro(),
-        LoginScreen.route: (context) => LoginScreen(),
+        HomeScreen.route: (context) => HomeScreen(),
       },
     );
   }
