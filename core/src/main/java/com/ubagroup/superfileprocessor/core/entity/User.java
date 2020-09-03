@@ -12,25 +12,42 @@ public class User {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String mail;
+    private String username;
+
     @Indexed(unique = true)
-    private String otp;
+    private String password;
+
     /**
      * The default roles are ADMIN,INITIATOR and VALIDATORS# where # represents a number that can be incremented indefinitely
      * In the DB only the admin account will be permanently stored.The other types of user will be only present in the collection
      * only for the duration of the process
      */
     private String role;
-
-    public User(String mail, String otp, String role) {
-        this.mail = mail;
-        this.otp = otp;
+    public User(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
         this.role = role;
     }
 
     @Override
     public String toString() {
-        return String.format("User:[id:%s\n,mail:%s\n,otp:%s\n,role:%s]",id,mail,otp,role);
+        return String.format("User:[id:%s\n,mail:%s\n,otp:%s\n,role:%s]",id,username,password,role);
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getId() {
@@ -41,21 +58,6 @@ public class User {
         this.id = id;
     }
 
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public String getOtp() {
-        return otp;
-    }
-
-    public void setOtp(String otp) {
-        this.otp = otp;
-    }
 
     public String getRole() {
         return role;
