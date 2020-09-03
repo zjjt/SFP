@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sfp/assets.dart';
-import 'package:sfp/widgets/responsive.dart';
+import 'package:sfp/src/widgets/widgets.dart';
 
 class CustomAppBar extends StatelessWidget {
   final Function helpOnPressed;

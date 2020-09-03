@@ -6,3 +6,5 @@ abstract class DataEvent extends Equatable {
 }
 
 class FetchConfigs extends DataEvent {}
+
+class DoneFetchingConfig extends DataEvent {}

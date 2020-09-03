@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:sfp/widgets/widgets.dart';
-
-import '../assets.dart';
+import 'package:sfp/assets.dart';
+import 'package:sfp/src/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String route = '/login';
