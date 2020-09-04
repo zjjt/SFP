@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/assets.dart';
+import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/screens/screens.dart';
 import 'package:splashscreen/splashscreen.dart';
 
@@ -39,6 +41,9 @@ class _SplashScreenIntroState extends State<SplashScreenIntro>
 
   @override
   Widget build(BuildContext context) {
+    // ignore: close_sinks
+    final dataBloc = context.bloc<DataBloc>();
+    dataBloc.add(FetchConfigs());
     return Container(
       color: Colors.white,
       child: FadeTransition(

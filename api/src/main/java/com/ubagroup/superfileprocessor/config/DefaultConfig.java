@@ -173,8 +173,9 @@ public class DefaultConfig {
                         break;
                 }
             }
-
-            var canalMeta=new FileSplitterMetadata(canalDbFields, executionPeriod, executionTimesInADay, canalDefaultMapToDbField,null);
+            // The execution time is set as a cron expression which runs every hour from 12 to 20 each 25th day of the month
+            // the ending date will be calculated at the first run of the job
+            var canalMeta=new FileSplitterMetadata(canalDbFields,"0 0 12-20 25/1 * * *", null, canalDefaultMapToDbField,null);
             /* here we define CANAL+ default configuration processing steps API
                 Each processing steps is linked to a functionality type and should be sequentially inserted into the list
                 with the id of each step so that the UI can properly build the forms and call the correct API endpoint when a submit

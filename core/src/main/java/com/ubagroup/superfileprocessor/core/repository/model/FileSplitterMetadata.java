@@ -1,5 +1,6 @@
 package com.ubagroup.superfileprocessor.core.repository.model;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -15,33 +16,36 @@ public class FileSplitterMetadata {
      */
     private List<String> dbFields;
     /**
-     * the executionperiod defines the day the cron job should start and the day it should stop.If we set if to [1;1]
-     * it would mean we ought to execute everyday infinitely.
-     * if we set it to [0;0] it should be executed only once
-     */
-    private List<Integer> executionPeriod;
-    /**
-     * the number of elements in this list defines the number of execution per day of a cron job
+     * a cron job
      * in the form of a cron syntax * * * * *
      */
-    private List<String> executionTimesInADay;
+    private String executionTime;
+    private Date endingDate;
+
     /**
      * the custom config will be mapped to the dbFields and their onscreen translation item and stored in a DbFieldsTranslation instance
      */
     private Map<String, DbFieldsTranslation> mapToDbFields;
-
     private Map<String,List<Integer>> positions;
 
-    public FileSplitterMetadata(List<String> dbFields, List<Integer> executionPeriod, List<String> executionTimesInADay, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
+    public FileSplitterMetadata(List<String> dbFields, String executionTime, Date endingDate, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
         this.dbFields = dbFields;
-        this.executionPeriod = executionPeriod;
-        this.executionTimesInADay = executionTimesInADay;
+        this.executionTime = executionTime;
+        this.endingDate = endingDate;
         this.mapToDbFields = mapToDbFields;
         this.positions = positions;
     }
+
     @Override
     public String toString() {
         return String.format("FileSplitterMetadata:[dbfields:%s\nmapToDbFields:%s\n,positions:%s]",dbFields,mapToDbFields,positions);
+    }
+    public String getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(String executionTime) {
+        this.executionTime = executionTime;
     }
 
 
@@ -72,15 +76,12 @@ public class FileSplitterMetadata {
         this.positions = positions;
     }
 
-    public List<Integer> getExecutionPeriod() {
-        return executionPeriod;
+
+    public Date getEndingDate() {
+        return endingDate;
     }
 
-    public List<String> getExecutionTimesInADay() {
-        return executionTimesInADay;
-    }
-
-    public void setExecutionTimesInADay(List<String> executionTimesInADay) {
-        this.executionTimesInADay = executionTimesInADay;
+    public void setEndingDate(Date endingDate) {
+        this.endingDate = endingDate;
     }
 }

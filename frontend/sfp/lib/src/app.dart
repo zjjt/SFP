@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sfp/src/blocs/data_bloc.dart';
+import 'package:sfp/src/resources/resources.dart';
 import 'package:sfp/src/screens/screens.dart';
 
 class App extends StatelessWidget {
@@ -20,8 +23,11 @@ class App extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white),
       initialRoute: SplashScreenIntro.route,
       routes: {
-        SplashScreenIntro.route: (context) => SplashScreenIntro(),
-        HomeScreen.route: (context) => HomeScreen(),
+        SplashScreenIntro.route: (context) => BlocProvider(
+            create: (context) => DataBloc(Repository()),
+            child: SplashScreenIntro()),
+        HomeScreen.route: (context) => BlocProvider(
+            create: (context) => DataBloc(Repository()), child: HomeScreen()),
       },
     );
   }

@@ -1,9 +1,9 @@
 class ProcessConfigModel {
   final String id;
   final String configName;
-  final List<String> functionnalityTypes;
+  final List<dynamic> functionnalityTypes;
   final Map<String, dynamic> metaparameters;
-  final List<Map<String, dynamic>> processingSteps;
+  final List<dynamic> processingSteps;
   final Map<String, dynamic> fileTypeAndSizeInMB;
 
   const ProcessConfigModel({
