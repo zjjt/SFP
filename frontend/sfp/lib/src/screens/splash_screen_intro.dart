@@ -23,6 +23,9 @@ class _SplashScreenIntroState extends State<SplashScreenIntro>
 
   @override
   void initState() {
+    // ignore: close_sinks
+    final dataBloc = context.bloc<DataBloc>();
+    dataBloc.add(FetchConfigs());
     super.initState();
     _fadeCtrl = AnimationController(
         duration: Duration(milliseconds: 1000), vsync: this);
@@ -41,9 +44,6 @@ class _SplashScreenIntroState extends State<SplashScreenIntro>
 
   @override
   Widget build(BuildContext context) {
-    // ignore: close_sinks
-    final dataBloc = context.bloc<DataBloc>();
-    dataBloc.add(FetchConfigs());
     return Container(
       color: Colors.white,
       child: FadeTransition(

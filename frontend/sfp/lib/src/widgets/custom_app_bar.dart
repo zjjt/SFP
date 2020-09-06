@@ -81,7 +81,7 @@ class _AppBarMobile extends StatelessWidget {
       backgroundColor: Colors.transparent,
       shadowColor: Colors.transparent,
       leading: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Image.asset(Assets.ubaRedSigleT, fit: BoxFit.cover),
       ),
       title: Text(

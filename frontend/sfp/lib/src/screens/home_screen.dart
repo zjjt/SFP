@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sfp/assets.dart';
+import 'package:sfp/src/screens/pages/pages.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -52,7 +53,21 @@ class _HomeScreenState extends State<HomeScreen>
             tooltip: "Is something wrong ? Contact IT Support",
             onPressed: () => print('Should display support popup'),
           ),
-          body: Container(),
+          body: Container(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: LoginPage(),
+                  ),
+                ),
+                //Spacer(),
+                Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Text("SFP v1.0.0 ubagroup.com")),
+              ],
+            ),
+          ),
         ),
       ),
     );

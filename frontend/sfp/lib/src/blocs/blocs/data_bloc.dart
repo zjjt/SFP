@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/models/process_config_model.dart';
 import 'package:sfp/src/resources/repository.dart';
 
-import 'blocs.dart';
+import '../blocs.dart';
 
 class DataBloc extends Bloc<DataEvent, DataState> {
   final Repository repo;

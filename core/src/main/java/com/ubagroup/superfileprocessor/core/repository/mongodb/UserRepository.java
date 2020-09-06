@@ -9,5 +9,6 @@ public interface UserRepository extends MongoRepository<User,String> {
     //SELECT
     public List<User> findByRole(String role);
     public User findFirstByUsername(String mail);
+    public User findFirstByUsernameAndPassword(String username,String password);
 
 }

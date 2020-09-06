@@ -136,7 +136,9 @@ public class DefaultConfig {
 
 
         if(userRepository.count()==0){
-            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020", "ADMIN"));
+            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020", false, "ADMIN"));
+            userRepository.save(new User("test.sfp@ubagroup.com", "sfp2020", false, "INITIATOR"));
+
             System.out.println("Admin user inserted in user collection");
 
         }

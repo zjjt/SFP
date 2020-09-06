@@ -16,6 +16,7 @@ public class User {
 
     @Indexed(unique = true)
     private String password;
+    private boolean hasValidation;
 
     /**
      * The default roles are ADMIN,INITIATOR and VALIDATORS# where # represents a number that can be incremented indefinitely
@@ -23,9 +24,10 @@ public class User {
      * only for the duration of the process
      */
     private String role;
-    public User(String username, String password, String role) {
+    public User(String username, String password, boolean hasValidation, String role) {
         this.username = username;
         this.password = password;
+        this.hasValidation = hasValidation;
         this.role = role;
     }
 
@@ -65,5 +67,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isHasValidation() {
+        return hasValidation;
+    }
+
+    public void setHasValidation(boolean hasValidation) {
+        this.hasValidation = hasValidation;
     }
 }

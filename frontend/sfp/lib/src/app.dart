@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sfp/src/blocs/data_bloc.dart';
+import 'package:sfp/src/blocs/blocs/data_bloc.dart';
 import 'package:sfp/src/resources/resources.dart';
 import 'package:sfp/src/screens/screens.dart';
 

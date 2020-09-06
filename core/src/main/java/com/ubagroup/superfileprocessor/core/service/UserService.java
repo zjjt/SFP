@@ -18,13 +18,18 @@ public class UserService implements UserInterface {
     }
 
     @Override
-    public List<User> get(String mailourole) {
+    public List<User> get(String usernameouRole) {
         List<User> l=new ArrayList<>();
-        if(mailourole.contains("@")) {
-            l.add(userRepository.findFirstByUsername(mailourole));
+      if(usernameouRole.contains("@")) {
+            l.add(userRepository.findFirstByUsername(usernameouRole));
             return l;
         }
-        return userRepository.findByRole(mailourole);
+        return userRepository.findByRole(usernameouRole);
+    }
+
+    @Override
+    public User getAdmin(String admin,String password){
+            return userRepository.findFirstByUsernameAndPassword(admin,password);
     }
 
 
