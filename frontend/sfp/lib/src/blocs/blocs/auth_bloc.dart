@@ -18,10 +18,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         final result = await repo.fetchUsers(event.username, event.password);
         //we check if we have some errors return from the api
-        if (user != null) {
+        if (!result['errors']) {
+          user = UserModel.fromJSON(result['users'][0]);
           yield AuthState.authenticated(user);
         } else {
-          yield AuthState.unauthenticated();
+          yield AuthState.unauthenticated(errorMsg: result['message']);
         }
       } on NetWorkException {}
     }

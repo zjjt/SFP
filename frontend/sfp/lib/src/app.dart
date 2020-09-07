@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sfp/src/blocs/blocs/data_bloc.dart';
 import 'package:sfp/src/resources/resources.dart';
 import 'package:sfp/src/screens/screens.dart';
 
@@ -12,7 +11,9 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => DataBloc(Repository())),
-        BlocProvider(create: (context) => AuthBloc(Repository()))
+        BlocProvider(create: (context) => AuthBloc(Repository())),
+        BlocProvider(create: (context) => AnimateEntranceBloc()),
+        BlocProvider(create: (context) => NavBloc()),
       ],
       child: MaterialApp(
         color: Colors.white,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,12 +19,20 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isErrorMsg = false;
   AuthBloc authBloc;
+  NavBloc navBloc;
+  AnimateEntranceBloc animateBloc;
+  String message = "Please enter your credentials above";
   @override
   void initState() {
     super.initState();
     // ignore: close_sinks
     authBloc = context.bloc<AuthBloc>();
+    navBloc = context.bloc<NavBloc>();
+    animateBloc = context.bloc<AnimateEntranceBloc>();
+    //launching entrence animation
+    animateBloc.add(EnteringPage());
     showPassword = true;
   }
 
@@ -75,16 +85,53 @@ class _LoginPageState extends State<LoginPage> {
                         : const EdgeInsets.all(0),
                     child: BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
+                        print("state status is ${state.status}");
                         switch (state.status) {
                           case AuthStatus.unknown:
+                            setState(() {
+                              isErrorMsg = false;
+                              message = "Please enter your credentials above";
+                            });
                             break;
                           case AuthStatus.authenticated:
                             //here we redirect to another page
+                            setState(() {
+                              isErrorMsg = false;
+                              message = "welcome dear staff member";
+                            });
+                            Timer(Duration(milliseconds: 100), () {
+                              animateBloc.add(LeavingPage());
+                              Timer(Duration(milliseconds: 500), () {
+                                if (state.user.role == "ADMIN") {
+                                  navBloc.add(GoAdmin());
+                                  //TO REMOVE AFTER CREATING THE PAGE
+                                  animateBloc.add(EnteringPage());
+                                } else if (state.user.validations.isNotEmpty) {
+                                  navBloc.add(GoValidate());
+                                  //TO REMOVE AFTER CREATING THE PAGE
+                                  animateBloc.add(EnteringPage());
+                                } else {
+                                  navBloc.add(GoConfig());
+                                  //TO REMOVE AFTER CREATING THE PAGE
+                                  animateBloc.add(EnteringPage());
+                                }
+                              });
+                            });
                             break;
                           case AuthStatus.loading:
                             //here we switch state of the login button
+                            setState(() {
+                              isErrorMsg = false;
+                              message =
+                                  "Please wait while we process your informations";
+                            });
                             break;
                           case AuthStatus.unauthenticated:
+                            setState(() {
+                              isErrorMsg = true;
+                              message = state.errorMsg ??
+                                  "Please verify your credentials.";
+                            });
                             break;
                         }
                       },
@@ -121,6 +168,12 @@ class _LoginPageState extends State<LoginPage> {
                             TextFormField(
                               obscureText: showPassword,
                               controller: passwordController,
+                              validator: (password) {
+                                if (password.isEmpty) {
+                                  return 'Please fill in your password before submitting the form';
+                                }
+                                return null;
+                              },
                               decoration: InputDecoration(
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -151,17 +204,29 @@ class _LoginPageState extends State<LoginPage> {
                             Container(
                               width: appB.width * 0.5,
                               height: 40.0,
-                              child: RaisedButton(
-                                onPressed: _login,
-                                color: Assets.ubaRedColor,
-                                textColor: Colors.white,
-                                child: Text("Log in",
-                                    style: const TextStyle(fontSize: 16)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25.0),
-                                ),
-                              ),
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                  builder: (context, state) {
+                                return RaisedButton(
+                                  onPressed: _login,
+                                  color: Assets.ubaRedColor,
+                                  textColor: Colors.white,
+                                  child: state.status == AuthStatus.loading
+                                      ? CircularProgressIndicator(
+                                          backgroundColor: Colors.white,
+                                        )
+                                      : Text("Log in",
+                                          style: const TextStyle(fontSize: 16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ),
+                                );
+                              }),
                             ),
+                            SizedBox(height: 40.0),
+                            Text(message,
+                                style: TextStyle(
+                                    color:
+                                        isErrorMsg ? Colors.red : Colors.grey)),
                           ],
                         ),
                       ),

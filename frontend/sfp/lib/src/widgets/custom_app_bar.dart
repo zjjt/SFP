@@ -5,8 +5,12 @@ import 'package:sfp/src/widgets/widgets.dart';
 class CustomAppBar extends StatelessWidget {
   final Function helpOnPressed;
   final Function logOut;
+  final bool userConnected;
   const CustomAppBar(
-      {Key key, @required this.helpOnPressed, @required this.logOut})
+      {Key key,
+      @required this.helpOnPressed,
+      @required this.logOut,
+      this.userConnected = false})
       : super(key: key);
 
   @override
@@ -17,10 +21,12 @@ class CustomAppBar extends StatelessWidget {
         mobile: _AppBarMobile(
           helpOnPressed: helpOnPressed,
           logOut: logOut,
+          userConnected: userConnected,
         ),
         desktop: _AppBarDesktop(
           helpOnPressed: helpOnPressed,
           logOut: logOut,
+          userConnected: userConnected,
         ),
       ),
     );
@@ -30,7 +36,9 @@ class CustomAppBar extends StatelessWidget {
 class _AppBarDesktop extends StatelessWidget {
   final Function helpOnPressed;
   final Function logOut;
-  const _AppBarDesktop({Key key, this.helpOnPressed, this.logOut})
+  final bool userConnected;
+  const _AppBarDesktop(
+      {Key key, this.helpOnPressed, this.logOut, this.userConnected})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -53,6 +61,7 @@ class _AppBarDesktop extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+      centerTitle: true,
       actions: [
         IconButton(
           onPressed: helpOnPressed,
@@ -64,6 +73,17 @@ class _AppBarDesktop extends StatelessWidget {
           tooltip: "Help menu",
         ),
         //here we check if user is connected so we can display logout button
+        userConnected
+            ? IconButton(
+                onPressed: logOut,
+                color: Colors.transparent,
+                icon: Icon(
+                  Icons.exit_to_app_outlined,
+                  color: Colors.white,
+                ),
+                tooltip: "Log out",
+              )
+            : SizedBox()
       ],
     );
   }
@@ -72,7 +92,10 @@ class _AppBarDesktop extends StatelessWidget {
 class _AppBarMobile extends StatelessWidget {
   final Function helpOnPressed;
   final Function logOut;
-  const _AppBarMobile({Key key, this.helpOnPressed, this.logOut})
+  final bool userConnected;
+
+  const _AppBarMobile(
+      {Key key, this.helpOnPressed, this.logOut, this.userConnected})
       : super(key: key);
 
   @override
@@ -104,6 +127,17 @@ class _AppBarMobile extends StatelessWidget {
           tooltip: "Help menu",
         ),
         //here we check if user is connected so we can display logout button
+        userConnected
+            ? IconButton(
+                onPressed: logOut,
+                color: Colors.transparent,
+                icon: Icon(
+                  Icons.exit_to_app_outlined,
+                  color: Colors.white,
+                ),
+                tooltip: "Log out",
+              )
+            : SizedBox()
       ],
     );
   }

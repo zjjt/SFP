@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 /**
  * User represents a user in the DB
  */
@@ -16,7 +18,10 @@ public class User {
 
     @Indexed(unique = true)
     private String password;
-    private boolean hasValidation;
+    /**
+     * this map contains the config name and the file id
+     */
+    private Map<String,String> validations;
 
     /**
      * The default roles are ADMIN,INITIATOR and VALIDATORS# where # represents a number that can be incremented indefinitely
@@ -24,10 +29,10 @@ public class User {
      * only for the duration of the process
      */
     private String role;
-    public User(String username, String password, boolean hasValidation, String role) {
+    public User(String username, String password, Map<String, String> validations, String role) {
         this.username = username;
         this.password = password;
-        this.hasValidation = hasValidation;
+        this.validations = validations;
         this.role = role;
     }
 
@@ -69,11 +74,12 @@ public class User {
         this.role = role;
     }
 
-    public boolean isHasValidation() {
-        return hasValidation;
+
+    public Map<String, String> getValidations() {
+        return validations;
     }
 
-    public void setHasValidation(boolean hasValidation) {
-        this.hasValidation = hasValidation;
+    public void setValidations(Map<String, String> validations) {
+        this.validations = validations;
     }
 }

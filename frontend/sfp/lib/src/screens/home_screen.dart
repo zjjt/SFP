@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/assets.dart';
-import 'package:sfp/src/screens/pages/pages.dart';
+import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/src/screens/screens.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,21 +16,43 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  Animation _fadeIn;
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  AnimateEntranceBloc animationBloc;
+  Animation _fadeIn, _subFadeIn;
   AnimationController _fadeCtrl;
+  Animation _subSlide;
+  AnimationController _subSlideController;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    animationBloc = context.bloc<AnimateEntranceBloc>();
     _fadeCtrl =
         AnimationController(duration: Duration(milliseconds: 400), vsync: this);
+    _subSlideController =
+        AnimationController(duration: Duration(milliseconds: 800), vsync: this);
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
+    _subFadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _subSlideController, curve: Curves.easeOut));
+    _subSlide = Tween<Offset>(begin: const Offset(0.0, -0.3), end: Offset.zero)
+        .animate(CurvedAnimation(
+            parent: _subSlideController, curve: Curves.easeOut));
     Timer(Duration(milliseconds: 100), () {
       _fadeCtrl.forward();
     });
+
+    _subSlideController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        animationBloc.add(SignalEndAnimation());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _fadeCtrl.dispose();
+    _subSlideController.dispose();
   }
 
   @override
@@ -39,9 +63,22 @@ class _HomeScreenState extends State<HomeScreen>
       child: Container(
         child: Scaffold(
           appBar: PreferredSize(
-            child: CustomAppBar(
-              helpOnPressed: () => print('Help pressed'),
-              logOut: () => print('loging out pressed'),
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state.status == AuthStatus.authenticated) {
+                  return CustomAppBar(
+                    helpOnPressed: () => print('Help pressed'),
+                    logOut: () => print('loging out pressed'),
+                    userConnected: true,
+                  );
+                } else {
+                  return CustomAppBar(
+                    helpOnPressed: () => print('Help pressed'),
+                    logOut: () => print('loging out pressed'),
+                    userConnected: false,
+                  );
+                }
+              },
             ),
             preferredSize:
                 Size(screenSize.width, AppBar().preferredSize.height),
@@ -57,7 +94,36 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 Expanded(
                   child: Center(
-                    child: LoginPage(),
+                    child:
+                        BlocListener<AnimateEntranceBloc, AnimateEntranceState>(
+                      listener: (context, state) {
+                        //we animate the entrance and leaving animations of each subPages
+                        switch (state.status) {
+                          case AnimationEntranceStatus.unknown:
+                            break;
+                          case AnimationEntranceStatus.start:
+                            //start animating forward
+                            //reset values to their proper point by dispatching AnimationEntranceStatus.done
+                            _subSlideController.reset();
+                            _subSlideController.forward();
+                            break;
+                          case AnimationEntranceStatus.reverse:
+                            //start animating backward
+                            //reset values to their proper point by dispatching AnimationEntranceStatus.done
+                            _subSlideController.reverse();
+                            break;
+                          case AnimationEntranceStatus.done:
+                            //_subSlideController.reset();
+                            break;
+                        }
+                      },
+                      child: SlideTransition(
+                          position: _subSlide,
+                          child: FadeTransition(
+                            opacity: _subFadeIn,
+                            child: PageBuilder(),
+                          )),
+                    ),
                   ),
                 ),
                 //Spacer(),

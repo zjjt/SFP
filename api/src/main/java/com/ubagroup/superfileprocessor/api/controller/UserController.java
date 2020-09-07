@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
@@ -34,7 +33,7 @@ public class UserController {
     }
     @GetMapping("/with")
     public Map<String,Object> get(@RequestParam(value = "username") String usernameOrRole,
-                                  @RequestParam(value = "password",required = false) String password, HttpServletRequest request){
+                                  @RequestParam(value = "tp",required = false) String password, HttpServletRequest request){
         System.out.println("get users with "+usernameOrRole+" API-----called");
         List<LogEntry>log=new ArrayList<>();
         var m=new HashMap<String,Object>();
@@ -46,7 +45,7 @@ public class UserController {
             return m;
         }
         //first we check if the user is an admin.If it is we immediately return
-        if(password.equals("sfp2020")){
+        if(usernameOrRole.contains("admin")|| password.equals("sfp2020")){
             System.out.println("Getting admin");
             User u=userService.getAdmin(usernameOrRole,password);
             System.out.println(u);
@@ -69,9 +68,9 @@ public class UserController {
             //second we log in to the Active Directory service to ensure this user is part of the domain
             if(!password.isEmpty()){
                 //here we decode the base64 encoded password string
+                System.out.println("encrypted password: "+password);
                 byte[] decodedBytes= Base64.getDecoder().decode(password);
                 password=new String(decodedBytes);
-                System.out.println("encrypted password: "+password);
                 System.out.println("decrypted password: "+password);
             }
             if(!Utils.isStringUpperCase(usernameOrRole) && Utils.isValidEmail(usernameOrRole) && password !=null ){
@@ -85,7 +84,7 @@ public class UserController {
                         if(listUsers.isEmpty()||listUsers.contains(null)){//TESTED
                             //we couldnt find the user in the db and we couldnt get a list of roles
                             //so we create the user as an INITIATOR
-                            User user=new User(usernameOrRole,password,false,"INITIATOR");
+                            User user=new User(usernameOrRole,password, null, "INITIATOR");
                             System.out.println(user);
                             userService.storeUser(user);
                             listUsers.clear();
@@ -113,7 +112,7 @@ public class UserController {
                             if(listUsers.isEmpty()||listUsers.contains(null)){//TESTED
                                 //we couldnt find the user in the db and we couldnt get a list of roles
                                 //so we create the user as an INITIATOR
-                                User user=new User(usernameOrRole,password,false,"INITIATOR");
+                                User user=new User(usernameOrRole,password,null, "INITIATOR");
                                 System.out.println(user);
                                 userService.storeUser(user);
                                 listUsers.clear();
