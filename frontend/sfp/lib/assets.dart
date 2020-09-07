@@ -6,5 +6,6 @@ class Assets {
   static const String ubaRedLogoT = '${_folder}uba_redlogo.png';
   static const String ubaWelLogo = '${_folder}uba_redlogoDesktop.png';
   static const String ubaRedSigleT = '${_folder}uba_sigle.png';
-  static const String backend = 'http://192.168.8.102:8080';
+  static const String backend =
+      'http://192.168.1.23:8080'; //'http://192.168.8.102:8080';
 }

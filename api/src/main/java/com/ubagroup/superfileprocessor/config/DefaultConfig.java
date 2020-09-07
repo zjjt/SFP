@@ -121,7 +121,7 @@ public class DefaultConfig {
      */
     public  void load(){
         System.out.println("appmode: "+appmode+"\n canalDBfields: "+canalDbFields);
-        if(appmode.equals("test")){
+        if(appmode.equals("dev")){
             System.out.println("Clearing database");
             clearAll();
         }

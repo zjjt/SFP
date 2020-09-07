@@ -25,6 +25,23 @@ class NetworkProvider {
       throw NetWorkException();
     }
   }
+
+  Future<Map<String, dynamic>> fetchUsers(
+      String username, String password) async {
+    print('in network provider trying to fetch the user from backend');
+    var response = await client.get(
+        '${Assets.backend}/user/with?username=$username&password=$password');
+    print(response);
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      print('data');
+      print(data);
+      //data["users"].forEach((e) => users.add(UserModel.fromJSON(e)));
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
 }
 
 var netProvider = NetworkProvider();

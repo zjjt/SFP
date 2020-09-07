@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -15,12 +17,14 @@ public class LogEntry {
     private String id;
     private String who;
     private String what;
-    private Date when;
+    private String when;
 
-    public LogEntry( String who, String what, Date when) {
+    public LogEntry( String who, String what) {
         this.who = who;
         this.what = what;
-        this.when = when;
+        DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now=LocalDateTime.now();
+        this.when = dtf.format(now);
     }
 
     @Override
@@ -52,11 +56,11 @@ public class LogEntry {
         this.what = what;
     }
 
-    public Date getWhen() {
+    public String getWhen() {
         return when;
     }
 
-    public void setWhen(Date when) {
+    public void setWhen(String when) {
         this.when = when;
     }
 }

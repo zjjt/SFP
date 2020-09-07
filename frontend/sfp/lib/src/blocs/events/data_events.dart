@@ -8,5 +8,4 @@ abstract class DataEvent extends Equatable {
 
 class FetchConfigs extends DataEvent {
   const FetchConfigs();
-  String toString() => 'dispatching FetchConfigs Event';
 }

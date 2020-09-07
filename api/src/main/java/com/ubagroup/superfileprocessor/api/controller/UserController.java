@@ -1,21 +1,31 @@
 package com.ubagroup.superfileprocessor.api.controller;
 
+import com.ubagroup.superfileprocessor.core.entity.LogEntry;
 import com.ubagroup.superfileprocessor.core.entity.User;
+import com.ubagroup.superfileprocessor.core.service.LogEntryService;
 import com.ubagroup.superfileprocessor.core.service.UserService;
 import com.ubagroup.superfileprocessor.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.*;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private LogEntryService logEntryService;
+    @Value("#{'${application.mode}'}")
+    private  String appmode;
     @GetMapping
     public List<User> getAll(){
         //TESTED
@@ -24,8 +34,9 @@ public class UserController {
     }
     @GetMapping("/with")
     public Map<String,Object> get(@RequestParam(value = "username") String usernameOrRole,
-                                  @RequestParam(value = "password",required = false) String password){
+                                  @RequestParam(value = "password",required = false) String password, HttpServletRequest request){
         System.out.println("get users with "+usernameOrRole+" API-----called");
+        List<LogEntry>log=new ArrayList<>();
         var m=new HashMap<String,Object>();
         //we check if the username is a valid email
         if(!Utils.isValidEmail(usernameOrRole) && password!=null){
@@ -42,6 +53,8 @@ public class UserController {
             var listUsers=new ArrayList<User>();
             if(u!=null){
                 listUsers.add(u);
+                log.add(new LogEntry(u.getUsername()+"|"+ request.getRemoteAddr(),"log in"));
+                logEntryService.saveLogs(log);
                 m.put("errors",false);
                 m.put("message","admin connected successfully");
                 m.put("users",listUsers);
@@ -54,28 +67,74 @@ public class UserController {
             }
         }else{
             //second we log in to the Active Directory service to ensure this user is part of the domain
-            if(true && !Utils.isStringUpperCase(usernameOrRole) && Utils.isValidEmail(usernameOrRole) && password !=null ){
+            if(!password.isEmpty()){
+                //here we decode the base64 encoded password string
+                byte[] decodedBytes= Base64.getDecoder().decode(password);
+                password=new String(decodedBytes);
+                System.out.println("encrypted password: "+password);
+                System.out.println("decrypted password: "+password);
+            }
+            if(!Utils.isStringUpperCase(usernameOrRole) && Utils.isValidEmail(usernameOrRole) && password !=null ){
                 //we stub the active directory query and assume this user is found then we look for him in the db
-                //if he doesnt exist we store him as an INITIATOR and we encrypt its password
-                var listUsers=userService.get(usernameOrRole);
-                if(listUsers.isEmpty()||listUsers.contains(null)){//TESTED
-                    //we couldnt find the user in the db and we couldnt get a list of roles
-                    //so we create the user as an INITIATOR
-                    User user=new User(usernameOrRole,password,false,"INITIATOR");
-                    System.out.println(user);
-                    userService.storeUser(user);
-                    listUsers.clear();
-                    listUsers.add(user);
-                    m.put("errors",false);
-                    m.put("message","user "+usernameOrRole+" logged in successfully");
-                    m.put("users",listUsers);
-                    return m;
+                List<User> listUsers;
+                //here if we are in dev mode we dont use the AD
+                switch(appmode){
+                    case "dev":
+                        //if he doesnt exist we store him as an INITIATOR and we encrypt its password
+                        listUsers=userService.get(usernameOrRole);
+                        if(listUsers.isEmpty()||listUsers.contains(null)){//TESTED
+                            //we couldnt find the user in the db and we couldnt get a list of roles
+                            //so we create the user as an INITIATOR
+                            User user=new User(usernameOrRole,password,false,"INITIATOR");
+                            System.out.println(user);
+                            userService.storeUser(user);
+                            listUsers.clear();
+                            listUsers.add(user);
+                            log.add(new LogEntry(user.getUsername()+"|"+ request.getRemoteAddr(),"created user in db and log in"));
+                            logEntryService.saveLogs(log);
+                            m.put("errors",false);
+                            m.put("message","user "+usernameOrRole+" logged in successfully");
+                            m.put("users",listUsers);
+                            return m;
 
-                }else{//TESTED
-                    m.put("errors",false);
-                    m.put("message","user "+usernameOrRole+" logged in successfully");
-                    m.put("users",listUsers);
-                    return m;
+                        }else{//TESTED
+                            log.add(new LogEntry(usernameOrRole+"|"+ request.getRemoteAddr(),"log in"));
+                            logEntryService.saveLogs(log);
+                            m.put("errors",false);
+                            m.put("message","user "+usernameOrRole+" logged in successfully");
+                            m.put("users",listUsers);
+                            return m;
+                        }
+                    case "test":
+                    case"prod":
+                        if(authAD(usernameOrRole,password)){
+                            //if he doesnt exist we store him as an INITIATOR and we encrypt its password
+                            listUsers=userService.get(usernameOrRole);
+                            if(listUsers.isEmpty()||listUsers.contains(null)){//TESTED
+                                //we couldnt find the user in the db and we couldnt get a list of roles
+                                //so we create the user as an INITIATOR
+                                User user=new User(usernameOrRole,password,false,"INITIATOR");
+                                System.out.println(user);
+                                userService.storeUser(user);
+                                listUsers.clear();
+                                listUsers.add(user);
+                                log.add(new LogEntry(user.getUsername()+"|"+ request.getRemoteAddr(),"created user in db and log in"));
+                                logEntryService.saveLogs(log);
+                                m.put("errors",false);
+                                m.put("message","user "+usernameOrRole+" logged in successfully");
+                                m.put("users",listUsers);
+                                return m;
+
+                            }else{//TESTED
+                                log.add(new LogEntry(usernameOrRole+"|"+ request.getRemoteAddr(),"log in"));
+                                logEntryService.saveLogs(log);
+                                m.put("errors",false);
+                                m.put("message","user "+usernameOrRole+" logged in successfully");
+                                m.put("users",listUsers);
+                                return m;
+                            }
+                        }
+                            break;
                 }
 
             }else{
@@ -91,6 +150,7 @@ public class UserController {
                         return m;
                     }
                     //TESTED
+
                     m.put("errors",false);
                     m.put("message","list of all the users with role "+usernameOrRole);
                     m.put("users",listUsers);
@@ -104,6 +164,7 @@ public class UserController {
                 }
             }
         }
+        return m;
     }
     @PostMapping("/update")
     public Map<String,Object> updateUser(@RequestBody User user){
@@ -113,5 +174,37 @@ public class UserController {
         m.put("message","user "+user.getUsername()+" updated successfully");
         m.put("users",user);
         return m;
+    }
+    //authenticating via UBA Active Directory
+    public boolean authAD(String username,String password){
+            boolean checker = false;
+                try {
+
+                    String url = "http://10.100.5.195:8017/api/ADUser/AuthenticateUser";
+                    StringBuilder urlBuilder = new StringBuilder();
+                    urlBuilder.append(url);
+                    urlBuilder.append("?username=").append(URLEncoder.encode(username.trim(), "UTF-8")).append("&password=").append(URLEncoder.encode(password.trim(), "UTF-8"));
+                    String line = "";
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(urlBuilder.toString()).openStream()));
+                    StringBuffer result = new StringBuffer();
+
+                    System.out.println("URL" + urlBuilder.toString());
+
+                    while ((line = reader.readLine()) != null){
+                        result.append(line);
+                    }
+                    System.out.println("VALEUR =" + result.toString().trim());
+
+                    if(result.toString().equals("true") || result.toString().equalsIgnoreCase("true")){
+                        checker = true;
+                    }
+
+                } catch (Exception ex) {
+                    System.out.println("CAUSE ERROR : " + ex.getCause());
+                    System.out.println("MESSAGE ERROR : " + ex.getMessage());
+                }
+
+            return checker;
     }
 }

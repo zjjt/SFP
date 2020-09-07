@@ -12,16 +12,33 @@ class DataBloc extends Bloc<DataEvent, DataState> {
   @override
   Stream<DataState> mapEventToState(DataEvent event) async* {
     if (event is FetchConfigs) {
-      print('dispatching FetchConfigs Event');
       try {
         yield DataLoading();
         final configs = await repo.fetchConfig();
         processConfigs = configs;
         yield ConfigOK(configs);
       } on NetWorkException {
-        yield DataFailure("Aucune connexion internet détectée");
+        yield DataFailure("No internet connection");
       }
     }
     //if(event is )
+  }
+
+  @override
+  void onEvent(DataEvent event) {
+    print(event);
+    super.onEvent(event);
+  }
+
+  @override
+  void onChange(Change<DataState> change) {
+    print(change);
+    super.onChange(change);
+  }
+
+  @override
+  void onTransition(Transition<DataEvent, DataState> transition) {
+    print(transition);
+    super.onTransition(transition);
   }
 }

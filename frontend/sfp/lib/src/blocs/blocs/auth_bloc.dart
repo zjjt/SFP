@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sfp/src/models/process_config_model.dart';
+import 'package:sfp/src/models/user_model.dart';
 import 'package:sfp/src/resources/repository.dart';
 
 import '../blocs.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final Repository repo;
-  List<ProcessConfigModel> processConfigs;
+  UserModel user;
   AuthBloc(this.repo) : super(const AuthState.unknown());
 
   @override
@@ -14,15 +14,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (event is LoggingIn) {
       print(
           'trying to login with username:${event.username} and ${event.password}');
+      yield AuthState.loading();
       try {
-        yield DataLoading();
-        final configs = await repo.fetchConfig();
-        processConfigs = configs;
-        yield ConfigOK(configs);
-      } on NetWorkException {
-        yield DataFailure("Aucune connexion internet détectée");
-      }
+        final result = await repo.fetchUsers(event.username, event.password);
+        //we check if we have some errors return from the api
+        if (user != null) {
+          yield AuthState.authenticated(user);
+        } else {
+          yield AuthState.unauthenticated();
+        }
+      } on NetWorkException {}
     }
     //if(event is )
+  }
+
+  @override
+  void onEvent(AuthEvent event) {
+    print(event);
+    super.onEvent(event);
+  }
+
+  @override
+  void onChange(Change<AuthState> change) {
+    print(change);
+    super.onChange(change);
+  }
+
+  @override
+  void onTransition(Transition<AuthEvent, AuthState> transition) {
+    print(transition);
+    super.onTransition(transition);
   }
 }

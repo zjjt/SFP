@@ -6,6 +6,7 @@ class AuthState extends Equatable {
   final UserModel user;
   const AuthState._({this.status = AuthStatus.unknown, this.user});
   const AuthState.unknown() : this._();
+  const AuthState.loading() : this._(status: AuthStatus.loading);
   const AuthState.authenticated(UserModel user)
       : this._(status: AuthStatus.authenticated, user: user);
   const AuthState.unauthenticated({String msg})
@@ -14,4 +15,4 @@ class AuthState extends Equatable {
   List<Object> get props => [status, user];
 }
 
-enum AuthStatus { unknown, authenticated, unauthenticated }
+enum AuthStatus { unknown, loading, authenticated, unauthenticated }

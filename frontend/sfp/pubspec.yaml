@@ -32,8 +32,9 @@ dependencies:
   equatable: ^1.2.4
   splashscreen: ^1.2.0
   fluttertoast: ^7.0.4
-  flutter_spinkit: "^4.1.2"
+  flutter_spinkit: ^4.1.2
   http: ^0.12.2
+  email_validator: ^1.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
