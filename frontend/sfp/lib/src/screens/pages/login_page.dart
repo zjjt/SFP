@@ -73,6 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Text(
                     "Sign In !",
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Assets.ubaRedColor,
                       fontSize: 50.0,
@@ -106,14 +107,13 @@ class _LoginPageState extends State<LoginPage> {
                                   navBloc.add(GoAdmin());
                                   //TO REMOVE AFTER CREATING THE PAGE
                                   animateBloc.add(EnteringPage());
-                                } else if (state.user.validations.isNotEmpty) {
+                                } else if (state.user.validations != null &&
+                                    state.user.validations.isNotEmpty) {
                                   navBloc.add(GoValidate());
                                   //TO REMOVE AFTER CREATING THE PAGE
                                   animateBloc.add(EnteringPage());
                                 } else {
                                   navBloc.add(GoConfig());
-                                  //TO REMOVE AFTER CREATING THE PAGE
-                                  animateBloc.add(EnteringPage());
                                 }
                               });
                             });
@@ -166,6 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             SizedBox(height: 20.0),
                             TextFormField(
+                              onFieldSubmitted: (event) => _login(),
                               obscureText: showPassword,
                               controller: passwordController,
                               validator: (password) {
@@ -209,6 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                                 return RaisedButton(
                                   onPressed: _login,
                                   color: Assets.ubaRedColor,
+                                  hoverColor: Colors.black,
                                   textColor: Colors.white,
                                   child: state.status == AuthStatus.loading
                                       ? CircularProgressIndicator(

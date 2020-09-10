@@ -21,11 +21,26 @@ class DataLoading extends DataState {
   String toString() => 'emiting DataLoading';
 }
 
-class ConfigOK extends DataState {
+class ConfigLoaded extends DataState {
   final List<ProcessConfigModel> configs;
-  const ConfigOK(this.configs);
-  String toString() => 'emiting ConfigOK';
+  const ConfigLoaded(this.configs);
+  String toString() => 'emiting ConfigLoaded';
 }
+
+class ConfigSelected extends DataState {
+  final ProcessConfigModel config;
+  const ConfigSelected(this.config);
+  List<Object> get props => [config];
+}
+
+class FileUploaded extends DataState {
+  final String message;
+  final bool errors;
+  const FileUploaded({this.message, this.errors});
+  List<Object> get props => [message];
+}
+
+class FileUploading extends DataState {}
 
 class DataFailure extends DataState {
   final String _message;

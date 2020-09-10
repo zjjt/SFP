@@ -10,6 +10,10 @@ class LoginState extends NavState {}
 
 class AdminState extends NavState {}
 
+class FuploadState extends NavState {}
+
+class SelectConfigState extends NavState {}
+
 class ValidationState extends NavState {}
 
 class WhereTo extends NavState {

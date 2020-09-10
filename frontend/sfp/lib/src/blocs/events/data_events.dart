@@ -9,3 +9,16 @@ abstract class DataEvent extends Equatable {
 class FetchConfigs extends DataEvent {
   const FetchConfigs();
 }
+
+class SelectConfig extends DataEvent {
+  final int configPosition;
+  const SelectConfig(this.configPosition);
+  List<Object> get props => [configPosition];
+}
+
+class DoFileUpload extends DataEvent {
+  final files;
+  final String userName;
+  const DoFileUpload(this.files, this.userName);
+  List<Object> get props => [files, userName];
+}

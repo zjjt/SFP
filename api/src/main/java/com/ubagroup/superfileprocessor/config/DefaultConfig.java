@@ -207,15 +207,15 @@ public class DefaultConfig {
 
             //Setting the accepted file type and size for the processing
             var canalFileTypeandSize=new HashMap<String,Object>();
-            canalFileTypeandSize.put("type","txt");
+            canalFileTypeandSize.put("type","BAN");
             canalFileTypeandSize.put("size",10);
             canalFileTypeandSize.put("space_in_memory","mb");
             var paySendFileTypeandSize=new HashMap<String,Object>();
             paySendFileTypeandSize.put("type","xlsx");
             paySendFileTypeandSize.put("size",10);
             paySendFileTypeandSize.put("space_in_memory","mb");
-            var canalConfig=new ProcessConfig("CANAL+",canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
-            var paySendConfig=new ProcessConfig("PAYSEND",paySendFunctionality,null,paySendProcessingSteps,paySendFileTypeandSize);
+            var canalConfig=new ProcessConfig("CANAL+", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
+            var paySendConfig=new ProcessConfig("PAYSEND", "HR process", paySendFunctionality,null,paySendProcessingSteps,paySendFileTypeandSize);
 
             //inserting the default configs now
             processConfigRepository.deleteAll();

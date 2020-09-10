@@ -28,7 +28,7 @@ public class ProcessConfigController {
         return processConfigService.getAll();
     }
     @PostMapping
-    public Map<String,Object> saveConfig(ProcessConfig config){
+    public Map<String,Object> saveConfig(@RequestBody ProcessConfig config){
         var m=new HashMap<String,Object>();
         if(processConfigService.saveConfig(config)){
             m.put("errors",false);

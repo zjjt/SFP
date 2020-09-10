@@ -10,6 +10,8 @@ class GoLogin extends NavEvent {}
 
 class GoConfig extends NavEvent {}
 
+class GoFupload extends NavEvent {}
+
 class GoAdmin extends NavEvent {}
 
 class GoValidate extends NavEvent {}

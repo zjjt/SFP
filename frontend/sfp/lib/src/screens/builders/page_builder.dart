@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/src/screens/pages/file_upload_mobile_page.dart';
 import 'package:sfp/src/screens/pages/pages.dart';
 
 class PageBuilder extends StatefulWidget {
@@ -29,6 +31,10 @@ class _PageBuilderState extends State<PageBuilder> {
               child: Center(
             child: Text("Admin page here"),
           ));
+        } else if (state is SelectConfigState) {
+          return SelectConfigPage();
+        } else if (state is FuploadState) {
+          return kIsWeb ? FileUploadWebPage() : FileUploadMobilePage();
         } else if (state is WhereTo) {
           return Container(
               child: Center(

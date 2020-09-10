@@ -101,7 +101,7 @@ class _AppBarMobile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       shadowColor: Colors.transparent,
       leading: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -133,7 +133,7 @@ class _AppBarMobile extends StatelessWidget {
                 color: Colors.transparent,
                 icon: Icon(
                   Icons.exit_to_app_outlined,
-                  color: Colors.white,
+                  color: Assets.ubaRedColor,
                 ),
                 tooltip: "Log out",
               )

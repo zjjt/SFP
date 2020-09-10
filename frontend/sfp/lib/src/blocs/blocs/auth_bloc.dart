@@ -26,6 +26,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       } on NetWorkException {}
     }
+    if (event is LogOut) {
+      print('user ${user.username} logging out');
+      try {
+        if (await repo.logOut(user.username)) {
+          user = null;
+          yield AuthState.unknown();
+        }
+      } on NetWorkException {}
+    }
     //if(event is )
   }
 

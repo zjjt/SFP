@@ -15,6 +15,9 @@ import java.util.Date;
 public class LogEntry {
     @Id
     private String id;
+    /**
+     * who might be composed of the username,the ip adress,the mac adress and the imei of the currently logged user
+     */
     private String who;
     private String what;
     private String when;

@@ -165,6 +165,12 @@ public class UserController {
         }
         return m;
     }
+    @GetMapping("/logout")
+    public boolean logOut(@RequestParam(value="username") String username,HttpServletRequest request){
+        List<LogEntry> log=new ArrayList<>();
+        log.add(new LogEntry(username+"|"+ request.getRemoteAddr(),"disconnection"));
+        return logEntryService.saveLogs(log);
+    }
     @PostMapping("/update")
     public Map<String,Object> updateUser(@RequestBody User user){
         var m=new HashMap<String,Object>();

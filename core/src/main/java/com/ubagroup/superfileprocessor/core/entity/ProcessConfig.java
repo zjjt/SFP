@@ -22,6 +22,7 @@ public class ProcessConfig {
     private String id;
     @Indexed(unique = true)
     private String configName;
+    private String description;
     /**
      * The types define the frontend functionality that will be available to the user to
      * handle the task at hand depending if it requires it or not.
@@ -38,8 +39,9 @@ public class ProcessConfig {
     private List<ProcessingSteps> processingSteps;
     private Map<String,Object> fileTypeAndSizeInMB;
 
-    public ProcessConfig(String configName, List<String> functionnalityTypes, FileSplitterMetadata metaparameters, List<ProcessingSteps> processingSteps, Map<String, Object> fileTypeAndSizeInMB) {
+    public ProcessConfig(String configName, String description, List<String> functionnalityTypes, FileSplitterMetadata metaparameters, List<ProcessingSteps> processingSteps, Map<String, Object> fileTypeAndSizeInMB) {
         this.configName = configName;
+        this.description = description;
         this.functionnalityTypes = functionnalityTypes;
         this.metaparameters = metaparameters;
         this.processingSteps = processingSteps;
@@ -97,6 +99,14 @@ public class ProcessConfig {
 
     public void setConfigName(String configName) {
         this.configName = configName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
 
