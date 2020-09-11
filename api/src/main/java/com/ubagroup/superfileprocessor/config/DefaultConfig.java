@@ -214,7 +214,7 @@ public class DefaultConfig {
             paySendFileTypeandSize.put("type","xlsx");
             paySendFileTypeandSize.put("size",10);
             paySendFileTypeandSize.put("space_in_memory","mb");
-            var canalConfig=new ProcessConfig("CANAL+", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
+            var canalConfig=new ProcessConfig("CANAL", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
             var paySendConfig=new ProcessConfig("PAYSEND", "HR process", paySendFunctionality,null,paySendProcessingSteps,paySendFileTypeandSize);
 
             //inserting the default configs now

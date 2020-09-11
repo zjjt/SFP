@@ -29,11 +29,12 @@ class Repository {
     return users;
   }
 
-  Future<Map<String, dynamic>> uploadFiles(
-      List<dynamic> files, String configName, String userName) async {
+  Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
+      String configName, String userName, String extension) async {
     var fup;
     try {
-      fup = await netProvider.uploadFiles(files, configName, userName);
+      fup =
+          await netProvider.uploadFiles(files, configName, userName, extension);
     } on NetWorkException {
       print("couldnt reach the api ${fup.message}");
       return null;

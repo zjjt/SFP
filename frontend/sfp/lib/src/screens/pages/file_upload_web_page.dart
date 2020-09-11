@@ -237,7 +237,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                       Timer(Duration(milliseconds: 200), () {
                                         alertBloc.add(ShowAlert(
                                           whatToShow: Container(
-                                            height: 150,
+                                            height: 200,
                                             width: 200,
                                             color: Colors.white,
                                             padding: EdgeInsets.fromLTRB(

@@ -32,7 +32,10 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         if (event.files.isNotEmpty && event.userName.isNotEmpty) {
           //here we call the repository to handle the api post request
           final m = await repo.uploadFiles(
-              event.files, currentConfig.configName, event.userName);
+              event.files,
+              currentConfig.configName,
+              event.userName,
+              currentConfig.fileTypeAndSizeInMB['type']);
           print('fileupload result $m');
           yield FileUploaded(errors: m['errors'], message: m['message']);
         } else {

@@ -45,8 +45,8 @@ class NetworkProvider {
     }
   }
 
-  Future<Map<String, dynamic>> uploadFiles(
-      List<dynamic> files, String configName, String userName) async {
+  Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
+      String configName, String userName, String extension) async {
     print(
         "in network provider trying to upload ${files.length} files for config ");
 
@@ -54,12 +54,12 @@ class NetworkProvider {
     for (var i = 0; i < files.length; i++) {
       if (files[i] is File) {
         filesM.add(MultipartFile.fromBytes(files[i].readAsBytesSync(),
-            filename: "fichier$i",
+            filename: "fichier${configName}_$i.$extension",
             contentType: MediaType.parse("multipart/form-data")));
       } else {
         filesM.add(MultipartFile.fromBytes(
             await Utils.convertHtmlFileToBytes(files[i]),
-            filename: "fichier$i",
+            filename: "fichier${configName}_$i.$extension",
             contentType: MediaType.parse("multipart/form-data")));
       }
     }
