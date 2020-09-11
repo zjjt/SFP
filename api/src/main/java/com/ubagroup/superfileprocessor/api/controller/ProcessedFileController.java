@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +18,19 @@ public class ProcessedFileController {
     @Autowired
     ProcessedFileService processedFileService;
     @PostMapping
-    public Map<String,Object> uploadFile(@RequestParam(name="files") List<MultipartFile> files,
+    public Map<String,Object> uploadFile(@RequestParam("files[]") List<MultipartFile> files,
                                          @RequestParam(name="configName") String configName,
-                                         @RequestParam(name="userName") String userName){
+                                         @RequestParam(name="userName") String userName, HttpServletRequest request){
         System.out.println("uploading "+files.size()+" files API ---- called");
-        System.out.println(files.toString());
 
         var m=new HashMap<String,Object>();
         if(!files.isEmpty()){
             //Here we forward everything to the service which will handle the proper treatment based on the processing config chosen
+            try{
+                Thread.sleep(5*1000);
+            }catch(InterruptedException ex){
+                ex.printStackTrace();
+            }
             System.out.println(files);
             m.put("errors",false);
             m.put("message","files uploaded successfully");

@@ -6,6 +6,7 @@ import 'package:file_picker_platform_interface/file_picker_platform_interface.da
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
@@ -25,6 +26,8 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
   AuthBloc authBloc;
   NavBloc navBloc;
   DataBloc dataBloc;
+  AlertBloc alertBloc;
+
   int noFiles;
   List<File> files;
   AnimateEntranceBloc animateBloc;
@@ -39,6 +42,8 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
     navBloc = context.bloc<NavBloc>();
     dataBloc = context.bloc<DataBloc>();
     animateBloc = context.bloc<AnimateEntranceBloc>();
+    alertBloc = context.bloc<AlertBloc>();
+
     //launching entrence animation
     animateBloc.add(EnteringPage());
     _uploadSlideController =
@@ -101,7 +106,6 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
         noFiles = filesW.length;
         files = filesW;
       });
-      FilePicker.clearTemporaryFiles();
       //send files to server
     }
   }
@@ -202,51 +206,102 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                               if (MediaQuery.of(context).orientation ==
                                   Orientation.portrait)
                                 SizedBox(height: 10.0),
-                              BlocBuilder<DataBloc, DataState>(
-                                builder: (context, state) {
-                                  if (state is FileUploaded) {
-                                    Scaffold.of(context).showSnackBar(SnackBar(
-                                      content: Text(
-                                          '${files.length} files uploaded',
-                                          style: const TextStyle(
-                                              color: Colors.white)),
-                                      backgroundColor: Colors.black,
-                                    ));
+                              BlocListener<DataBloc, DataState>(
+                                listener: (context, state) {
+                                  if (state is FileUploaded && !state.errors) {
+                                    alertBloc.add(CloseAlert());
                                     Timer(Duration(milliseconds: 100), () {
-                                      animateBloc.add(LeavingPage());
-                                      Timer(Duration(milliseconds: 500), () {
-                                        print("navigating to next step");
-                                      });
+                                      Scaffold.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(
+                                            '${files.length} files processed for ${dataBloc.currentConfig.configName} configuration',
+                                            style: const TextStyle(
+                                                color: Colors.white)),
+                                        backgroundColor: Colors.black,
+                                      ));
+                                    });
+                                  } else if (state is FileUploaded &&
+                                      state.errors) {
+                                    Timer(Duration(milliseconds: 100), () {
+                                      Scaffold.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(state.message,
+                                            style: const TextStyle(
+                                                color: Colors.white)),
+                                        backgroundColor: Colors.red,
+                                      ));
                                     });
                                   }
-                                  return Container(
-                                    width: MediaQuery.of(context).orientation ==
-                                            Orientation.portrait
-                                        ? appB.width
-                                        : appB.width * 0.4,
-                                    height: 40.0,
-                                    child: RaisedButton(
-                                      onPressed: state is FileUploading
-                                          ? () {}
-                                          : _sendFiles,
-                                      color: Assets.ubaRedColor,
-                                      hoverColor: Colors.black,
-                                      disabledColor: Colors.redAccent,
-                                      disabledTextColor: Colors.black,
-                                      textColor: Colors.white,
-                                      child: Text(
-                                        state is FileUploading
-                                            ? "Please wait"
-                                            : "Start process",
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(25.0),
-                                      ),
-                                    ),
-                                  );
                                 },
+                                child: BlocBuilder<DataBloc, DataState>(
+                                  builder: (context, state) {
+                                    if (state is FileUploading) {
+                                      Timer(Duration(milliseconds: 200), () {
+                                        alertBloc.add(ShowAlert(
+                                          whatToShow: Container(
+                                            height: 150,
+                                            width: 200,
+                                            color: Colors.white,
+                                            padding: EdgeInsets.fromLTRB(
+                                                10.0, 0.0, 10.0, 10.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Center(
+                                                  child: SpinKitRing(
+                                                      color: Assets.ubaRedColor,
+                                                      size: 80.0),
+                                                ),
+                                                SizedBox(height: 10.0),
+                                                Text(
+                                                    "Please wait while your file(s) are being processed...")
+                                              ],
+                                            ),
+                                          ),
+                                          title: '',
+                                          actions: [],
+                                        ));
+                                      });
+                                    } else if (state is FileUploaded &&
+                                        !state.errors) {
+                                      Timer(Duration(milliseconds: 500), () {
+                                        animateBloc.add(LeavingPage());
+                                        Timer(Duration(milliseconds: 500), () {
+                                          print("navigating to next step");
+                                        });
+                                      });
+                                    }
+                                    return Container(
+                                      width:
+                                          MediaQuery.of(context).orientation ==
+                                                  Orientation.portrait
+                                              ? appB.width
+                                              : appB.width * 0.4,
+                                      height: 40.0,
+                                      child: RaisedButton(
+                                        onPressed: state is FileUploading
+                                            ? () {}
+                                            : _sendFiles,
+                                        color: Assets.ubaRedColor,
+                                        hoverColor: Colors.black,
+                                        disabledColor: Colors.redAccent,
+                                        disabledTextColor: Colors.black,
+                                        textColor: Colors.white,
+                                        child: Text(
+                                          state is FileUploading
+                                              ? "Please wait"
+                                              : "Start process",
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(25.0),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),

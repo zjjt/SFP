@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/resources/repository.dart';
@@ -50,12 +51,16 @@ class NetworkProvider {
         "in network provider trying to upload ${files.length} files for config ");
 
     List<MultipartFile> filesM = [];
-    for (var file in files) {
-      if (file is File) {
-        filesM.add(MultipartFile.fromBytes(file.readAsBytesSync()));
+    for (var i = 0; i < files.length; i++) {
+      if (files[i] is File) {
+        filesM.add(MultipartFile.fromBytes(files[i].readAsBytesSync(),
+            filename: "fichier$i",
+            contentType: MediaType.parse("multipart/form-data")));
       } else {
-        filesM.add(
-            MultipartFile.fromBytes(await Utils.convertHtmlFileToBytes(file)));
+        filesM.add(MultipartFile.fromBytes(
+            await Utils.convertHtmlFileToBytes(files[i]),
+            filename: "fichier$i",
+            contentType: MediaType.parse("multipart/form-data")));
       }
     }
     print('files to upload  ${filesM.length}');
@@ -66,6 +71,9 @@ class NetworkProvider {
         "configName": configName,
         "userName": userName,
       });
+
+      print('files to upload  ${formData.files.length}');
+
       response = await dio.post("$backend/upload", data: formData,
           onSendProgress: (int sent, int total) {
         print("$sent/$total");

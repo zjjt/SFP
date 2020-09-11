@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController _fadeCtrl;
   Animation _subSlide, _subFadeIn;
   AnimationController _subSlideController;
+
   @override
   void initState() {
     super.initState();
@@ -62,9 +63,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _subSlideController.dispose();
   }
 
+  void _showAlert(
+      {bool isAlertUp = false,
+      BuildContext context,
+      Widget leWidget,
+      String title = '',
+      List<Widget> actions,
+      Alignment alignement}) {
+    if (!isAlertUp) {
+      print('closing the displayed alert dialog');
+      Navigator.of(context).pop();
+      return;
+    }
+    showDialog(
+        context: context,
+        barrierDismissible: alignement != null,
+        builder: (_) => alignement != null
+            ? Stack(children: [
+                /*Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  color: Color.fromRGBO(0, 0, 0, 0.5),
+                ),*/
+                alignement == Alignment.bottomRight
+                    ? Positioned(right: 20.0, bottom: 100.0, child: leWidget)
+                    : Positioned(child: leWidget)
+              ])
+            : AlertDialog(
+                title: Text(title),
+                content: leWidget,
+                actions: actions,
+              ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
+
     return FadeTransition(
       opacity: _fadeIn,
       child: Container(
@@ -82,34 +117,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           },
           child: Scaffold(
             appBar: PreferredSize(
-              child: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  if (state.status == AuthStatus.authenticated) {
-                    return CustomAppBar(
-                      helpOnPressed: () => print('Help pressed'),
-                      logOut: () {
-                        authBloc.add(LogOut());
-                      },
-                      userConnected: true,
-                    );
-                  } else {
-                    //the user should be directed to the login page
-                    if (state.status == AuthStatus.unknown && !isIntitialPage) {
-                      Timer(Duration(milliseconds: 100), () {
-                        animationBloc.add(LeavingPage());
-                        dataBloc.add(FetchConfigs());
-                        Timer(Duration(milliseconds: 500), () {
-                          navBloc.add(GoLogin());
-                        });
-                      });
-                    }
-                    return CustomAppBar(
-                      helpOnPressed: () => print('Help pressed'),
-                      logOut: () => authBloc.add(LogOut()),
-                      userConnected: false,
-                    );
+              child: BlocListener<AlertBloc, AlertState>(
+                listener: (context, state) {
+                  if (state.status == AlertDialogStatus.opened) {
+                    _showAlert(
+                        isAlertUp: true,
+                        context: context,
+                        leWidget: state.whatToShow,
+                        title: state.title,
+                        actions: state.actions,
+                        alignement: state.alignement);
+                  } else if (state.status == AlertDialogStatus.closed) {
+                    _showAlert(isAlertUp: false, context: context, actions: []);
                   }
                 },
+                child: BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state.status == AuthStatus.authenticated) {
+                      return CustomAppBar(
+                        helpOnPressed: () => print('Help pressed'),
+                        logOut: () {
+                          authBloc.add(LogOut());
+                        },
+                        userConnected: true,
+                      );
+                    } else {
+                      //the user should be directed to the login page
+                      if (state.status == AuthStatus.unknown &&
+                          !isIntitialPage) {
+                        Timer(Duration(milliseconds: 100), () {
+                          animationBloc.add(LeavingPage());
+                          dataBloc.add(FetchConfigs());
+                          Timer(Duration(milliseconds: 500), () {
+                            navBloc.add(GoLogin());
+                          });
+                        });
+                      }
+                      return CustomAppBar(
+                        helpOnPressed: () => print('Help pressed'),
+                        logOut: () => authBloc.add(LogOut()),
+                        userConnected: false,
+                      );
+                    }
+                  },
+                ),
               ),
               preferredSize:
                   Size(screenSize.width, AppBar().preferredSize.height),
