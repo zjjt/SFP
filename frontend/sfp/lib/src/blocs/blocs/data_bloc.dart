@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/models/process_config_model.dart';
 import 'package:sfp/src/resources/repository.dart';
 
@@ -7,6 +8,7 @@ import '../blocs.dart';
 class DataBloc extends Bloc<DataEvent, DataState> {
   final Repository repo;
   List<ProcessConfigModel> processConfigs;
+  List<ProcessedFileModel> processedFiles;
   ProcessConfigModel currentConfig;
   DataBloc(this.repo) : super(DataInitial());
 
@@ -29,17 +31,28 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     if (event is DoFileUpload) {
       yield FileUploading();
       try {
-        if (event.files.isNotEmpty && event.userName.isNotEmpty) {
+        if (event.files.isNotEmpty && event.userId.isNotEmpty) {
           //here we call the repository to handle the api post request
           final m = await repo.uploadFiles(
               event.files,
               currentConfig.configName,
-              event.userName,
+              event.userId,
               currentConfig.fileTypeAndSizeInMB['type']);
-          print('fileupload result $m');
-          yield FileUploaded(errors: m['errors'], message: m['message']);
+          processedFiles = [];
+          for (int i = 0; i < m['fichiers'].length; i++) {
+            print(m['fichiers'].length);
+            print(m['fichiers'][i]['configName']);
+            var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
+            processedFiles.add(pf);
+          }
+          print("processed files $processedFiles");
+          yield FileUploaded(
+              errors: m['errors'],
+              message: m['message'],
+              processingTime: m['processing_time']);
         } else {
           yield FileUploaded(
+              processingTime: '0 milliseconds',
               message:
                   "A problem occured during the file upload.\nMake sure you are selecting the right files",
               errors: true);

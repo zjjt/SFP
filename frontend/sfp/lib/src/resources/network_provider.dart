@@ -46,7 +46,7 @@ class NetworkProvider {
   }
 
   Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
-      String configName, String userName, String extension) async {
+      String configName, String userId, String extension) async {
     print(
         "in network provider trying to upload ${files.length} files for config ");
 
@@ -69,7 +69,7 @@ class NetworkProvider {
       FormData formData = FormData.fromMap({
         "files": filesM,
         "configName": configName,
-        "userName": userName,
+        "userId": userId,
       });
 
       print('files to upload  ${formData.files.length}');

@@ -16,6 +16,8 @@ class GoAdmin extends NavEvent {}
 
 class GoValidate extends NavEvent {}
 
+class GoResult extends NavEvent {}
+
 class GoTo extends NavEvent {
   final String where;
   const GoTo({this.where});

@@ -1,6 +1,7 @@
 package com.ubagroup.superfileprocessor.core.entity;
 
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
+import org.bson.types.Binary;
 import org.json.JSONObject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -17,16 +18,16 @@ public class ProcessedFile {
     @Id
     private String id;
     @Indexed(unique = true)
-    private JSONObject inFile;
+    private Binary inFile;
     @Indexed(unique = true)
-    private JSONObject outFile;
+    private Binary outFile;
     private String userId;
     private String configName;
     private boolean processingStatus;
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile(JSONObject inFile, JSONObject outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile(Binary inFile, Binary outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
@@ -65,19 +66,19 @@ public class ProcessedFile {
         this.dateProcessed = dateProcessed;
     }
 
-    public JSONObject getInFile() {
+    public Binary getInFile() {
         return inFile;
     }
 
-    public void setInFile(JSONObject inFile) {
+    public void setInFile(Binary inFile) {
         this.inFile = inFile;
     }
 
-    public JSONObject getOutFile() {
+    public Binary getOutFile() {
         return outFile;
     }
 
-    public void setOutFile(JSONObject outFile) {
+    public void setOutFile(Binary outFile) {
         this.outFile = outFile;
     }
 

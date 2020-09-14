@@ -15,6 +15,8 @@ class NavBloc extends Bloc<NavEvent, NavState> {
       yield SelectConfigState();
     } else if (event is GoFupload) {
       yield FuploadState();
+    } else if (event is GoResult) {
+      yield ResultState();
     } else if (event is GoTo) {
       yield WhereTo(event.where);
     } else if (event is GoValidate) {

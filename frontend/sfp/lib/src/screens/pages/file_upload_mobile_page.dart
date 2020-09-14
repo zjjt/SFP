@@ -68,7 +68,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
     //here we send the uploaded files to the server
     //and navigate away to ...(check now the processing steps)
     if (noFiles > 0 && files.length > 0) {
-      dataBloc.add(DoFileUpload(files, authBloc.user.username));
+      dataBloc.add(DoFileUpload(files, authBloc.user.id));
     } else {
       Scaffold.of(context).showSnackBar(SnackBar(
         content: Text('Choose at leat one file before proceeding',
@@ -214,11 +214,12 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                       Scaffold.of(context)
                                           .showSnackBar(SnackBar(
                                         content: Text(
-                                            '${files.length} files processed for ${dataBloc.currentConfig.configName} configuration',
+                                            '${files.length} files processed for ${dataBloc.currentConfig.configName} configuration in ${state.processingTime}',
                                             style: const TextStyle(
                                                 color: Colors.white)),
                                         backgroundColor: Colors.black,
                                       ));
+                                      FilePicker.clearTemporaryFiles();
                                     });
                                   } else if (state is FileUploaded &&
                                       state.errors) {
@@ -265,9 +266,10 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                       });
                                     } else if (state is FileUploaded &&
                                         !state.errors) {
-                                      Timer(Duration(milliseconds: 500), () {
+                                      Timer(Duration(milliseconds: 100), () {
                                         animateBloc.add(LeavingPage());
                                         Timer(Duration(milliseconds: 500), () {
+                                          navBloc.add(GoResult());
                                           print("navigating to next step");
                                         });
                                       });

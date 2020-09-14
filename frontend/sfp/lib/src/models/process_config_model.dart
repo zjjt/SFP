@@ -17,7 +17,7 @@ class ProcessConfigModel {
     this.fileTypeAndSizeInMB,
   });
   ProcessConfigModel.fromJSON(Map<String, dynamic> parsedJSON)
-      : id = parsedJSON['_id'],
+      : id = parsedJSON['id'],
         configName = parsedJSON['configName'],
         description = parsedJSON['description'],
         functionnalityTypes = parsedJSON['functionnalityTypes'],

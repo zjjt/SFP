@@ -36,8 +36,9 @@ class ConfigSelected extends DataState {
 class FileUploaded extends DataState {
   final String message;
   final bool errors;
-  const FileUploaded({this.message, this.errors});
-  List<Object> get props => [message];
+  final String processingTime;
+  const FileUploaded({this.message, this.errors, this.processingTime});
+  List<Object> get props => [message, errors, processingTime];
 }
 
 class FileUploading extends DataState {}

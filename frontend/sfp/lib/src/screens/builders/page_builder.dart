@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/screens/pages/file_upload_mobile_page.dart';
 import 'package:sfp/src/screens/pages/pages.dart';
+import 'package:sfp/src/screens/pages/result_page.dart';
 
 class PageBuilder extends StatefulWidget {
   PageBuilder({Key key}) : super(key: key);
@@ -35,6 +36,8 @@ class _PageBuilderState extends State<PageBuilder> {
           return SelectConfigPage();
         } else if (state is FuploadState) {
           return kIsWeb ? FileUploadWebPage() : FileUploadMobilePage();
+        } else if (state is ResultState) {
+          return ResultPage();
         } else if (state is WhereTo) {
           return Container(
               child: Center(

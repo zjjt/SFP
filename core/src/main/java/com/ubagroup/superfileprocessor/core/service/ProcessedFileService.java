@@ -1,10 +1,15 @@
 package com.ubagroup.superfileprocessor.core.service;
 
 import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
+import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.ProcessedFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -68,5 +73,14 @@ public class ProcessedFileService implements ProcessedFileInterface {
                     break;
             }
         }
+    }
+
+    @Override
+    public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class<?> processClass = Class.forName("com.ubagroup.superfileprocessor.core.processors.Processors");
+        Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class);
+        List<ProcessedFile> treated= (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName);
+        processedFileRepository.saveAll(treated);
+        return treated;
     }
 }

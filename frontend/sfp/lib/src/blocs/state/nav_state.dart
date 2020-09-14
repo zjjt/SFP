@@ -12,6 +12,8 @@ class AdminState extends NavState {}
 
 class FuploadState extends NavState {}
 
+class ResultState extends NavState {}
+
 class SelectConfigState extends NavState {}
 
 class ValidationState extends NavState {}

@@ -8,7 +8,7 @@ class UserModel {
   const UserModel(
       {this.id, this.username, this.password, this.role, this.validations});
   UserModel.fromJSON(Map<String, dynamic> parsedJSON)
-      : id = parsedJSON['_id'],
+      : id = parsedJSON['id'],
         username = parsedJSON['username'],
         password = parsedJSON['password'],
         role = parsedJSON['role'],

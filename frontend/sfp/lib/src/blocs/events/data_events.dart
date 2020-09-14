@@ -18,7 +18,7 @@ class SelectConfig extends DataEvent {
 
 class DoFileUpload extends DataEvent {
   final files;
-  final String userName;
-  const DoFileUpload(this.files, this.userName);
-  List<Object> get props => [files, userName];
+  final String userId;
+  const DoFileUpload(this.files, this.userId);
+  List<Object> get props => [files, userId];
 }

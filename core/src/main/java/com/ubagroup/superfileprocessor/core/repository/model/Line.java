@@ -1,7 +1,6 @@
 package com.ubagroup.superfileprocessor.core.repository.model;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * This class represents a single entry line of a txt file which is stored in the collection
@@ -12,17 +11,17 @@ import java.util.Objects;
  * if not it will be NOK.the next day the cron will proceed to handle the lines which are NOK
  */
 public class Line {
-    private Map<String, Objects> field;
+    private Map<String, Object> field;
 
-    public Line(Map<String, Objects> field) {
+    public Line(Map<String, Object> field) {
         this.field = field;
     }
 
-    public Map<String, Objects> getField() {
+    public Map<String, Object> getField() {
         return field;
     }
 
-    public void setField(Map<String, Objects> field) {
+    public void setField(Map<String, Object> field) {
         this.field = field;
     }
 }
