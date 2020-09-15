@@ -28,6 +28,22 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       currentConfig = processConfigs[event.configPosition];
       yield ConfigSelected(currentConfig);
     }
+    if (event is DiscardFiles) {
+      if (event.files.isNotEmpty) {
+        //removing from local state variable
+        event.files.forEach((element) => processedFiles.remove(element));
+        if (processedFiles.isEmpty) {
+          yield AllFilesDiscarded();
+        } else {
+          try {
+            var r = await repo.deleteFilesById(event.files);
+            yield FilesDiscarded(message: r['message'], errors: r['errors']);
+          } on NetWorkException {
+            yield DataFailure("No internet connection");
+          }
+        }
+      }
+    }
     if (event is DoFileUpload) {
       yield FileUploading();
       try {
@@ -45,7 +61,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
             var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
             processedFiles.add(pf);
           }
-          print("processed files $processedFiles");
+          print("processed files number ${processedFiles.length}");
           yield FileUploaded(
               errors: m['errors'],
               message: m['message'],

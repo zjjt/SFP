@@ -217,6 +217,13 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                                 color: Colors.white)),
                                         backgroundColor: Colors.black,
                                       ));
+                                      Timer(Duration(milliseconds: 100), () {
+                                        animateBloc.add(LeavingPage());
+                                        Timer(Duration(milliseconds: 500), () {
+                                          navBloc.add(GoResult());
+                                          print("navigating to next step");
+                                        });
+                                      });
                                     });
                                   } else if (state is FileUploaded &&
                                       state.errors) {
@@ -234,7 +241,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                 child: BlocBuilder<DataBloc, DataState>(
                                   builder: (context, state) {
                                     if (state is FileUploading) {
-                                      Timer(Duration(milliseconds: 200), () {
+                                      Timer(Duration(milliseconds: 100), () {
                                         alertBloc.add(ShowAlert(
                                           whatToShow: Container(
                                             height: 200,
@@ -253,7 +260,9 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                                 ),
                                                 SizedBox(height: 10.0),
                                                 Text(
-                                                    "Please wait while your file(s) are being processed...")
+                                                  "Please wait while your file(s) are being processed...",
+                                                  textAlign: TextAlign.center,
+                                                )
                                               ],
                                             ),
                                           ),
@@ -262,15 +271,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                         ));
                                       });
                                     } else if (state is FileUploaded &&
-                                        !state.errors) {
-                                      Timer(Duration(milliseconds: 100), () {
-                                        animateBloc.add(LeavingPage());
-                                        Timer(Duration(milliseconds: 500), () {
-                                          navBloc.add(GoResult());
-                                          print("navigating to next step");
-                                        });
-                                      });
-                                    }
+                                        !state.errors) {}
                                     return Container(
                                       width:
                                           MediaQuery.of(context).orientation ==

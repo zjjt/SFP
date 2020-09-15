@@ -18,18 +18,37 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
-@RequestMapping("/upload")
+@RequestMapping("/files")
 public class ProcessedFileController {
     @Autowired
     ProcessedFileService processedFileService;
-
-    @PostMapping
+    @PostMapping("/delete")
+    public Map<String,Object> deleteFiles(@RequestParam("file_ids[]") List<String> ids){
+        var m=new TreeMap<String,Object>();
+        if(!ids.isEmpty()){
+            ids.stream()
+                .parallel()
+                .forEach(id->{
+                    m.put("fileId",id);
+                });
+        }
+        if(!m.isEmpty()){
+            processedFileService.delete(m);
+            m.clear();
+            m.put("errors", false);
+            m.put("message", "files deleted successfully");
+            System.out.println(m);
+        }else{
+            m.put("errors", true);
+            m.put("message", "A problem occurred while trying to delete the files");
+            System.out.println(m);
+        }
+        return m;
+    }
+    @PostMapping("/upload")
     public Map<String, Object> uploadFile(@RequestParam("files[]") List<MultipartFile> files,
                                           @RequestParam(name = "configName") String configName,
                                           @RequestParam(name = "userId") String userId, HttpServletRequest request) {

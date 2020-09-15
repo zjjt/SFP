@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _fadeCtrl =
         AnimationController(duration: Duration(milliseconds: 400), vsync: this);
     _subSlideController =
-        AnimationController(duration: Duration(milliseconds: 800), vsync: this);
+        AnimationController(duration: Duration(milliseconds: 400), vsync: this);
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
     _subFadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -58,9 +58,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    super.dispose();
     _fadeCtrl.dispose();
     _subSlideController.dispose();
+    super.dispose();
   }
 
   void _showAlert(

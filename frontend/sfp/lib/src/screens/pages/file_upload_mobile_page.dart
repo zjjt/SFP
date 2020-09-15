@@ -84,12 +84,12 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
     var filesW;
     String extension = dataBloc.currentConfig.fileTypeAndSizeInMB['type'];
     filesW = await FilePicker.getMultiFile(
-        type: FileType.custom, allowedExtensions: ['$extension']);
+        type: FileType.any /*, allowedExtensions: ['$extension']*/);
     if (filesW.length > 0) {
       //we cant get on mobile the file extensions for some filetypes so
       //for now we skip this check
 
-      /*for (var file in filesW) {
+      for (var file in filesW) {
         print("file path: ${file.path}");
         if (!file.path.endsWith(extension)) {
           Scaffold.of(context).showSnackBar(SnackBar(
@@ -100,7 +100,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
           ));
           return;
         }
-      }*/
+      }
       setState(() {
         print('file upload successfull\n .$extension');
         noFiles = filesW.length;
@@ -220,6 +220,13 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                         backgroundColor: Colors.black,
                                       ));
                                       FilePicker.clearTemporaryFiles();
+                                      Timer(Duration(milliseconds: 100), () {
+                                        animateBloc.add(LeavingPage());
+                                        Timer(Duration(milliseconds: 500), () {
+                                          navBloc.add(GoResult());
+                                          print("navigating to next step");
+                                        });
+                                      });
                                     });
                                   } else if (state is FileUploaded &&
                                       state.errors) {
@@ -237,7 +244,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                 child: BlocBuilder<DataBloc, DataState>(
                                   builder: (context, state) {
                                     if (state is FileUploading) {
-                                      Timer(Duration(milliseconds: 200), () {
+                                      Timer(Duration(milliseconds: 100), () {
                                         alertBloc.add(ShowAlert(
                                           whatToShow: Container(
                                             height: 150,
@@ -256,22 +263,15 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                                 ),
                                                 SizedBox(height: 10.0),
                                                 Text(
-                                                    "Please wait while your file(s) are being processed...")
+                                                  "Please wait while your file(s) are being processed...",
+                                                  textAlign: TextAlign.center,
+                                                )
                                               ],
                                             ),
                                           ),
                                           title: '',
                                           actions: [],
                                         ));
-                                      });
-                                    } else if (state is FileUploaded &&
-                                        !state.errors) {
-                                      Timer(Duration(milliseconds: 100), () {
-                                        animateBloc.add(LeavingPage());
-                                        Timer(Duration(milliseconds: 500), () {
-                                          navBloc.add(GoResult());
-                                          print("navigating to next step");
-                                        });
                                       });
                                     }
                                     return Container(

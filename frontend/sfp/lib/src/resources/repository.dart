@@ -29,6 +29,18 @@ class Repository {
     return users;
   }
 
+  Future<Map<String, dynamic>> deleteFilesById(
+      List<ProcessedFileModel> files) async {
+    var del;
+    try {
+      del = await netProvider.deleteFilesById(files);
+    } on NetWorkException {
+      print("couldnt reach the api ${del.message}");
+      return null;
+    }
+    return del;
+  }
+
   Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
       String configName, String userId, String extension) async {
     var fup;

@@ -43,6 +43,14 @@ class FileUploaded extends DataState {
 
 class FileUploading extends DataState {}
 
+class FilesDiscarded extends DataState {
+  final String message;
+  final bool errors;
+  const FilesDiscarded({this.message, this.errors});
+}
+
+class AllFilesDiscarded extends DataState {}
+
 class DataFailure extends DataState {
   final String _message;
   const DataFailure(this._message);

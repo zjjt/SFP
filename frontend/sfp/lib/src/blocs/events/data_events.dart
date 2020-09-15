@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:sfp/src/models/models.dart';
 
 abstract class DataEvent extends Equatable {
   const DataEvent();
@@ -21,4 +22,10 @@ class DoFileUpload extends DataEvent {
   final String userId;
   const DoFileUpload(this.files, this.userId);
   List<Object> get props => [files, userId];
+}
+
+class DiscardFiles extends DataEvent {
+  final List<ProcessedFileModel> files;
+  const DiscardFiles({this.files});
+  List<Object> get props => [files];
 }

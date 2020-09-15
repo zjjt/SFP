@@ -62,6 +62,9 @@ public class ProcessedFileService implements ProcessedFileInterface {
         //arg is in the form of a where {"K":"V"}
         for(Map.Entry<String,Object> element:arg.entrySet()){
             switch(element.getKey()){
+                case "fileId":
+                    processedFileRepository.deleteById((String)element.getValue());
+                    break;
                 case "userId":
                     processedFileRepository.deleteAllByUserId((String)element.getValue());
                     break;

@@ -45,6 +45,30 @@ class NetworkProvider {
     }
   }
 
+  Future<Map<String, dynamic>> deleteFilesById(
+      List<ProcessedFileModel> files) async {
+    List<String> fileIds = [];
+    for (var f in files) {
+      print("f ids: ${f.id}");
+      fileIds.add(f.id);
+    }
+    if (fileIds.isNotEmpty) {
+      FormData formData = FormData.fromMap({
+        "file_ids": fileIds,
+      });
+      var response = await dio.post('$backend/files/delete', data: formData);
+      print(response);
+      if (response.statusCode == 200) {
+        var data = response.data;
+        return data;
+      } else {
+        throw NetWorkException();
+      }
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
       String configName, String userId, String extension) async {
     print(
@@ -74,7 +98,7 @@ class NetworkProvider {
 
       print('files to upload  ${formData.files.length}');
 
-      response = await dio.post("$backend/upload", data: formData,
+      response = await dio.post("$backend/files/upload", data: formData,
           onSendProgress: (int sent, int total) {
         print("$sent/$total");
       });
