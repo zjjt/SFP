@@ -17,17 +17,15 @@ import java.util.List;
 public class ProcessedFile {
     @Id
     private String id;
-    @Indexed(unique = true)
-    private Binary inFile;
-    @Indexed(unique = true)
-    private Binary outFile;
+    private List<Line> inFile;
+    private List<Line> outFile;
     private String userId;
     private String configName;
     private boolean processingStatus;
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile(Binary inFile, Binary outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
@@ -66,19 +64,19 @@ public class ProcessedFile {
         this.dateProcessed = dateProcessed;
     }
 
-    public Binary getInFile() {
+    public List<Line> getInFile() {
         return inFile;
     }
 
-    public void setInFile(Binary inFile) {
+    public void setInFile(List<Line> inFile) {
         this.inFile = inFile;
     }
 
-    public Binary getOutFile() {
+    public List<Line> getOutFile() {
         return outFile;
     }
 
-    public void setOutFile(Binary outFile) {
+    public void setOutFile(List<Line> outFile) {
         this.outFile = outFile;
     }
 

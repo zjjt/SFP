@@ -89,9 +89,11 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
       //we cant get on mobile the file extensions for some filetypes so
       //for now we skip this check
 
-      for (var file in filesW) {
-        print("file path: ${file.path}");
-        if (!file.path.endsWith(extension)) {
+      for (File file in filesW) {
+        //print('mime type is: ${lookupMimeType(file.readAsStringSync())}');
+        print("file path: ${file.uri}");
+
+        /*if (!file.path.endsWith(extension)) {
           Scaffold.of(context).showSnackBar(SnackBar(
             content: Text(
                 'Please select files with the extension of $extension',
@@ -99,7 +101,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
             backgroundColor: Colors.black,
           ));
           return;
-        }
+        }*/
       }
       setState(() {
         print('file upload successfull\n .$extension');

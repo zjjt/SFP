@@ -61,6 +61,7 @@ public class ProcessedFileController {
             //Normally we should just send the files over to another microservice for recollection and handling but
             //we will go the messy way for now until we have time to refactor present code
             long start= Instant.now().toEpochMilli();
+
             try {
                treatedFiles= processedFileService.processFiles(files,userId,configName);
             } catch (ClassNotFoundException e) {

@@ -11,17 +11,20 @@ import java.util.Map;
  * if not it will be NOK.the next day the cron will proceed to handle the lines which are NOK
  */
 public class Line {
-    private Map<String, Object> field;
+    private Map<String, Object> ligne;
 
-    public Line(Map<String, Object> field) {
-        this.field = field;
+    public Line(Map<String, Object> ligne) {
+        this.ligne = ligne;
+    }
+    public void removeKey(String key){
+        ligne.remove(key);
     }
 
-    public Map<String, Object> getField() {
-        return field;
+    public Map<String, Object> getLigne() {
+        return ligne;
     }
 
-    public void setField(Map<String, Object> field) {
-        this.field = field;
+    public void setLigne(Map<String, Object> ligne) {
+        this.ligne = ligne;
     }
 }

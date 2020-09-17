@@ -152,12 +152,12 @@ public class DefaultConfig {
             //GUI admin interface along with any new config
             //PROCESS FUNCTIONALITY
             var canalFunctionality=new ArrayList<String>();
-            var paySendFunctionality=new ArrayList<String>();
+            var sageFunctionality=new ArrayList<String>();
 
             //CANAL+ PROCESS
             canalFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("TXT_SPLITTER").getType(),processTypeRepository.findFirstByType("ALLOW_DOWNLOAD").getType()));
             //HR PAY SENDING PROCESS
-            paySendFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("VALIDATIONS").getType(),processTypeRepository.findFirstByType("ALLOW_MAIL_SENDING").getType()));
+            sageFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("VALIDATIONS").getType(),processTypeRepository.findFirstByType("ALLOW_MAIL_SENDING").getType()));
             //the developer should not forget that the above PROCESS_TYPES are mapped with the PROCESSING_STEPS described below
             //any chnages in the processes above should then be reflected in the processing steps because they are dependant on each other
             //for building the UI accordingly
@@ -193,13 +193,13 @@ public class DefaultConfig {
                     new ProcessingSteps(4,"DOWNLOADING RESULT","/download/","GET",generateApiParams(4,"CANAL+"))));
 
 
-            //Here we define PAYSEND HR default configuration processing API please follow the explanation given above before modifying the current
+            //Here we define SAGE HR default configuration processing API please follow the explanation given above before modifying the current
             //implementation
-            var paySendProcessingSteps=new ArrayList<ProcessingSteps>();
-            paySendProcessingSteps.addAll(Arrays.asList(new ProcessingSteps(1,"UPLOADING FILE","/file-upload","POST",generateApiParams(1,"PAYSEND")),
-                    new ProcessingSteps(2,"START PROCESSING WITH CURRENT CONFIG","/xlsprocessing/","GET",generateApiParams(2,"PAYSEND")),
-                    new ProcessingSteps(3,"START THE VALIDATION PROCEDURE","/validate","POST",generateApiParams(3,"PAYSEND")),
-                    new ProcessingSteps(4,"SENDING THE FINAL MAIL","/mail","POST",generateApiParams(4,"PAYSEND"))));
+            var sageProcessingSteps=new ArrayList<ProcessingSteps>();
+            sageProcessingSteps.addAll(Arrays.asList(new ProcessingSteps(1,"UPLOADING FILE","/file-upload","POST",generateApiParams(1,"SAGE")),
+                    new ProcessingSteps(2,"START PROCESSING WITH CURRENT CONFIG","/xlsprocessing/","GET",generateApiParams(2,"SAGE")),
+                    new ProcessingSteps(3,"START THE VALIDATION PROCEDURE","/validate","POST",generateApiParams(3,"SAGE")),
+                    new ProcessingSteps(4,"SENDING THE FINAL MAIL","/mail","POST",generateApiParams(4,"SAGE"))));
 
 
 
@@ -210,18 +210,18 @@ public class DefaultConfig {
             canalFileTypeandSize.put("type","BAN");
             canalFileTypeandSize.put("size",10);
             canalFileTypeandSize.put("space_in_memory","mb");
-            var paySendFileTypeandSize=new HashMap<String,Object>();
-            paySendFileTypeandSize.put("type","xlsx");
-            paySendFileTypeandSize.put("size",10);
-            paySendFileTypeandSize.put("space_in_memory","mb");
+            var sageFileTypeandSize=new HashMap<String,Object>();
+            sageFileTypeandSize.put("type","xlsx");
+            sageFileTypeandSize.put("size",10);
+            sageFileTypeandSize.put("space_in_memory","mb");
             var canalConfig=new ProcessConfig("CANAL", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
-            var paySendConfig=new ProcessConfig("PAYSEND", "HR process", paySendFunctionality,null,paySendProcessingSteps,paySendFileTypeandSize);
+            var sageConfig=new ProcessConfig("SAGE", "HR process", sageFunctionality,null,sageProcessingSteps,sageFileTypeandSize);
 
             //inserting the default configs now
             processConfigRepository.deleteAll();
             processConfigRepository.save(canalConfig);
-            processConfigRepository.save(paySendConfig);
-            System.out.println("ProcessConfig for CANAL+ and PAYSEND inserted in the ProcessConfig collection");
+            processConfigRepository.save(sageConfig);
+            System.out.println("ProcessConfig for CANAL+ and SAGE inserted in the ProcessConfig collection");
 
 
         }

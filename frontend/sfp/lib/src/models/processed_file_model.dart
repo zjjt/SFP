@@ -1,7 +1,7 @@
 class ProcessedFileModel {
   final String id;
-  final Map<String, dynamic> inFile;
-  final Map<String, dynamic> outFile;
+  final List<dynamic> inFile;
+  final List<dynamic> outFile;
   final String userId;
   final String configName;
   final bool processingStatus;
