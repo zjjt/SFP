@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/src/screens/pages/pdf_viewer.dart';
 import 'package:sfp/src/screens/screens.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
@@ -21,11 +24,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   NavBloc navBloc;
   AuthBloc authBloc;
   DataBloc dataBloc;
+  AlertBloc alertBloc;
+  DocBloc docBloc;
   bool isIntitialPage = true;
   Animation _fadeIn;
   AnimationController _fadeCtrl;
   Animation _subSlide, _subFadeIn;
   AnimationController _subSlideController;
+  int currentPdfPage = 0;
+  int totalPdfPages = 0;
 
   @override
   void initState() {
@@ -34,6 +41,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     navBloc = context.bloc<NavBloc>();
     authBloc = context.bloc<AuthBloc>();
     dataBloc = context.bloc<DataBloc>();
+    docBloc = context.bloc<DocBloc>();
+    alertBloc = context.bloc<AlertBloc>();
     _fadeCtrl =
         AnimationController(duration: Duration(milliseconds: 400), vsync: this);
     _subSlideController =
@@ -69,31 +78,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       Widget leWidget,
       String title = '',
       List<Widget> actions,
-      Alignment alignement}) {
+      Alignment alignement,
+      bool isDoc,
+      Uint8List doc}) {
     if (!isAlertUp) {
       print('closing the displayed alert dialog');
       Navigator.of(context).pop();
       return;
     }
+
     showDialog(
         context: context,
         barrierDismissible: alignement != null,
-        builder: (_) => alignement != null
-            ? Stack(children: [
-                /*Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  color: Color.fromRGBO(0, 0, 0, 0.5),
-                ),*/
-                alignement == Alignment.bottomRight
-                    ? Positioned(right: 20.0, bottom: 100.0, child: leWidget)
-                    : Positioned(child: leWidget)
-              ])
-            : AlertDialog(
-                title: Text(title),
-                content: leWidget,
-                actions: actions,
-              ));
+        builder: (context) {
+          if (alignement != null) {
+            print('custom alert box');
+
+            return Stack(children: [
+              alignement == Alignment.bottomRight
+                  ? Positioned(right: 20.0, bottom: 100.0, child: leWidget)
+                  : Positioned(child: leWidget)
+            ]);
+          } else if (isDoc) {
+            var _pdfController =
+                PdfController(document: PdfDocument.openData(doc));
+            print(' document is here to show');
+
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return BlocListener<DocBloc, DocState>(
+                  listener: (context, state) {
+                    print(
+                        "current state is $state and page is ${docBloc.currentPage}");
+                    if (state is ChangePage) {
+                      setState(() {
+                        currentPdfPage = docBloc.currentPage;
+                        totalPdfPages = docBloc.totalPages;
+                      });
+                    }
+                  },
+                  child: AlertDialog(
+                    title: Text(title),
+                    content: PdfViewer(
+                      controller: _pdfController,
+                    ),
+                    actions: actions,
+                  ),
+                );
+              },
+            );
+          } else {
+            print('no document here to show');
+            return AlertDialog(
+              title: Text(title),
+              content: leWidget,
+              actions: actions,
+            );
+          }
+        });
   }
 
   @override
@@ -123,6 +165,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _showAlert(
                         isAlertUp: true,
                         context: context,
+                        isDoc: state.isDoc,
+                        doc: state.doc,
                         leWidget: state.whatToShow,
                         title: state.title,
                         actions: state.actions,

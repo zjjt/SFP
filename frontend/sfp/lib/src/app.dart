@@ -15,6 +15,7 @@ class App extends StatelessWidget {
         BlocProvider(create: (context) => AnimateEntranceBloc()),
         BlocProvider(create: (context) => NavBloc()),
         BlocProvider(create: (context) => AlertBloc()),
+        BlocProvider(create: (context) => DocBloc()),
       ],
       child: MaterialApp(
         color: Colors.white,

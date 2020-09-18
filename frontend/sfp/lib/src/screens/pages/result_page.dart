@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:pdf/pdf.dart' as pdfDart;
 import 'package:pdf/widgets.dart' as pw;
@@ -11,6 +12,7 @@ import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+//import 'package:universal_html/html.dart';
 
 class ResultPage extends StatefulWidget {
   ResultPage({Key key}) : super(key: key);
@@ -24,6 +26,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   AnimateEntranceBloc animateBloc;
   AlertBloc alertBloc;
   NavBloc navBloc;
+  FToast ftoast;
+  DocBloc docBloc;
+  int currentPage, totalPages;
   @override
   void initState() {
     super.initState();
@@ -31,11 +36,16 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     animateBloc = context.bloc<AnimateEntranceBloc>();
     alertBloc = context.bloc<AlertBloc>();
     navBloc = context.bloc<NavBloc>();
+    docBloc = context.bloc<DocBloc>();
+    currentPage = 1;
+    totalPages = 0;
+    ftoast = FToast();
+    ftoast.init(context);
     //launching entrence animation
     animateBloc.add(EnteringPage());
   }
 
-  pw.Widget _buildPdf(
+  List<pw.Widget> _buildPdf(
       ProcessedFileModel file, String which, String configName) {
     pw.Widget retour = pw.Container();
     print('building th pdf for $which');
@@ -45,15 +55,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           case "original":
             int i = 0;
             List<String> headerList, headerListInitial;
+            headerList = file.inFile[i]['ligne'].keys.toList();
+            headerListInitial = file.inFile[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
             while (i < file.inFile.length - 1) {
-              if (file.inFile[i]['ligne'].keys.toList().length >
-                  file.inFile[i + 1]['ligne'].keys.toList().length) {
+              if (headerList.length <
+                  file.inFile[i]['ligne'].keys.toList().length) {
                 headerList = file.inFile[i]['ligne'].keys.toList();
                 headerListInitial = file.inFile[i]['ligne'].keys.toList();
-              } else {
-                headerList = file.inFile[i + 1]['ligne'].keys.toList();
-                headerListInitial = file.inFile[i + 1]['ligne'].keys.toList();
               }
               i++;
             }
@@ -150,27 +159,24 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               );
               //return pw.TableRow();
             }));
-            retour = pw.Container(
-              child: pw.Table(
-                tableWidth: pw.TableWidth.max,
-                border: pw.TableBorder(
-                    top: true, left: true, right: true, bottom: true),
-                children: tableLignes,
-              ),
+            retour = pw.Table(
+              tableWidth: pw.TableWidth.max,
+              border: pw.TableBorder(
+                  top: true, left: true, right: true, bottom: true),
+              children: tableLignes,
             );
             break;
-          case "processed":
+          case "generated":
             int i = 0;
             List<String> headerList, headerListInitial;
+            headerList = file.inFile[i]['ligne'].keys.toList();
+            headerListInitial = file.inFile[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
-            while (i < file.outFile.length - 1) {
-              if (file.outFile[i]['ligne'].keys.toList().length >
-                  file.outFile[i + 1]['ligne'].keys.toList().length) {
-                headerList = file.outFile[i]['ligne'].keys.toList();
-                headerListInitial = file.outFile[i]['ligne'].keys.toList();
-              } else {
-                headerList = file.outFile[i + 1]['ligne'].keys.toList();
-                headerListInitial = file.outFile[i + 1]['ligne'].keys.toList();
+            while (i < file.inFile.length - 1) {
+              if (headerList.length <
+                  file.inFile[i]['ligne'].keys.toList().length) {
+                headerList = file.inFile[i]['ligne'].keys.toList();
+                headerListInitial = file.inFile[i]['ligne'].keys.toList();
               }
               i++;
             }
@@ -268,13 +274,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               );
               //return pw.TableRow();
             }));
-            retour = pw.Container(
-              child: pw.Table(
-                tableWidth: pw.TableWidth.max,
-                border: pw.TableBorder(
-                    top: true, left: true, right: true, bottom: true),
-                children: tableLignes,
-              ),
+            retour = pw.Table(
+              tableWidth: pw.TableWidth.max,
+              border: pw.TableBorder(
+                  top: true, left: true, right: true, bottom: true),
+              children: tableLignes,
             );
             break;
           default:
@@ -287,18 +291,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           case "original":
             int i = 0;
             List<String> headerList, headerListInitial;
+            headerList = file.inFile[i]['ligne'].keys.toList();
+            headerListInitial = file.inFile[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
             while (i < file.inFile.length - 1) {
-              if (file.inFile[i]['ligne'].keys.toList().length >
-                  file.inFile[i + 1]['ligne'].keys.toList().length) {
+              if (headerList.length <
+                  file.inFile[i]['ligne'].keys.toList().length) {
                 headerList = file.inFile[i]['ligne'].keys.toList();
                 headerListInitial = file.inFile[i]['ligne'].keys.toList();
-              } else {
-                headerList = file.inFile[i + 1]['ligne'].keys.toList();
-                headerListInitial = file.inFile[i + 1]['ligne'].keys.toList();
               }
               i++;
             }
+
             for (int i = 0; i < headerList.length; i++) {
               headerList[i] = headerList[i].replaceAll(new RegExp("\\d"), "");
               headerList[i] = headerList[i].replaceAll("~", "");
@@ -392,27 +396,24 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               );
               //return pw.TableRow();
             }));
-            retour = pw.Container(
-              child: pw.Table(
-                tableWidth: pw.TableWidth.max,
-                border: pw.TableBorder(
-                    top: true, left: true, right: true, bottom: true),
-                children: tableLignes,
-              ),
+            retour = pw.Table(
+              tableWidth: pw.TableWidth.max,
+              border: pw.TableBorder(
+                  top: true, left: true, right: true, bottom: true),
+              children: tableLignes,
             );
             break;
-          case "processed":
+          case "generated":
             int i = 0;
             List<String> headerList, headerListInitial;
+            headerList = file.inFile[i]['ligne'].keys.toList();
+            headerListInitial = file.inFile[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
-            while (i < file.outFile.length - 1) {
-              if (file.outFile[i]['ligne'].keys.toList().length >
-                  file.outFile[i + 1]['ligne'].keys.toList().length) {
-                headerList = file.outFile[i]['ligne'].keys.toList();
-                headerListInitial = file.outFile[i]['ligne'].keys.toList();
-              } else {
-                headerList = file.outFile[i + 1]['ligne'].keys.toList();
-                headerListInitial = file.outFile[i + 1]['ligne'].keys.toList();
+            while (i < file.inFile.length - 1) {
+              if (headerList.length <
+                  file.inFile[i]['ligne'].keys.toList().length) {
+                headerList = file.inFile[i]['ligne'].keys.toList();
+                headerListInitial = file.inFile[i]['ligne'].keys.toList();
               }
               i++;
             }
@@ -510,13 +511,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               );
               //return pw.TableRow();
             }));
-            retour = pw.Container(
-              child: pw.Table(
-                tableWidth: pw.TableWidth.max,
-                border: pw.TableBorder(
-                    top: true, left: true, right: true, bottom: true),
-                children: tableLignes,
-              ),
+            retour = pw.Table(
+              tableWidth: pw.TableWidth.max,
+              border: pw.TableBorder(
+                  top: true, left: true, right: true, bottom: true),
+              children: tableLignes,
             );
             break;
           default:
@@ -526,7 +525,43 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
         break;
     }
 
-    return retour;
+    return [retour];
+  }
+
+  void _showToast(String message) {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: Color.fromRGBO(237, 90, 90, 0.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.info),
+          SizedBox(
+            width: 12.0,
+          ),
+          Text(message, style: const TextStyle(color: Colors.black)),
+        ],
+      ),
+    );
+    if (kIsWeb) {
+      ftoast.showToast(
+        child: toast,
+        toastDuration: Duration(seconds: 4),
+        gravity: ToastGravity.BOTTOM,
+      );
+    } else {
+      Fluttertoast.showToast(
+          msg: message,
+          toastLength: Toast.LENGTH_LONG,
+          timeInSecForIosWeb: 2,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Color.fromRGBO(237, 90, 90, 0.5),
+          textColor: Colors.black,
+          fontSize: 12.0);
+    }
   }
 
   @override
@@ -583,7 +618,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           // print(inFile.readAsBytesSync());
                           // final inFilePDF = PdfImage.file(pdf.document,
                           //     bytes: inFile.readAsBytesSync());
-
+                          int windex = i + 1;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10.0),
                             decoration: BoxDecoration(
@@ -615,7 +650,8 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(20.0)),
                                           onPressed: () {
-                                            pdf.addPage(pw.Page(
+                                            print("clicked");
+                                            pdf.addPage(pw.MultiPage(
                                                 pageFormat: pdfDart
                                                     .PdfPageFormat.a3.landscape,
                                                 build: (pw.Context context) {
@@ -626,53 +662,30 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                       dataBloc.currentConfig
                                                           .configName);
                                                 }));
+                                            var doc = pdf.save();
 
-                                            final pdfController = PdfController(
-                                                document: PdfDocument.openData(
-                                                    pdf.save()));
                                             alertBloc.add(ShowAlert(
-                                                whatToShow: kIsWeb
-                                                    ? Container(
-                                                        width: 1000.0,
-                                                        child: Container(
-                                                          child:
-                                                              InteractiveViewer(
-                                                            child: PdfView(
-                                                              pageSnapping:
-                                                                  false,
-                                                              documentLoader:
-                                                                  SpinKitThreeBounce(
-                                                                size: 20.0,
-                                                                color: Assets
-                                                                    .ubaRedColor,
-                                                              ),
-                                                              controller:
-                                                                  pdfController,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    : Container(
-                                                        //width: 1000.0,
-                                                        child: Container(
-                                                          child:
-                                                              InteractiveViewer(
-                                                            child: PdfView(
-                                                              pageSnapping:
-                                                                  false,
-                                                              documentLoader:
-                                                                  SpinKitThreeBounce(
-                                                                size: 20.0,
-                                                                color: Assets
-                                                                    .ubaRedColor,
-                                                              ),
-                                                              controller:
-                                                                  pdfController,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                title: 'Original file ${++i}'));
+                                                whatToShow: null,
+                                                isDoc: true,
+                                                doc: doc,
+                                                actions: [
+                                                  FlatButton(
+                                                    onPressed: () {
+                                                      alertBloc
+                                                          .add(CloseAlert());
+                                                    },
+                                                    child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Text("CLOSE")),
+                                                  )
+                                                ],
+                                                title:
+                                                    'Original file $windex'));
+                                            _showToast(kIsWeb
+                                                ? "Use the mouse wheel to zoom in or out on the area of interest"
+                                                : "Pinch with your fingers to zoom in or out of the document");
                                           },
                                           child: Column(
                                             mainAxisAlignment:
@@ -723,7 +736,57 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(20.0)),
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            pdf.addPage(pw.MultiPage(
+                                                pageFormat: pdfDart
+                                                    .PdfPageFormat.a3.landscape,
+                                                build: (pw.Context context) {
+                                                  return _buildPdf(
+                                                      dataBloc
+                                                          .processedFiles[i],
+                                                      "generated",
+                                                      dataBloc.currentConfig
+                                                          .configName);
+                                                }));
+
+                                            final pdfController = PdfController(
+                                                document: PdfDocument.openData(
+                                                    pdf.save()));
+                                            alertBloc.add(ShowAlert(
+                                                whatToShow: Container(
+                                                  width: 1000.0,
+                                                  child: InteractiveViewer(
+                                                    child: PdfView(
+                                                      pageSnapping: false,
+                                                      documentLoader:
+                                                          SpinKitThreeBounce(
+                                                        size: 20.0,
+                                                        color:
+                                                            Assets.ubaRedColor,
+                                                      ),
+                                                      controller: pdfController,
+                                                    ),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  FlatButton(
+                                                    onPressed: () {
+                                                      alertBloc
+                                                          .add(CloseAlert());
+                                                    },
+                                                    child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Text("CLOSE")),
+                                                  )
+                                                ],
+                                                title:
+                                                    'Generated file $windex'));
+                                            _showToast(kIsWeb
+                                                ? "Use the mouse wheel to zoom in or out on the area of interest"
+                                                : "Pinch with your fingers to zoom in or out of the document");
+                                          },
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
@@ -740,7 +803,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                 height: 20.0,
                                               ),
                                               Text(
-                                                "Processed file",
+                                                "Generated file",
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                     fontSize:
@@ -762,7 +825,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("File ${i + 1}"),
+                                    Text("File $windex"),
                                     SizedBox(width: 50.0),
                                     IconButton(
                                       color: Colors.black,
@@ -787,10 +850,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                               onPressed: () {
                                                 print("i index $i");
                                                 Navigator.of(context).pop();
-                                                dataBloc.add(DiscardFiles(
-                                                    files: [
-                                                      dataBloc.processedFiles[i]
-                                                    ]));
+                                                dataBloc.add(
+                                                    DiscardFiles(files: [
+                                                  dataBloc
+                                                      .processedFiles[--windex]
+                                                ]));
                                               },
                                               child: Container(
                                                   padding:

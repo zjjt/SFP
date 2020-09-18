@@ -8,9 +8,10 @@ class AlertBloc extends Bloc<AlertEvent, AlertState> {
   @override
   Stream<AlertState> mapEventToState(AlertEvent event) async* {
     if (event is ShowAlert) {
-      var widget = event.whatToShow;
-      yield AlertState.opened(
-          widget, event.title, event.actions, event.alignement);
+      var currentWidget = event.whatToShow;
+      print(currentWidget);
+      yield AlertState.opened(currentWidget, event.isDoc, event.doc,
+          event.title, event.actions, event.alignement);
     }
     if (event is CloseAlert) {
       yield AlertState.closed();
