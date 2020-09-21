@@ -13,6 +13,8 @@ class GetTotalPages extends DocEvent {
   List<Object> get props => [pages];
 }
 
+class ResetDoc extends DocEvent {}
+
 class PageChanged extends DocEvent {
   final int page;
   const PageChanged(this.page);

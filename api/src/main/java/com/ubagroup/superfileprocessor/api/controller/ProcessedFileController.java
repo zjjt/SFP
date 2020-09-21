@@ -64,6 +64,7 @@ public class ProcessedFileController {
 
             try {
                treatedFiles= processedFileService.processFiles(files,userId,configName);
+               //the files have been processed and now we need to read from the db and
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (NoSuchMethodException e) {

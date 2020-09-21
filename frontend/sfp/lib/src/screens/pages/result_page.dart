@@ -43,6 +43,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     ftoast.init(context);
     //launching entrence animation
     animateBloc.add(EnteringPage());
+    docBloc.add(ResetDoc());
   }
 
   List<pw.Widget> _buildPdf(

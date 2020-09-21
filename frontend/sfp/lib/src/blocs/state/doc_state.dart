@@ -6,6 +6,8 @@ abstract class DocState extends Equatable {
   List<Object> get props => [];
 }
 
+class DocInit extends DocState {}
+
 class DocLoading extends DocState {}
 
 class TotalPages extends DocState {

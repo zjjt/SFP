@@ -88,6 +88,16 @@ public class Processors {
                 });
         return treatedFiles;
     }
+    public void debitCanal(List<Line> lignesDuFichier){
+        //1- we get the statuses of the accounts
+        //2- we store it in memory
+        //3 we proceed to debit and update the debited account immediately with the solde
+        lignesDuFichier.stream()
+                .parallel()
+                .forEachOrdered((ligne)->{
+                    System.out.println("ok "+ligne);
+                });
+    }
 
     private List<Line> readTXT(MultipartFile file, String configName) {
         List<Line> lignes=new ArrayList<>();

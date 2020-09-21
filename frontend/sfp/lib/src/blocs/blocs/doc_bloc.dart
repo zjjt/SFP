@@ -4,7 +4,7 @@ import 'package:sfp/src/blocs/state/state.dart';
 import '../blocs.dart';
 
 class DocBloc extends Bloc<DocEvent, DocState> {
-  DocBloc() : super(DocLoading());
+  DocBloc() : super(DocInit());
   int currentPage = 1, totalPages = 0;
   @override
   Stream<DocState> mapEventToState(DocEvent event) async* {
@@ -15,6 +15,11 @@ class DocBloc extends Bloc<DocEvent, DocState> {
     if (event is GetTotalPages) {
       totalPages = event.pages;
       yield TotalPages(total: event.pages);
+    }
+    if (event is ResetDoc) {
+      currentPage = 1;
+      totalPages = 0;
+      yield DocInit();
     }
   }
 
