@@ -31,7 +31,17 @@ import java.util.stream.Collectors;
  * processor for the files uploaded
  */
 public class Processors {
-
+    public List<Line> debitCanal(List<Line> lignesDuFichier){
+        //1- we get the statuses of the accounts
+        //2- we store it in memory
+        //3 we proceed to debit and update the debited account immediately with the solde
+        lignesDuFichier.stream()
+                .parallel()
+                .forEachOrdered((ligne)->{
+                    System.out.println("ok "+ligne);
+                });
+        return lignesDuFichier;
+    }
 
     public List<ProcessedFile> canalProcessor(List<MultipartFile>files, String userId, String configName) {
         List<ProcessedFile> treatedFiles=new ArrayList<>();
@@ -47,6 +57,7 @@ public class Processors {
                         for(var l:lignes){
                             l.removeKey("process_done");
                         }
+                        List<Line> lignesAfterQuery=debitCanal(lignes);
                         f.setInFile(lignes);
                         f.setOutFile(lignes);
                         treatedFiles.add(f);
@@ -88,16 +99,7 @@ public class Processors {
                 });
         return treatedFiles;
     }
-    public void debitCanal(List<Line> lignesDuFichier){
-        //1- we get the statuses of the accounts
-        //2- we store it in memory
-        //3 we proceed to debit and update the debited account immediately with the solde
-        lignesDuFichier.stream()
-                .parallel()
-                .forEachOrdered((ligne)->{
-                    System.out.println("ok "+ligne);
-                });
-    }
+
 
     private List<Line> readTXT(MultipartFile file, String configName) {
         List<Line> lignes=new ArrayList<>();
