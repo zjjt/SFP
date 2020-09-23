@@ -659,7 +659,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        30 *
+                                                        20 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
@@ -757,7 +757,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        30 *
+                                                        20 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,

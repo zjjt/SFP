@@ -63677,7 +63677,7 @@ $0:function(){var s,r,q,p,o=this,n=null
 P.a5("clicked")
 s=o.c
 r=o.b
-q=B.ajv(new M.ab9(r,o.d),Q.ajQ(2834.6456692913384,850.3937007874016,14.173228346456693,0,0,0,0))
+q=B.ajv(new M.ab9(r,o.d),Q.ajQ(2834.6456692913384,566.9291338582677,14.173228346456693,0,0,0,0))
 q.Bk(s)
 s.c.push(q)
 p=s.bN(0)
@@ -63694,7 +63694,7 @@ M.aba.prototype={
 $0:function(){this.a.f.u(0,new Y.mo())},
 $S:0}
 M.abe.prototype={
-$0:function(){var s,r=this,q=null,p=r.c,o=r.b,n=B.ajv(new M.ab7(o,r.d),Q.ajQ(2834.6456692913384,850.3937007874016,14.173228346456693,0,0,0,0))
+$0:function(){var s,r=this,q=null,p=r.c,o=r.b,n=B.ajv(new M.ab7(o,r.d),Q.ajQ(2834.6456692913384,566.9291338582677,14.173228346456693,0,0,0,0))
 n.Bk(p)
 p.c.push(n)
 p=S.He(p.bN(0))
@@ -63873,7 +63873,7 @@ $C:"$3",
 $R:3,
 $S:159}
 O.a_8.prototype={
-$1:function(a){return S.afw(10,0.75,!1,!0,100,1,10,1,1)},
+$1:function(a){return S.afw(20,0.75,!1,!0,100,1,20,1,1)},
 $S:124}
 O.a_9.prototype={
 $1:function(a){var s,r,q,p=a.x,o=a.d.b,n=this.a,m=n.b
