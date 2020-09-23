@@ -42,31 +42,48 @@ public class Processors {
         //3 we proceed to debit and update the debited account immediately with the solde
         var listAccount=lignesDuFichier.stream()
                 .parallel()
-                .flatMap(line -> line.getLigne().entrySet().parallelStream())
+                .flatMap(line ->line.getLigne().entrySet().parallelStream())
                 .filter(l->l.getKey().equalsIgnoreCase("ACCOUNT~4"))
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
 
 
-                    try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL, OracleDBConfig.USER, OracleDBConfig.PASSWORD);
+                    try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
+                            OracleDBConfig.USER,
+                            OracleDBConfig.PASSWORD);
                          Statement st=connection.createStatement();
                     ) {
                         System.out.println("in here trying to execute sql");
-
                         Class.forName(OracleDBConfig.ORACLE_DRIVER);
                         ResultSet rs=st.executeQuery(Queries.getAccountStatus(listAccount));
-                        System.out.println(rs);
                         while(rs.next()){
-
+                            for(var i=0;i<lignesDuFichier.size();i++){
+                                //we purposely skip the first and last line
+                                if(i==0||i==lignesDuFichier.size()-1){
+                                    continue;
+                                }
+                                var laligne=lignesDuFichier.get(i).getLigne();
+                                if(laligne.get("ACCOUNT~4").equals(rs.getString("FORACID"))){
+                                    System.out.println(rs.getString("FORACID"));
+                                    laligne.put("ACCT_STATUS~10",rs.getString("ACCT_STATUS"));
+                                    laligne.put("BALANCE~11",rs.getString("SOLDE"));
+                                    laligne.put("SCHM_CODE~12",rs.getString("SCHM_CODE"));
+                                    laligne.put("SCHM_DESC~13",rs.getString("SCHM_DESC"));
+                                    System.out.println(laligne);
+                                   // if()
+                                    lignesDuFichier.get(i).setLigne(laligne);
+                                    break;
+                                }
+                            }
                         }
                         if(rs!=null){
                             rs.close();
                         }
                     } catch (ClassNotFoundException | SQLException e) {
-                        e.printStackTrace();
-                        System.out.println("ISSUE NN");
+                        System.out.println("EXCEPTION----");
                         System.out.println("Exception Cause : " + e.getCause());
                         System.out.println("Exception Message : " + e.getMessage());
+                        e.printStackTrace();
                     } finally {
 
                     }
@@ -84,12 +101,12 @@ public class Processors {
                     List<Line> lignes = readTXT(file, configName);
                     f.setFileLines(lignes);
                     f.setOutFile(lignes);
+                    lignes = debitCanal(f.getFileLines());
+
                     for (var l : lignes) {
                         l.removeKey("process_done");
                     }
-                    List<Line> lignesAfterQuery = debitCanal(lignes);
                     f.setInFile(lignes);
-                    f.setOutFile(lignes);
                     treatedFiles.add(f);
 
 
