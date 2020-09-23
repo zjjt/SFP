@@ -653,8 +653,20 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                           onPressed: () {
                                             print("clicked");
                                             pdf.addPage(pw.MultiPage(
-                                                pageFormat: pdfDart
-                                                    .PdfPageFormat.a3.landscape,
+                                                pageFormat:
+                                                    pdfDart.PdfPageFormat(
+                                                        25 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm,
+                                                        20 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm,
+                                                        marginAll: 0.5 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm),
                                                 build: (pw.Context context) {
                                                   return _buildPdf(
                                                       dataBloc
@@ -739,8 +751,20 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                   BorderRadius.circular(20.0)),
                                           onPressed: () {
                                             pdf.addPage(pw.MultiPage(
-                                                pageFormat: pdfDart
-                                                    .PdfPageFormat.a3.landscape,
+                                                pageFormat:
+                                                    pdfDart.PdfPageFormat(
+                                                        25 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm,
+                                                        20 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm,
+                                                        marginAll: 0.5 *
+                                                            pdfDart
+                                                                .PdfPageFormat
+                                                                .cm),
                                                 build: (pw.Context context) {
                                                   return _buildPdf(
                                                       dataBloc

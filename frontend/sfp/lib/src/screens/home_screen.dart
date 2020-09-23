@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
-import 'package:sfp/src/screens/pages/pdf_viewer.dart';
 import 'package:sfp/src/screens/screens.dart';
+import 'package:sfp/src/widgets/pdf_viewer.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
