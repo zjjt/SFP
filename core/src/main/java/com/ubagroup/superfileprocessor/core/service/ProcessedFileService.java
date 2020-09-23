@@ -83,7 +83,9 @@ public class ProcessedFileService implements ProcessedFileInterface {
         Class<?> processClass = Class.forName("com.ubagroup.superfileprocessor.core.processors.Processors");
         Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class);
         List<ProcessedFile> treated= (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName);
-        processedFileRepository.saveAll(treated);
+        if(treated.size()>0){
+            processedFileRepository.saveAll(treated);
+        }
         return treated;
     }
 }

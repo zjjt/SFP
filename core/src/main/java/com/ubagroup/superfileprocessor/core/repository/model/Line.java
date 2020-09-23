@@ -1,5 +1,6 @@
 package com.ubagroup.superfileprocessor.core.repository.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -10,11 +11,17 @@ import java.util.Map;
  * to check for each line of the file if the bank account can be debited.if the debit operation occurs, we mark the line as OK
  * if not it will be NOK.the next day the cron will proceed to handle the lines which are NOK
  */
-public class Line {
+public class Line implements Cloneable{
     private Map<String, Object> ligne;
 
     public Line(Map<String, Object> ligne) {
         this.ligne = ligne;
+    }
+    @Override
+    public Line clone() throws CloneNotSupportedException{
+        Line line=(Line)super.clone();
+        line.ligne=new HashMap<>();
+        return line;
     }
     public void removeKey(String key){
         ligne.remove(key);
@@ -27,4 +34,5 @@ public class Line {
     public void setLigne(Map<String, Object> ligne) {
         this.ligne = ligne;
     }
+
 }

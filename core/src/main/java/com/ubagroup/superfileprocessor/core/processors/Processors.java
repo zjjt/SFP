@@ -35,59 +35,85 @@ import java.util.stream.Collectors;
  * processor for the files uploaded
  */
 public class Processors {
-    public List<Line> debitCanal(List<Line> lignesDuFichier) {
-
+    public List<Line> getSolde(List<Line> lignesDuFichier) {
+        List<Line> newList=new ArrayList<>();
         //1- we get the statuses of the accounts
         //2- we store it in memory
         //3 we proceed to debit and update the debited account immediately with the solde
-        var listAccount=lignesDuFichier.stream()
+        var listAccount = lignesDuFichier.stream()
                 .parallel()
-                .flatMap(line ->line.getLigne().entrySet().parallelStream())
-                .filter(l->l.getKey().equalsIgnoreCase("ACCOUNT~4"))
+                .flatMap(line -> line.getLigne().entrySet().parallelStream())
+                .filter(l -> l.getKey().equalsIgnoreCase("ACCOUNT~4"))
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
 
 
-                    try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
-                            OracleDBConfig.USER,
-                            OracleDBConfig.PASSWORD);
-                         Statement st=connection.createStatement();
-                    ) {
-                        System.out.println("in here trying to execute sql");
-                        Class.forName(OracleDBConfig.ORACLE_DRIVER);
-                        ResultSet rs=st.executeQuery(Queries.getAccountStatus(listAccount));
-                        while(rs.next()){
-                            for(var i=0;i<lignesDuFichier.size();i++){
-                                //we purposely skip the first and last line
-                                if(i==0||i==lignesDuFichier.size()-1){
-                                    continue;
-                                }
-                                var laligne=lignesDuFichier.get(i).getLigne();
-                                if(laligne.get("ACCOUNT~4").equals(rs.getString("FORACID"))){
-                                    System.out.println(rs.getString("FORACID"));
-                                    laligne.put("ACCT_STATUS~10",rs.getString("ACCT_STATUS"));
-                                    laligne.put("BALANCE~11",rs.getString("SOLDE"));
-                                    laligne.put("SCHM_CODE~12",rs.getString("SCHM_CODE"));
-                                    laligne.put("SCHM_DESC~13",rs.getString("SCHM_DESC"));
-                                    System.out.println(laligne);
-                                   // if()
-                                    lignesDuFichier.get(i).setLigne(laligne);
-                                    break;
-                                }
-                            }
-                        }
-                        if(rs!=null){
-                            rs.close();
-                        }
-                    } catch (ClassNotFoundException | SQLException e) {
-                        System.out.println("EXCEPTION----");
-                        System.out.println("Exception Cause : " + e.getCause());
-                        System.out.println("Exception Message : " + e.getMessage());
-                        e.printStackTrace();
-                    } finally {
+        try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
+                OracleDBConfig.USER,
+                OracleDBConfig.PASSWORD);
+             Statement st = connection.createStatement();
+        ) {
+            System.out.println("in here trying to execute sql");
+            Class.forName(OracleDBConfig.ORACLE_DRIVER);
+            ResultSet rs = st.executeQuery(Queries.getAccountStatus(listAccount));
+
+            while (rs.next()) {
+                //System.out.println("length of lines for sql read "+lignesDuFichier.size());
+                for (var i = 0; i < lignesDuFichier.size(); i++) {
+                    //we purposely skip the first and last line
+                    if (i == 0 || i == lignesDuFichier.size() - 1) {
+                        newList.add(lignesDuFichier.get(i).clone());
+                        continue;
+                    }
+                    var laligne = lignesDuFichier.get(i).getLigne();
+                    if (laligne.get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
+                        System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
+                        laligne.put("ACCT_STATUS~10", rs.getString("ACCT_STATUS"));
+                        laligne.put("BALANCE~11", rs.getString("SOLDE"));
+                        laligne.put("SCHM_CODE~12", rs.getString("SCHM_CODE"));
+                        laligne.put("SCHM_DESC~13", rs.getString("SCHM_DESC"));
+                        lignesDuFichier.get(i).setLigne(laligne);
+                        newList.add(lignesDuFichier.get(i).clone());
 
                     }
-        return lignesDuFichier;
+                    // System.out.println("index "+i);
+                }
+            }
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (ClassNotFoundException | SQLException | CloneNotSupportedException e) {
+            System.out.println("EXCEPTION----");
+            System.out.println("Exception Cause : " + e.getCause());
+            System.out.println("Exception Message : " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+
+        }
+        return newList;
+    }
+
+    public List<Line> doCanalDebit(List<Line> processingLines) {
+        for (int i = 0; i < processingLines.size(); i++) {
+            System.out.println("length of lines is " + processingLines.size());
+            //we purposely skip the first and last line
+            System.out.println("index is " + i + "\n" + processingLines.get(i).getLigne());
+            if (i == 0 || i == processingLines.size() - 1) {
+                continue;
+            }
+            if (processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("A")) {
+                int amountToDebit = Integer.parseInt(processingLines.get(i).getLigne().get("AMOUNT_TO_DEBIT~9").toString().trim());
+                int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~11").toString().trim());
+                if (currentBalance >= amountToDebit) {
+                    System.out.println("we debit");
+                    processingLines.get(i).getLigne().put("process_done", true);
+                } else {
+                    System.out.println("we cant debit");
+                    processingLines.get(i).getLigne().put("process_done", false);
+                }
+            }
+        }
+        return processingLines;
     }
 
     public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName) {
@@ -99,20 +125,27 @@ public class Processors {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
                     ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, new Date(), null);
                     List<Line> lignes = readTXT(file, configName);
-                    f.setFileLines(lignes);
-                    f.setOutFile(lignes);
-                    lignes = debitCanal(f.getFileLines());
-
                     for (var l : lignes) {
                         l.removeKey("process_done");
+                        System.out.println(l);
                     }
+                    //we store then the initial file lines
                     f.setInFile(lignes);
+                    //we get the details from the database and proceed with the direct debit
+                    List<Line> aftersolde;
+                    aftersolde = getSolde(lignes);
+                    aftersolde = doCanalDebit(aftersolde);
+                    //we then update the processing lines
+                    f.setFileLines(aftersolde);
+                    //#TODO reconcile with original file
+                    f.setOutFile(f.getInFile());
                     treatedFiles.add(f);
+                    System.out.println(treatedFiles.get(0).getInFile().hashCode()+"---"+treatedFiles.get(0).getOutFile().hashCode()+"---"+treatedFiles.get(0).getFileLines().hashCode());
+                    System.out.println(treatedFiles.get(0).getInFile().get(2).getLigne()+"INFILE"+treatedFiles.get(0).getInFile().get(2).getLigne().hashCode());
+                    System.out.println(treatedFiles.get(0).getOutFile().get(2).getLigne()+"OUTFILE"+treatedFiles.get(0).getOutFile().get(2).getLigne().hashCode());
+                    System.out.println(treatedFiles.get(0).getFileLines().get(2).getLigne()+"PROCESSING"+treatedFiles.get(0).getFileLines().get(2).getLigne().hashCode());
 
 
-                    //third we read each line and store them in the db
-                    //we set a cron task for retrieving each line of the file and update it depending on the currentConfig
-                    //another cron task will be responsible of monitoring when the previous one finishes to alert the UI
                 });
         return treatedFiles;
     }
