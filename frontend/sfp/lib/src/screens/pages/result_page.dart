@@ -655,11 +655,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                             pdf.addPage(pw.MultiPage(
                                                 pageFormat:
                                                     pdfDart.PdfPageFormat(
-                                                        25 *
+                                                        100 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        20 *
+                                                        100 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
@@ -753,11 +753,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                             pdf.addPage(pw.MultiPage(
                                                 pageFormat:
                                                     pdfDart.PdfPageFormat(
-                                                        25 *
+                                                        100 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        20 *
+                                                        100 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
