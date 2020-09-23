@@ -161,7 +161,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               //return pw.TableRow();
             }));
             retour = pw.Table(
-              tableWidth: pw.TableWidth.max,
               border: pw.TableBorder(
                   top: true, left: true, right: true, bottom: true),
               children: tableLignes,
@@ -659,7 +658,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        20 *
+                                                        25 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
@@ -757,7 +756,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,
-                                                        20 *
+                                                        25 *
                                                             pdfDart
                                                                 .PdfPageFormat
                                                                 .cm,

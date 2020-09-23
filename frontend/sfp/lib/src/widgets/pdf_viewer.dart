@@ -52,9 +52,9 @@ class PdfViewer extends StatelessWidget {
                 mode: ExtendedImageMode.gesture,
                 initGestureConfigHandler: (_) => GestureConfig(
                   minScale: 1,
-                  maxScale: 20.0,
+                  maxScale: 50.0,
                   animationMinScale: .75,
-                  animationMaxScale: 20.0,
+                  animationMaxScale: 50.0,
                   speed: 1,
                   inertialSpeed: 100,
                   inPageView: true,
