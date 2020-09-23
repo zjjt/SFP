@@ -19,9 +19,7 @@ public class Line implements Cloneable{
     }
     @Override
     public Line clone() throws CloneNotSupportedException{
-        Line line=(Line)super.clone();
-        line.ligne=new HashMap<>();
-        return line;
+        return new Line(this.ligne);
     }
     public void removeKey(String key){
         ligne.remove(key);

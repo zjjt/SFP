@@ -59,15 +59,14 @@ public class Processors {
 
             while (rs.next()) {
                 //System.out.println("length of lines for sql read "+lignesDuFichier.size());
-                for (var i = 0; i < lignesDuFichier.size(); i++) {
+                for (int i = 0; i < lignesDuFichier.size(); i++) {
                     //we purposely skip the first and last line
                     if (i == 0 || i == lignesDuFichier.size() - 1) {
-                        newList.add(lignesDuFichier.get(i).clone());
                         continue;
                     }
                     var laligne = lignesDuFichier.get(i).getLigne();
                     if (laligne.get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
-                        System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
+                        //System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
                         laligne.put("ACCT_STATUS~10", rs.getString("ACCT_STATUS"));
                         laligne.put("BALANCE~11", rs.getString("SOLDE"));
                         laligne.put("SCHM_CODE~12", rs.getString("SCHM_CODE"));
@@ -88,7 +87,7 @@ public class Processors {
             System.out.println("Exception Message : " + e.getMessage());
             e.printStackTrace();
         } finally {
-
+            System.out.println("newList is "+newList.size());
         }
         return newList;
     }
@@ -134,6 +133,8 @@ public class Processors {
                     //we get the details from the database and proceed with the direct debit
                     List<Line> aftersolde;
                     aftersolde = getSolde(lignes);
+                    System.out.println("aftersolde "+aftersolde.size());
+
                     aftersolde = doCanalDebit(aftersolde);
                     //we then update the processing lines
                     f.setFileLines(aftersolde);
