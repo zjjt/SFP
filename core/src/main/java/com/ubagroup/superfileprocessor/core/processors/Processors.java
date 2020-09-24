@@ -15,8 +15,6 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.bson.BsonBinarySubType;
-import org.bson.types.Binary;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -28,6 +26,7 @@ import java.util.*;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Processors are methods paired with the actual processing configuration parametrized to handle the file processings
@@ -35,85 +34,6 @@ import java.util.stream.Collectors;
  * processor for the files uploaded
  */
 public class Processors {
-    public List<Line> getSolde(List<Line> lignesDuFichier) {
-        List<Line> newList=new ArrayList<>();
-        //1- we get the statuses of the accounts
-        //2- we store it in memory
-        //3 we proceed to debit and update the debited account immediately with the solde
-        var listAccount = lignesDuFichier.stream()
-                .parallel()
-                .flatMap(line -> line.getLigne().entrySet().parallelStream())
-                .filter(l -> l.getKey().equalsIgnoreCase("ACCOUNT~4"))
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
-
-
-        try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
-                OracleDBConfig.USER,
-                OracleDBConfig.PASSWORD);
-             Statement st = connection.createStatement();
-        ) {
-            System.out.println("in here trying to execute sql");
-            Class.forName(OracleDBConfig.ORACLE_DRIVER);
-            ResultSet rs = st.executeQuery(Queries.getAccountStatus(listAccount));
-
-            while (rs.next()) {
-                //System.out.println("length of lines for sql read "+lignesDuFichier.size());
-                for (int i = 0; i < lignesDuFichier.size(); i++) {
-                    //we purposely skip the first and last line
-                    if (i == 0 || i == lignesDuFichier.size() - 1) {
-                        continue;
-                    }
-                    var laligne = lignesDuFichier.get(i).getLigne();
-                    if (laligne.get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
-                        //System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
-                        laligne.put("ACCT_STATUS~10", rs.getString("ACCT_STATUS"));
-                        laligne.put("BALANCE~11", rs.getString("SOLDE"));
-                        laligne.put("SCHM_CODE~12", rs.getString("SCHM_CODE"));
-                        laligne.put("SCHM_DESC~13", rs.getString("SCHM_DESC"));
-                        lignesDuFichier.get(i).setLigne(laligne);
-                        newList.add(lignesDuFichier.get(i).clone());
-
-                    }
-                    // System.out.println("index "+i);
-                }
-            }
-            if (rs != null) {
-                rs.close();
-            }
-        } catch (ClassNotFoundException | SQLException | CloneNotSupportedException e) {
-            System.out.println("EXCEPTION----");
-            System.out.println("Exception Cause : " + e.getCause());
-            System.out.println("Exception Message : " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            System.out.println("newList is "+newList.size());
-        }
-        return newList;
-    }
-
-    public List<Line> doCanalDebit(List<Line> processingLines) {
-        for (int i = 0; i < processingLines.size(); i++) {
-            System.out.println("length of lines is " + processingLines.size());
-            //we purposely skip the first and last line
-            System.out.println("index is " + i + "\n" + processingLines.get(i).getLigne());
-            if (i == 0 || i == processingLines.size() - 1) {
-                continue;
-            }
-            if (processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("A")) {
-                int amountToDebit = Integer.parseInt(processingLines.get(i).getLigne().get("AMOUNT_TO_DEBIT~9").toString().trim());
-                int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~11").toString().trim());
-                if (currentBalance >= amountToDebit) {
-                    System.out.println("we debit");
-                    processingLines.get(i).getLigne().put("process_done", true);
-                } else {
-                    System.out.println("we cant debit");
-                    processingLines.get(i).getLigne().put("process_done", false);
-                }
-            }
-        }
-        return processingLines;
-    }
 
     public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName) {
         List<ProcessedFile> treatedFiles = new ArrayList<>();
@@ -123,28 +43,28 @@ public class Processors {
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
                     ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, new Date(), null);
-                    List<Line> lignes = readTXT(file, configName);
-                    for (var l : lignes) {
-                        l.removeKey("process_done");
-                        System.out.println(l);
+                    List<Line> lignesInitiales = readTXT(file, configName);
+                    for (var l : lignesInitiales) {
+                        l.removeKey("process_done~17");
+                       // System.out.println("removing process_done");
                     }
                     //we store then the initial file lines
-                    f.setInFile(lignes);
+                    f.setInFile(lignesInitiales);
                     //we get the details from the database and proceed with the direct debit
-                    List<Line> aftersolde;
-                    aftersolde = getSolde(lignes);
-                    System.out.println("aftersolde "+aftersolde.size());
-
-                    aftersolde = doCanalDebit(aftersolde);
+                    List<Line> lignesProcessing;
+                    lignesProcessing = getSolde(lignesInitiales);
+                    lignesProcessing = doCanalDebit(lignesProcessing);
+                    lignesProcessing.add(0, lignesInitiales.get(0));
+                    lignesProcessing.add(lignesInitiales.get(lignesInitiales.size() - 1));
                     //we then update the processing lines
-                    f.setFileLines(aftersolde);
+                    f.setFileLines(lignesProcessing);
                     //#TODO reconcile with original file
-                    f.setOutFile(f.getInFile());
+                    List<Line> lignesGenerated = reconcileCanal(lignesProcessing, lignesInitiales);
+                    f.setOutFile(lignesGenerated);
                     treatedFiles.add(f);
-                    System.out.println(treatedFiles.get(0).getInFile().hashCode()+"---"+treatedFiles.get(0).getOutFile().hashCode()+"---"+treatedFiles.get(0).getFileLines().hashCode());
-                    System.out.println(treatedFiles.get(0).getInFile().get(2).getLigne()+"INFILE"+treatedFiles.get(0).getInFile().get(2).getLigne().hashCode());
-                    System.out.println(treatedFiles.get(0).getOutFile().get(2).getLigne()+"OUTFILE"+treatedFiles.get(0).getOutFile().get(2).getLigne().hashCode());
-                    System.out.println(treatedFiles.get(0).getFileLines().get(2).getLigne()+"PROCESSING"+treatedFiles.get(0).getFileLines().get(2).getLigne().hashCode());
+                    System.out.println("INITIAL lines " + lignesInitiales.size() + " column count" + lignesInitiales.get(2).getLigne().entrySet().size());
+                    System.out.println("PROCESSING lines " + lignesProcessing.size() + " column count" + lignesProcessing.get(2).getLigne().entrySet().size());
+                    System.out.println("GENERATED lines " + lignesGenerated.size() + " column count" + lignesGenerated.get(2).getLigne().entrySet().size());
 
 
                 });
@@ -220,8 +140,8 @@ public class Processors {
                                                 firstNoPart = firstNoPart.replaceAll("\\+", "");
                                                 //System.out.println("nameStart "+nameStart+"\n firstnumpart "+firstNoPart);
                                                 m.put("inc~1".toUpperCase(), firstNoPart.substring(0, 6));
-                                                m.put("date_debit~2".toUpperCase(), firstNoPart.substring(6, 13));
-                                                m.put("bank_code~3".toUpperCase(), firstNoPart.substring(13, 21));
+                                                m.put("date_debit~2".toUpperCase(), firstNoPart.substring(8, 14));
+                                                m.put("bank_code~3".toUpperCase(), firstNoPart.substring(14, 22));
                                                 m.put("account~4".toUpperCase(), firstNoPart.substring(nameStart.contentEquals("CANAL+") ? 23 : 22));
                                                 m.put("customer_name~5".toUpperCase(), nameStart);
                                                 return;
@@ -265,12 +185,12 @@ public class Processors {
 
                         index.getAndIncrement();
                         //we reorder the map
-                        Comparator<String> c = (k1, k2) -> Integer.parseInt(k1.split("~")[1]) - Integer.parseInt(k2.split("~")[1]);
+                        Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
                         Map<String, Object> sorted = m.keySet()
                                 .stream()
                                 .sorted(c)
                                 .collect(Collectors.toMap(key -> key, key -> m.get(key), (key, value) -> value, LinkedHashMap::new));
-                        sorted.put("process_done", false);
+                        //sorted.put("process_done", false);
                         ligne.setLigne(sorted);
                         lignes.add(ligne);
                         // System.out.println("content of m:\n "+m);
@@ -283,6 +203,139 @@ public class Processors {
         return lignes;
     }
 
+    public List<Line> getSolde(List<Line> lignesDuFichier) {
+        List<Line> newList = new ArrayList<>();
+        //1- we get the statuses of the accounts
+        //2- we store it in memory
+        //3 we proceed to debit and update the debited account immediately with the solde
+        var listAccount = lignesDuFichier.stream()
+                .parallel()
+                .flatMap(line -> line.getLigne().entrySet().parallelStream())
+                .filter(l -> l.getKey().equalsIgnoreCase("ACCOUNT~4"))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+
+
+        try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
+                OracleDBConfig.USER,
+                OracleDBConfig.PASSWORD);
+             Statement st = connection.createStatement();
+        ) {
+            System.out.println("in here trying to execute sql");
+            Class.forName(OracleDBConfig.ORACLE_DRIVER);
+            ResultSet rs = st.executeQuery(Queries.getAccountStatus(listAccount));
+
+            while (rs.next()) {
+                //System.out.println("length of lines for sql read "+lignesDuFichier.size());
+                for (int i = 0; i < lignesDuFichier.size(); i++) {
+                    //we purposely skip the first and last line
+                    if (i == 0 || i == lignesDuFichier.size() - 1) {
+                        continue;
+                    }
+                    var laligne = lignesDuFichier.get(i).clone();
+                    if (laligne.getLigne().get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
+                        //System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
+                        laligne.getLigne().put("ACCT_STATUS~10", rs.getString("ACCT_STATUS"));
+                        laligne.getLigne().put("BALANCE~11", rs.getString("SOLDE"));
+                        laligne.getLigne().put("FREEZECODE~12", rs.getString("FREZ_CODE"));
+                        laligne.getLigne().put("FREEZEREASON~13", rs.getString("FREZ_REASON_CODE"));
+                        laligne.getLigne().put("ACCOUNTCLOSEDATE~14", rs.getString("account_close_date"));
+                        laligne.getLigne().put("SCHM_CODE~15", rs.getString("SCHM_CODE"));
+                        laligne.getLigne().put("SCHM_DESC~16", rs.getString("SCHM_DESC"));
+                        newList.add(laligne);
+
+                    }
+                    // System.out.println("index "+i);
+                }
+            }
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (ClassNotFoundException | SQLException | CloneNotSupportedException e) {
+            System.out.println("EXCEPTION----");
+            System.out.println("Exception Cause : " + e.getCause());
+            System.out.println("Exception Message : " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            System.out.println("newList is " + newList.size());
+        }
+        return newList;
+    }
+
+    public List<Line> doCanalDebit(List<Line> processingLines) {
+        for (int i = 0; i < processingLines.size(); i++) {
+            System.out.println("length of lines is " + processingLines.size());
+            //we purposely skip the first and last line
+            System.out.println("index is " + i + "\n" + processingLines.get(i).getLigne());
+
+            if (processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("A")
+                    || processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("I")) {
+
+                int amountToDebit = Integer.parseInt(processingLines.get(i).getLigne().get("AMOUNT_TO_DEBIT~9").toString().trim());
+                int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~11").toString().trim());
+                System.out.println("solde: "+currentBalance+"\n debiter "+amountToDebit+"\n solde>debit ?"+(currentBalance >= amountToDebit));
+                //System.out.println(processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank());
+                if (currentBalance >= amountToDebit
+                        && processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank()
+                        && processingLines.get(i).getLigne().get("FREEZEREASON~13") == null
+                        && processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") == null) {
+                    System.out.println("we debit");
+                    processingLines.get(i).getLigne().put("process_done~17", true);
+                    processingLines.get(i).getLigne().put("status_code~18", "00");
+
+                } else {
+                    if(processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14")!=null){
+                        System.out.println("we cant debit");
+                        processingLines.get(i).getLigne().put("process_done~17", false);
+                        processingLines.get(i).getLigne().put("status_code~18", "04");
+                    }else{
+                        System.out.println("we cant debit");
+                        processingLines.get(i).getLigne().put("process_done~17", false);
+                        processingLines.get(i).getLigne().put("status_code~18", "06");
+                    }
+                }
+            } else {
+                System.out.println("we cant debit account isnt active " + processingLines.get(i).getLigne().get("ACCT_STATUS~10"));
+                processingLines.get(i).getLigne().put("process_done~17", false);
+                processingLines.get(i).getLigne().put("status_code~18", "06");
+
+            }
+            //we reorder the map
+            var m=processingLines.get(i).getLigne();
+            Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
+            Map<String, Object> sorted = m.keySet()
+                    .stream()
+                    .sorted(c)
+                    .collect(Collectors.toMap(key -> key, key -> m.get(key), (key, value) -> value, LinkedHashMap::new));
+            processingLines.get(i).setLigne(sorted);
+        }
+        return processingLines;
+    }
+
+    public List<Line> reconcileCanal(List<Line> afterDebit, List<Line> initialLines) {
+        List<Line> done = new ArrayList<>();
+        initialLines.stream()
+                .forEachOrdered(line -> {
+                    try {
+                        done.add(line.clone());
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                });
+        IntStream.range(0, afterDebit.size())
+                .parallel()
+                .forEachOrdered(index -> {
+                    System.out.println("index "+index);
+                    if (index != 0 && index != afterDebit.size()-1) {
+                        done.get(index).getLigne().put("AMOUNT_TO_DEBIT~9",
+                                done.get(index).getLigne().get("AMOUNT_TO_DEBIT~9").toString()
+                                        +afterDebit.get(index).getLigne().get("status_code~18"));
+                    }
+                    //System.out.println("reconcile--" + afterDebit.get(index).getLigne());
+                });
+        return done;
+    }
+//#########   SAGE processing
     private List<Line> readXlsx(OPCPackage file) {
 
         DataFormatter dataFormatter = new DataFormatter();

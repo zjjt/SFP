@@ -5,11 +5,16 @@ import java.util.List;
 public class Queries {
     public static String getAccountStatus(List<Object> accountId){
         System.out.println("the accounts are "+accountId);
-        String req="select foracid,g.acct_name,g.schm_code, CLR_bal_amt Solde,acct_status,schm_desc\r\n"+
+//        String req="select foracid,acct_cls_date as account_close_date,FREZ_CODE, FREZ_REASON_CODE,g.acct_name,g.schm_code, CLR_bal_amt Solde,acct_status,schm_desc\r\n"+
+//                "from tbaadm.gam g,tbaadm.gsp g1,((select acid,acct_status from tbaadm.cam where acct_status\n" +
+//                "in ('D','I','A')) union (select acid,acct_status from tbaadm.smt where acct_status in ('D','I','A'))) z\r\n"+
+//                "where  z.acid = g.acid and g1.schm_code=g.schm_code and acct_ownership<>'O' and g.bank_id='CI' and g1.bank_id='CI'\r\n"+
+//                "null and g.del_flg = 'N' and foracid in (";
+        String req="select foracid,acct_cls_date as account_close_date,FREZ_CODE, FREZ_REASON_CODE,g.acct_name,g.schm_code, CLR_bal_amt Solde,acct_status,schm_desc\n" +
                 "from tbaadm.gam g,tbaadm.gsp g1,((select acid,acct_status from tbaadm.cam where acct_status\n" +
-                "in ('D','I','A')) union (select acid,acct_status from tbaadm.smt where acct_status in ('D','I','A'))) z\r\n"+
-                "where  z.acid = g.acid and g1.schm_code=g.schm_code and acct_ownership<>'O' and g.bank_id='CI' and g1.bank_id='CI'\r\n"+
-                "and acct_cls_date is  null and g.del_flg = 'N' and foracid in (";
+                "in ('D','I','A')) union (select acid,acct_status from tbaadm.smt where acct_status in ('D','I','A'))) z\n" +
+                "where  z.acid = g.acid and g1.schm_code=g.schm_code and acct_ownership<>'O' and g.bank_id='CI' and g1.bank_id='CI'\n" +
+                " and g.del_flg = 'N' and foracid in (";
         int index=0;
         for(var account : accountId){
             System.out.println("the account is "+account);

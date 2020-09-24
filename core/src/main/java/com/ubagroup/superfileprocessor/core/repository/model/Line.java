@@ -17,9 +17,15 @@ public class Line implements Cloneable{
     public Line(Map<String, Object> ligne) {
         this.ligne = ligne;
     }
+
+    //deep copy
     @Override
     public Line clone() throws CloneNotSupportedException{
-        return new Line(this.ligne);
+        Line line=(Line)super.clone();
+        Map<String,Object> m=new HashMap<>();
+        m.putAll(this.ligne);
+        line.setLigne(m);
+        return line;
     }
     public void removeKey(String key){
         ligne.remove(key);
