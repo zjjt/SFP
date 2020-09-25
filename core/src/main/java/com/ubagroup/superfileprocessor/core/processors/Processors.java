@@ -46,14 +46,21 @@ public class Processors {
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~17");
-                       // System.out.println("removing process_done");
+                        // System.out.println("removing process_done");
                     }
                     //we store then the initial file lines
                     f.setInFile(lignesInitiales);
                     //we get the details from the database and proceed with the direct debit
                     List<Line> lignesProcessing;
                     lignesProcessing = getSolde(lignesInitiales);
-                    lignesProcessing = doCanalDebit(lignesProcessing);
+                    try {
+                        lignesProcessing = doCanalDebit(lignesProcessing);
+                    } catch (CloneNotSupportedException e) {
+                        System.out.println("EXCEPTION----");
+                        System.out.println("Exception Cause : " + e.getCause());
+                        System.out.println("Exception Message : " + e.getMessage());
+                        e.printStackTrace();
+                    }
                     lignesProcessing.add(0, lignesInitiales.get(0));
                     lignesProcessing.add(lignesInitiales.get(lignesInitiales.size() - 1));
                     //we then update the processing lines
@@ -185,13 +192,7 @@ public class Processors {
 
                         index.getAndIncrement();
                         //we reorder the map
-                        Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
-                        Map<String, Object> sorted = m.keySet()
-                                .stream()
-                                .sorted(c)
-                                .collect(Collectors.toMap(key -> key, key -> m.get(key), (key, value) -> value, LinkedHashMap::new));
-                        //sorted.put("process_done", false);
-                        ligne.setLigne(sorted);
+                        ligne.setLigne(sortedLines(m));
                         lignes.add(ligne);
                         // System.out.println("content of m:\n "+m);
                         // System.out.println("\n");
@@ -262,7 +263,7 @@ public class Processors {
         return newList;
     }
 
-    public List<Line> doCanalDebit(List<Line> processingLines) {
+    public List<Line> doCanalDebit(List<Line> processingLines) throws CloneNotSupportedException {
         for (int i = 0; i < processingLines.size(); i++) {
             System.out.println("length of lines is " + processingLines.size());
             //we purposely skip the first and last line
@@ -273,22 +274,29 @@ public class Processors {
 
                 int amountToDebit = Integer.parseInt(processingLines.get(i).getLigne().get("AMOUNT_TO_DEBIT~9").toString().trim());
                 int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~11").toString().trim());
-                System.out.println("solde: "+currentBalance+"\n debiter "+amountToDebit+"\n solde>debit ?"+(currentBalance >= amountToDebit));
+                System.out.println("solde: " + currentBalance + "\n debiter " + amountToDebit + "\n solde>debit ?" + (currentBalance >= amountToDebit));
                 //System.out.println(processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank());
                 if (currentBalance >= amountToDebit
                         && processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank()
                         && processingLines.get(i).getLigne().get("FREEZEREASON~13") == null
-                        && processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") == null) {
-                    System.out.println("we debit");
-                    processingLines.get(i).getLigne().put("process_done~17", true);
-                    processingLines.get(i).getLigne().put("status_code~18", "00");
+                        && processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") == null
+                ) {
+
+                    if (processingLines.get(i).getLigne().containsKey("process_done~17")
+                            && processingLines.get(i).getLigne().get("process_done~17").toString().equalsIgnoreCase("false")
+                            && !processingLines.get(i).getLigne().get("status_code~18").toString().equalsIgnoreCase("00")
+                    ) {
+                        System.out.println("we debit");
+                        processingLines.get(i).getLigne().put("process_done~17", true);
+                        processingLines.get(i).getLigne().put("status_code~18", "00");
+                    }
 
                 } else {
-                    if(processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14")!=null){
+                    if (processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") != null) {
                         System.out.println("we cant debit");
                         processingLines.get(i).getLigne().put("process_done~17", false);
                         processingLines.get(i).getLigne().put("status_code~18", "04");
-                    }else{
+                    } else {
                         System.out.println("we cant debit");
                         processingLines.get(i).getLigne().put("process_done~17", false);
                         processingLines.get(i).getLigne().put("status_code~18", "06");
@@ -301,12 +309,9 @@ public class Processors {
 
             }
             //we reorder the map
-            var m=processingLines.get(i).getLigne();
-            Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
-            Map<String, Object> sorted = m.keySet()
-                    .stream()
-                    .sorted(c)
-                    .collect(Collectors.toMap(key -> key, key -> m.get(key), (key, value) -> value, LinkedHashMap::new));
+            var m = processingLines.get(i).clone();
+            var sorted = sortedLines(m.getLigne());
+            System.out.println("sorted " + sorted);
             processingLines.get(i).setLigne(sorted);
         }
         return processingLines;
@@ -325,17 +330,20 @@ public class Processors {
         IntStream.range(0, afterDebit.size())
                 .parallel()
                 .forEachOrdered(index -> {
-                    System.out.println("index "+index);
-                    if (index != 0 && index != afterDebit.size()-1) {
+                    System.out.println("index " + index);
+                    if (index != 0 && index != afterDebit.size() - 1) {
                         done.get(index).getLigne().put("AMOUNT_TO_DEBIT~9",
                                 done.get(index).getLigne().get("AMOUNT_TO_DEBIT~9").toString()
-                                        +afterDebit.get(index).getLigne().get("status_code~18"));
+                                        + afterDebit.get(index).getLigne().get("status_code~18"));
                     }
-                    //System.out.println("reconcile--" + afterDebit.get(index).getLigne());
+                    var m = done.get(index).getLigne();
+                    done.get(index).setLigne(sortedLines(m));
                 });
+
         return done;
     }
-//#########   SAGE processing
+
+    //#########   SAGE processing
     private List<Line> readXlsx(OPCPackage file) {
 
         DataFormatter dataFormatter = new DataFormatter();
@@ -430,5 +438,16 @@ public class Processors {
             e.printStackTrace();
         }
         return lignes;
+    }
+
+    private Map<String, Object> sortedLines(Map<String, Object> m) {
+        Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
+        Map<String, Object> sorted = m.keySet()
+                .stream()
+                .sorted(c)
+                .collect(Collectors.toMap(key -> key, key -> m.get(key) != null ? m.get(key) : ""
+                        , (key, value) -> value
+                        , LinkedHashMap::new));
+        return sorted;
     }
 }

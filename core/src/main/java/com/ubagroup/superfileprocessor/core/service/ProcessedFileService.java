@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,18 @@ public class ProcessedFileService implements ProcessedFileInterface {
     }
 
     @Override
+    public boolean saveProcessedFile(List<ProcessedFile> files) {
+        var saves=new ArrayList<>();
+        for(var f : files){
+            saves.add(processedFileRepository.save(f));
+        }
+        if(saves.size()==files.size()){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> processClass = Class.forName("com.ubagroup.superfileprocessor.core.processors.Processors");
         Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class);
@@ -88,4 +101,5 @@ public class ProcessedFileService implements ProcessedFileInterface {
         }
         return treated;
     }
+
 }
