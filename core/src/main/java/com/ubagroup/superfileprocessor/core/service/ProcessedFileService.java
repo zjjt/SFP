@@ -92,10 +92,10 @@ public class ProcessedFileService implements ProcessedFileInterface {
     }
 
     @Override
-    public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName,String appmode) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> processClass = Class.forName("com.ubagroup.superfileprocessor.core.processors.Processors");
-        Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class);
-        List<ProcessedFile> treated= (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName);
+        Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class,String.class);
+        List<ProcessedFile> treated= (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName,appmode);
         if(treated.size()>0){
             processedFileRepository.saveAll(treated);
         }

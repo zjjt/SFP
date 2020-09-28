@@ -16,11 +16,10 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -35,7 +34,7 @@ import java.util.stream.IntStream;
  */
 public class Processors {
 
-    public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName) {
+    public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName, String appmode) {
         List<ProcessedFile> treatedFiles = new ArrayList<>();
         System.out.println("in canal+ processor processing " + files.size() + " files for " + configName + " with userId " + userId);
         files.stream()
@@ -52,7 +51,7 @@ public class Processors {
                     f.setInFile(lignesInitiales);
                     //we get the details from the database and proceed with the direct debit
                     List<Line> lignesProcessing;
-                    lignesProcessing = getSolde(lignesInitiales);
+                    lignesProcessing = appmode.equalsIgnoreCase("test")||appmode.equalsIgnoreCase("prod")?getSolde(lignesInitiales):getSoldeFromJson(lignesInitiales);
                     try {
                         lignesProcessing = doCanalDebit(lignesProcessing);
                     } catch (CloneNotSupportedException e) {
@@ -80,7 +79,7 @@ public class Processors {
 
     //this method processes an Excel file list via multithreading
 
-    public List<ProcessedFile> sageProcessor(List<MultipartFile> files, String userId, String configName) {
+    public List<ProcessedFile> sageProcessor(List<MultipartFile> files, String userId, String configName, String appmode) {
         List<ProcessedFile> treatedFiles = new ArrayList<>();
         System.out.println("in sage processor processing " + files.size() + " files for " + configName + " with userId " + userId);
         files.stream()
@@ -204,6 +203,79 @@ public class Processors {
         return lignes;
     }
 
+    public List<Line> getSoldeFromJson(List<Line> lignesDuFichier) {
+        System.out.println("Traitement a partir de JSON MOCK DATA");
+        List<Line> newList = new ArrayList<>();
+        //1- we get the statuses of the accounts
+        //2- we store it in memory
+        //3 we proceed to debit and update the debited account immediately with the solde
+        JSONParser parser=new JSONParser();
+        try {
+            String jsonData="{\"rows\":[\n" +
+                    "{\"foracid\":\"101010005626\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"TANOH MICHEL\",\"schm_code\":\"CAC01\",\"solde\":920733,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010006883\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"DIARRA DRAMANE\",\"schm_code\":\"CAC01\",\"solde\":148790,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010012172\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"AKUE COME ADOVI\",\"schm_code\":\"CAC01\",\"solde\":576009,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010019386\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"BOGUIFO AURELIA CLAUDE DESIRE NESSA\",\"schm_code\":\"CACDB\",\"solde\":-5185,\"acct_status\":\"A\",\"schm_desc\":\"CREANCES DOUTEUSES OU LI\"},\n" +
+                    "{\"foracid\":\"101010019355\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"WODJE LOUIS TEHOUA PRIVAT\",\"schm_code\":\"CAC01\",\"solde\":706983,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010029231\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"TOURE AMINATA\",\"schm_code\":\"CAC01\",\"solde\":211740,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010032026\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"GUEYE MONIQUE EPSE OBRE\",\"schm_code\":\"CAC01\",\"solde\":2695728,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010033221\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"KOUAME KOUASSI  LETONDAL\",\"schm_code\":\"CAC01\",\"solde\":69135,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010035881\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"KOUAKOU AFFOUA\",\"schm_code\":\"CACDB\",\"solde\":-5504,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
+                    "{\"foracid\":\"101010037267\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"LOUA ROJAS\",\"schm_code\":\"CAC01\",\"solde\":110666,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010037908\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"KONE CHEICK MOHAMED ABDEL KADER\",\"schm_code\":\"CAC01\",\"solde\":9900,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101020000017\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"ASSOUA SANDRINE KOUAME\",\"schm_code\":\"CAC02\",\"solde\":1692040,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
+                    "{\"foracid\":\"101020000299\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"AKA ASSOMAN GILBERT\",\"schm_code\":\"CAC02\",\"solde\":804842,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
+                    "{\"foracid\":\"101070000294\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"CABINET THEODORE HOEGAH\",\"schm_code\":\"CAC07\",\"solde\":3631198,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE ENT.INDIV.\"},\n" +
+                    "{\"foracid\":\"101070002685\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"ETUDE DE MAITRE KOUAKOU LILIANE SAINT PIERRE\",\"schm_code\":\"CAC07\",\"solde\":1002764017,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE ENT.INDIV.\"},\n" +
+                    "{\"foracid\":\"101070003736\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"EREF-CI\",\"schm_code\":\"CAC07\",\"solde\":3690089,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE ENT.INDIV.\"},\n" +
+                    "{\"foracid\":\"101070004850\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"PRESTIGE LOCATION DE VOITURE\",\"schm_code\":\"CAC07\",\"solde\":655949,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE ENT.INDIV.\"},\n" +
+                    "{\"foracid\":\"101090003110\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"MSTB-CI (MULTI SERVICES TECHNIQUES ET BUREAUTIQUES EN CI)\",\"schm_code\":\"CAC09\",\"solde\":6187782,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE SA & SARL\"},\n" +
+                    "{\"foracid\":\"101090005604\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"ASSUREUR CONSEIL ARMOO\",\"schm_code\":\"CAC34\",\"solde\":27630,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE ENT.SARL & SAS-FTC\"},\n" +
+                    "{\"foracid\":\"101090006065\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"INTELLIGENCE\",\"schm_code\":\"CAC09\",\"solde\":14910794,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE SA & SARL\"},\n" +
+                    "{\"foracid\":\"101200000066\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"SAM LAURENT-SAMUEL\",\"schm_code\":\"CAC01\",\"solde\":4171238,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101200000330\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"KOUAKOU KOUABENAN ADJEHI JULIEN\",\"schm_code\":\"CAC20\",\"solde\":83425,\"acct_status\":\"A\",\"schm_desc\":\"CAC20 INDIV. FTC 2000XOF\"},\n" +
+                    "{\"foracid\":\"101210000036\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"OUEDRAOGO SALIF ISSA\",\"schm_code\":\"CAC21\",\"solde\":1504894,\"acct_status\":\"A\",\"schm_desc\":\"CAC21 INDIV.FTC 2500 XOF\"},\n" +
+                    "{\"foracid\":\"102580008387\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"RESIDENCE SAINT MARTIN SARL\",\"schm_code\":\"CAC58\",\"solde\":574581,\"acct_status\":\"A\",\"schm_desc\":\"CPTE CC PME.SARL\\/SA PACK DOHO\"},\n" +
+                    "{\"foracid\":\"299020000408\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"THOMPSON SOLANGE\",\"schm_code\":\"CAC02\",\"solde\":135115,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
+                    "{\"foracid\":\"299020000590\",\"frez_code\":\" \",\"frez_reason_code\":\" \",\"acc_close_date\":\" \",\"acct_name\":\"BAKARE LATIF\",\"schm_code\":\"CAC02\",\"solde\":508112,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"}\n" +
+                    "]}";
+            Object obj= parser.parse(jsonData);
+            JSONObject jsonObject=(JSONObject)obj;
+            JSONArray rows=(JSONArray) jsonObject.get("rows");
+            Iterator<JSONObject> iterator=rows.iterator();
+            for(int index=0;index<rows.size();index++){
+                for (int i = 0; i < lignesDuFichier.size(); i++) {
+                    //we purposely skip the first and last line
+                    if (i == 0 || i == lignesDuFichier.size() - 1) {
+                        continue;
+                    }
+                    var laligne = lignesDuFichier.get(i).clone();
+                    JSONObject json=(JSONObject)rows.get(index);
+                    if (laligne.getLigne().get("ACCOUNT~4").equals(json.get("foracid"))) {
+                       // System.out.println(laligne.getLigne().get("CUSTOMER_NAME~5") + "--" + json.get("foracid") + "--" + i);
+                        laligne.getLigne().put("ACCT_STATUS~10", json.get("acct_status"));
+                        laligne.getLigne().put("BALANCE~11", json.get("solde"));
+                        laligne.getLigne().put("FREEZECODE~12", json.get("frez_code"));
+                        laligne.getLigne().put("FREEZEREASON~13", json.get("frez_reason_code"));
+                        laligne.getLigne().put("ACCOUNTCLOSEDATE~14", json.get("acc_close_date"));
+                        laligne.getLigne().put("SCHM_CODE~15", json.get("schm_code"));
+                        laligne.getLigne().put("SCHM_DESC~16", json.get("schm_desc"));
+                        newList.add(laligne);
+
+                    }
+                    // System.out.println("index "+i);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            System.out.println("newList is " + newList.size());
+        }
+
+
+        return newList;
+    }
+
     public List<Line> getSolde(List<Line> lignesDuFichier) {
         List<Line> newList = new ArrayList<>();
         //1- we get the statuses of the accounts
@@ -289,7 +361,7 @@ public class Processors {
                         System.out.println("we debit");
                         processingLines.get(i).getLigne().put("process_done~17", true);
                         processingLines.get(i).getLigne().put("status_code~18", "00");
-                    }else{
+                    } else {
                         System.out.println("we debit");
                         processingLines.get(i).getLigne().put("process_done~17", true);
                         processingLines.get(i).getLigne().put("status_code~18", "00");

@@ -4,6 +4,7 @@ import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.service.ProcessedFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,8 @@ import java.util.*;
 public class ProcessedFileController {
     @Autowired
     ProcessedFileService processedFileService;
+    @Value("#{'${application.mode}'}")
+    private  String appmode;
 
     @PostMapping("/delete")
     public Map<String, Object> deleteFiles(@RequestParam("file_ids[]") List<String> ids) {
@@ -65,7 +68,7 @@ public class ProcessedFileController {
             long start = Instant.now().toEpochMilli();
 
             try {
-                treatedFiles = processedFileService.processFiles(files, userId, configName);
+                treatedFiles = processedFileService.processFiles(files, userId, configName,appmode);
                 //the files have been processed and now we need to read from the db and save into db
             } catch (ClassNotFoundException e) {
                 long end = Instant.now().toEpochMilli();

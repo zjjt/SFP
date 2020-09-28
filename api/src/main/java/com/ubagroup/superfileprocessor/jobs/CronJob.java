@@ -13,6 +13,7 @@ import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import com.ubagroup.superfileprocessor.core.service.ProcessConfigService;
 import com.ubagroup.superfileprocessor.core.service.ProcessedFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,8 @@ public class CronJob {
     @Autowired
     ProcessConfigService processConfigService;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    @Value("#{'${application.mode}'}")
+    private  String appmode;
 
     @Scheduled(cron="#{@getCanalCronTime}")
     public void processCanalTask(){
@@ -52,7 +55,11 @@ public class CronJob {
                        //we
                        Processors processor=new Processors();
                        System.out.println("...getting account balance");
-                       f.setFileLines(processor.getSolde(f.getFileLines()));
+                       if(appmode.equalsIgnoreCase("dev")){
+                           f.setFileLines(processor.getSoldeFromJson(f.getFileLines()));
+                       }else{
+                           f.setFileLines(processor.getSolde(f.getFileLines()));
+                       }
                        try {
                            System.out.println("...starting the debit procedure");
                            f.setFileLines(processor.doCanalDebit(f.getFileLines()));
