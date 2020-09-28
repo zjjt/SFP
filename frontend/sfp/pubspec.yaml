@@ -45,6 +45,7 @@ dependencies:
   native_pdf_view: ^3.8.0 
   printing: ^3.6.1 
   file: ^5.2.1
+  cronparse: ^0.1.1
  
 dev_dependencies:
   flutter_test:

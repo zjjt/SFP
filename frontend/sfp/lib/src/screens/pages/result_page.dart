@@ -12,6 +12,7 @@ import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+
 //import 'package:universal_html/html.dart';
 
 class ResultPage extends StatefulWidget {
@@ -589,6 +590,38 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(height: 50.0),
+                  if (dataBloc.currentConfig.metaparameters
+                      .containsKey("executionTime"))
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                            "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
+                        Row(
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                  text:
+                                      "Elapsed time since previous execution: ",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                        text:
+                                            "${dataBloc.currentConfig.metaparameters['executionTime'].sincePreviousRelativeTo(DateTime.now())}")
+                                  ]),
+                            ),
+                            RichText(
+                              text: TextSpan(
+                                  text: "Time left before next execution: ",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  children: <TextSpan>[TextSpan(text: "")]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   BlocListener<DataBloc, DataState>(
                     listener: (context, state) {
                       if (state is AllFilesDiscarded) {
