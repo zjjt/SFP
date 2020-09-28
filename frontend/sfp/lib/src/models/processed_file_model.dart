@@ -5,6 +5,9 @@ class ProcessedFileModel {
   final String userId;
   final String configName;
   final bool processingStatus;
+  final bool hasBeenExecutedOnce;
+  final DateTime lastExecution;
+  final DateTime nextExecution;
   final String dateProcessed;
   final List<dynamic> fileLines;
   const ProcessedFileModel(
@@ -14,6 +17,9 @@ class ProcessedFileModel {
       this.userId,
       this.configName,
       this.processingStatus,
+      this.hasBeenExecutedOnce,
+      this.lastExecution,
+      this.nextExecution,
       this.dateProcessed,
       this.fileLines});
 
@@ -24,6 +30,9 @@ class ProcessedFileModel {
         userId = parsedJSON['userId'],
         configName = parsedJSON['configName'],
         processingStatus = parsedJSON['processingStatus'],
+        hasBeenExecutedOnce = parsedJSON['hasBeenExecutedOnce'],
+        lastExecution = DateTime.parse(parsedJSON['lastExecution']),
+        nextExecution = DateTime.parse(parsedJSON['nextExecution']),
         dateProcessed = parsedJSON['dateProcessed'],
         fileLines = parsedJSON['fileLines'];
 }
