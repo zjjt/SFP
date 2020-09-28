@@ -209,6 +209,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.0.4"
+  flutter_countdown_timer:
+    dependency: "direct main"
+    description:
+      name: flutter_countdown_timer
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -276,7 +283,7 @@ packages:
     source: hosted
     version: "2.1.15"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       url: "https://pub.dartlang.org"

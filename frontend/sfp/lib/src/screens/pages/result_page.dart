@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_countdown_timer/countdown_timer.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:pdf/pdf.dart' as pdfDart;
 import 'package:pdf/widgets.dart' as pw;
@@ -592,36 +594,8 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   SizedBox(height: 50.0),
                   if (dataBloc.currentConfig.metaparameters
                       .containsKey("executionTime"))
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                            "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
-                        Row(
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                  text:
-                                      "Elapsed time since previous execution: ",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                        text:
-                                            "${dataBloc.currentConfig.metaparameters['executionTime'].sincePreviousRelativeTo(DateTime.now())}")
-                                  ]),
-                            ),
-                            RichText(
-                              text: TextSpan(
-                                  text: "Time left before next execution: ",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                  children: <TextSpan>[TextSpan(text: "")]),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    Text(
+                        "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
                   BlocListener<DataBloc, DataState>(
                     listener: (context, state) {
                       if (state is AllFilesDiscarded) {
@@ -660,6 +634,53 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             ),
                             child: Column(
                               children: [
+                                Row(
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                          text: "Previous execution Time: ",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                          children: <TextSpan>[
+                                            TextSpan(
+                                                text:
+                                                    "${DateFormat('LLLL').format(dataBloc.processedFiles[i].lastExecution)}")
+                                          ]),
+                                    ),
+                                    Container(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                              "Time left before next execution:"),
+                                          SizedBox(height: 10.0),
+                                          CountdownTimer(
+                                            endTime: dataBloc.processedFiles[i]
+                                                    .nextExecution.millisecond +
+                                                3000,
+                                            textStyle: const TextStyle(
+                                                fontSize: 30.0,
+                                                fontWeight: FontWeight.bold),
+                                            onEnd: () {
+                                              print(
+                                                  'now should wait for 3 seconds before requesting update from server');
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                          text: "Next execution time: ",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                          children: <TextSpan>[
+                                            TextSpan(
+                                                text:
+                                                    "${DateFormat('LLLL').format(dataBloc.processedFiles[i].nextExecution)}")
+                                          ]),
+                                    ),
+                                  ],
+                                ),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
