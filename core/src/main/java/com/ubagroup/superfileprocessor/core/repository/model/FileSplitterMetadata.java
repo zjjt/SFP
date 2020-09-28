@@ -20,13 +20,14 @@ public class FileSplitterMetadata {
      * in the form of a cron syntax * * * * *
      */
     private String executionTime;
+
     private Date endingDate;
 
     /**
      * the custom config will be mapped to the dbFields and their onscreen translation item and stored in a DbFieldsTranslation instance
      */
     private Map<String, DbFieldsTranslation> mapToDbFields;
-    private Map<String,List<Integer>> positions;
+    private Map<String, List<Integer>> positions;
 
     public FileSplitterMetadata(List<String> dbFields, String executionTime, Date endingDate, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
         this.dbFields = dbFields;
@@ -38,8 +39,9 @@ public class FileSplitterMetadata {
 
     @Override
     public String toString() {
-        return String.format("FileSplitterMetadata:[dbfields:%s\nmapToDbFields:%s\n,positions:%s]",dbFields,mapToDbFields,positions);
+        return String.format("FileSplitterMetadata:[dbfields:%s\nmapToDbFields:%s\n,positions:%s]", dbFields, mapToDbFields, positions);
     }
+
     public String getExecutionTime() {
         return executionTime;
     }
@@ -67,7 +69,6 @@ public class FileSplitterMetadata {
     }
 
 
-
     public Map<String, List<Integer>> getPositions() {
         return positions;
     }
@@ -84,4 +85,6 @@ public class FileSplitterMetadata {
     public void setEndingDate(Date endingDate) {
         this.endingDate = endingDate;
     }
+
+
 }

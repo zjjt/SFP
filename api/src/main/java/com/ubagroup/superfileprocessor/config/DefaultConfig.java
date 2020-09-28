@@ -66,7 +66,7 @@ public class DefaultConfig {
 
 
             }
-        }else if(configName=="PAYSEND"){
+        }else if(configName=="SAGE"){
             switch(step){
                 case 1:
                     apiParams.put("file",new ApiParameterConstraints(true,false,false,10,0,0,false, false, false,true));
@@ -180,16 +180,16 @@ public class DefaultConfig {
             }
             // The execution time is set as a cron expression which runs every hour from 12 to 20 each 25th day of the month
             // the ending date will be calculated at the first run of the job
-            var canalMeta=new FileSplitterMetadata(canalDbFields,"0 0 12-20 25/1 * * *", null, canalDefaultMapToDbField,null);
+            var canalMeta=new FileSplitterMetadata(canalDbFields,"0 */2 * * * *",  null, canalDefaultMapToDbField,null);
             /* here we define CANAL+ default configuration processing steps API
                 Each processing steps is linked to a functionality type and should be sequentially inserted into the list
                 with the id of each step so that the UI can properly build the forms and call the correct API endpoint when a submit
                 button is pushed by a user
              */
             var canalProcessingSteps=new ArrayList<ProcessingSteps>();
-            canalProcessingSteps.addAll(Arrays.asList(new ProcessingSteps(1,"UPLOADING FILE","/file-upload","POST",generateApiParams(1,"CANAL+"))
-                    ,new ProcessingSteps(2,"START PROCESSING WITH CURRENT CONFIG","/txt-splitter/","GET",generateApiParams(2,"CANAL+")),
-                    new ProcessingSteps(3,"REGISTERING SPLITTING CONFIGURATION","/txt-splitter","POST",generateApiParams(3,"CANAL+")),
+            canalProcessingSteps.addAll(Arrays.asList(new ProcessingSteps(1,"UPLOADING FILE","/file-upload","POST",generateApiParams(1,"CANAL"))
+                    ,new ProcessingSteps(2,"START PROCESSING WITH CURRENT CONFIG","/txt-splitter/","GET",generateApiParams(2,"CANAL")),
+                    new ProcessingSteps(3,"REGISTERING SPLITTING CONFIGURATION","/txt-splitter","POST",generateApiParams(3,"CANAL")),
                     new ProcessingSteps(4,"DOWNLOADING RESULT","/download/","GET",generateApiParams(4,"CANAL+"))));
 
 

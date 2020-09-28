@@ -1,10 +1,7 @@
 package com.ubagroup.superfileprocessor.core.entity;
 
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
-import org.bson.types.Binary;
-import org.json.JSONObject;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -22,15 +19,21 @@ public class ProcessedFile {
     private String userId;
     private String configName;
     private boolean processingStatus;
+    private boolean hasBeenExecutedOnce;
+    private Date lastExecution;
+    private Date nextExecution;
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
         this.configName = configName;
         this.processingStatus = processingStatus;
+        this.hasBeenExecutedOnce = hasBeenExecutedOnce;
+        this.lastExecution = lastExecution;
+        this.nextExecution = nextExecution;
         this.dateProcessed = dateProcessed;
         this.fileLines = fileLines;
     }
@@ -102,5 +105,29 @@ public class ProcessedFile {
 
     public void setProcessingStatus(boolean processingStatus) {
         this.processingStatus = processingStatus;
+    }
+
+    public Date getNextExecution() {
+        return nextExecution;
+    }
+
+    public void setNextExecution(Date nextExecution) {
+        this.nextExecution = nextExecution;
+    }
+
+    public Date getLastExecution() {
+        return lastExecution;
+    }
+
+    public void setLastExecution(Date lastExecution) {
+        this.lastExecution = lastExecution;
+    }
+
+    public boolean isHasBeenExecutedOnce() {
+        return hasBeenExecutedOnce;
+    }
+
+    public void setHasBeenExecutedOnce(boolean hasBeenExecutedOnce) {
+        this.hasBeenExecutedOnce = hasBeenExecutedOnce;
     }
 }

@@ -42,7 +42,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, new Date(), null);
+                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~17");
@@ -87,7 +87,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial file in binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, new Date(), null);
+                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, new Date(0), new Date(0), new Date(0), null);
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());
