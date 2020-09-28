@@ -1,4 +1,5 @@
 package com.ubagroup.superfileprocessor;
+
 import com.ubagroup.superfileprocessor.config.DefaultConfig;
 import com.ubagroup.superfileprocessor.core.service.ProcessConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,23 +23,31 @@ public class ApiApplication implements CommandLineRunner {
     private DefaultConfig defaultConfig;
     @Autowired
     private ProcessConfigService processConfigService;
+
     public static void main(String[] args) {
         SpringApplication.run(ApiApplication.class, args);
     }
+
     //Initial setup of the database
     @Override
-    public void run(String... args)throws Exception{
+    public void run(String... args) throws Exception {
         //loading default configuration
         defaultConfig.load();
     }
+
     @Bean
-    public String getCanalCronTime(){
-        var c=processConfigService.get("CANAL");
-        String executionTime=c.getMetaparameters().getExecutionTime();
+    public String getCanalCronTime() {
+        var list = processConfigService.getAll();
+        String executionTime = "* * * * * *";
+        if (list.size() > 0) {
+            var c = processConfigService.get("CANAL");
+            executionTime = c.getMetaparameters().getExecutionTime();
+        }
         return executionTime;
     }
+
     @Bean
-    public WebMvcConfigurer corsConfigurer(){
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {

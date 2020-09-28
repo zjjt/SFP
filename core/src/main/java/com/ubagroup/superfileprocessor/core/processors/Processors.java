@@ -289,6 +289,10 @@ public class Processors {
                         System.out.println("we debit");
                         processingLines.get(i).getLigne().put("process_done~17", true);
                         processingLines.get(i).getLigne().put("status_code~18", "00");
+                    }else{
+                        System.out.println("we debit");
+                        processingLines.get(i).getLigne().put("process_done~17", true);
+                        processingLines.get(i).getLigne().put("status_code~18", "00");
                     }
 
                 } else {

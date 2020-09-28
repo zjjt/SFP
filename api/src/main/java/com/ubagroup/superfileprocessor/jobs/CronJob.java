@@ -29,37 +29,41 @@ public class CronJob {
                 true,false,new Date(),new Date(),new Date(),"","CANAL");
         System.out.println(listofFiles.size()+" files remaining to process\n Step 1 done");
         System.out.println("Step 2: Processing "+listofFiles.size()+" files now");
-        listofFiles.stream()
-                .parallel()
-                .map(f->{
-                    //we
-                    Processors processor=new Processors();
-                    System.out.println("...getting account balance");
-                    f.setFileLines(processor.getSolde(f.getFileLines()));
-                    try {
-                        System.out.println("...starting the debit procedure");
-                        f.setFileLines(processor.doCanalDebit(f.getFileLines()));
-                    } catch (CloneNotSupportedException e) {
-                        System.out.println("EXCEPTION----");
-                        System.out.println("Exception Cause : " + e.getCause());
-                        System.out.println("Exception Message : " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                    f.getFileLines().add(0,f.getInFile().get(0));
-                    f.getFileLines().add(f.getInFile().get(f.getInFile().size()-1));
-                    System.out.println("...generating the status codes");
-                    List<Line> lignesGenerated = processor.reconcileCanal(f.getFileLines(), f.getInFile());
-                    f.setOutFile(lignesGenerated);
-                    System.out.println("...end of file processing");
-                    return f;
-                })
-                .collect(Collectors.toList());
-        System.out.println("Step 3 generating the final file and saving into the database");
-        if(processedFileService.saveProcessedFile(listofFiles)){
-            System.out.println("the files have been properly saved");
-        }else{
-            System.out.println("the files couldnt be saved properly check the code");
-        }
+       if(listofFiles.size()>0){
+           listofFiles.stream()
+                   .parallel()
+                   .map(f->{
+                       //we
+                       Processors processor=new Processors();
+                       System.out.println("...getting account balance");
+                       f.setFileLines(processor.getSolde(f.getFileLines()));
+                       try {
+                           System.out.println("...starting the debit procedure");
+                           f.setFileLines(processor.doCanalDebit(f.getFileLines()));
+                       } catch (CloneNotSupportedException e) {
+                           System.out.println("EXCEPTION----");
+                           System.out.println("Exception Cause : " + e.getCause());
+                           System.out.println("Exception Message : " + e.getMessage());
+                           e.printStackTrace();
+                       }
+                       f.getFileLines().add(0,f.getInFile().get(0));
+                       f.getFileLines().add(f.getInFile().get(f.getInFile().size()-1));
+                       System.out.println("...generating the status codes");
+                       List<Line> lignesGenerated = processor.reconcileCanal(f.getFileLines(), f.getInFile());
+                       f.setOutFile(lignesGenerated);
+                       System.out.println("...end of file processing");
+                       return f;
+                   })
+                   .collect(Collectors.toList());
+           System.out.println("Step 3 generating the final file and saving into the database");
+           if(processedFileService.saveProcessedFile(listofFiles)){
+               System.out.println("the files have been properly saved");
+           }else{
+               System.out.println("the files couldnt be saved properly check the code");
+           }
+       }else{
+           System.out.println("---there is no files to process ---");
+       }
         System.out.println("Scheduler processCanalTask task with duration : " + sdf.format(new Date())+"\n\n################ End of CANAL+ JOB ################");
 
     }
