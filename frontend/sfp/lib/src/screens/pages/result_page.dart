@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:pdf/pdf.dart' as pdfDart;
 import 'package:pdf/widgets.dart' as pw;
@@ -28,6 +27,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   DataBloc dataBloc;
   AnimateEntranceBloc animateBloc;
   AlertBloc alertBloc;
+  AuthBloc authBloc;
   NavBloc navBloc;
   FToast ftoast;
   DocBloc docBloc;
@@ -38,6 +38,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     dataBloc = context.bloc<DataBloc>();
     animateBloc = context.bloc<AnimateEntranceBloc>();
     alertBloc = context.bloc<AlertBloc>();
+    authBloc = context.bloc<AuthBloc>();
     navBloc = context.bloc<NavBloc>();
     docBloc = context.bloc<DocBloc>();
     currentPage = 1;
@@ -594,8 +595,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   SizedBox(height: 50.0),
                   if (dataBloc.currentConfig.metaparameters
                       .containsKey("executionTime"))
-                    Text(
-                        "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
+                    Container(
+                      height: 30.0,
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                          "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
+                    ),
                   BlocListener<DataBloc, DataState>(
                     listener: (context, state) {
                       if (state is AllFilesDiscarded) {
@@ -634,53 +639,139 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             ),
                             child: Column(
                               children: [
-                                Row(
-                                  children: [
-                                    RichText(
-                                      text: TextSpan(
-                                          text: "Previous execution Time: ",
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                          children: <TextSpan>[
-                                            TextSpan(
-                                                text:
-                                                    "${DateFormat('LLLL').format(dataBloc.processedFiles[i].lastExecution)}")
-                                          ]),
-                                    ),
-                                    Container(
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                              "Time left before next execution:"),
-                                          SizedBox(height: 10.0),
-                                          CountdownTimer(
-                                            endTime: dataBloc.processedFiles[i]
-                                                    .nextExecution.millisecond +
-                                                3000,
-                                            textStyle: const TextStyle(
-                                                fontSize: 30.0,
-                                                fontWeight: FontWeight.bold),
-                                            onEnd: () {
-                                              print(
-                                                  'now should wait for 3 seconds before requesting update from server');
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    RichText(
-                                      text: TextSpan(
-                                          text: "Next execution time: ",
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                          children: <TextSpan>[
-                                            TextSpan(
-                                                text:
-                                                    "${DateFormat('LLLL').format(dataBloc.processedFiles[i].nextExecution)}")
-                                          ]),
-                                    ),
-                                  ],
-                                ),
+                                if (dataBloc
+                                        .processedFiles[i].lastExecution.year !=
+                                    1970)
+                                  Responsive.isMobile(context)
+                                      ? Container(
+                                          child: Column(
+                                          children: [
+                                            Text(
+                                              "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
+                                                  .replaceAll(":00.000", ""),
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Container(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    "Time left before next execution:",
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  SizedBox(height: 10.0),
+                                                  CountdownTimer(
+                                                    endTime: dataBloc
+                                                            .processedFiles[i]
+                                                            .nextExecution
+                                                            .millisecondsSinceEpoch +
+                                                        3000,
+                                                    textStyle: const TextStyle(
+                                                        fontSize: 30.0,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    onEnd: () {
+                                                      print(
+                                                          'now should wait for 3 seconds before requesting update from server');
+                                                      Timer(
+                                                          Duration(
+                                                              milliseconds:
+                                                                  100), () {
+                                                        dataBloc.add(
+                                                            FetchFilesForConfig(
+                                                                dataBloc
+                                                                    .currentConfig
+                                                                    .configName,
+                                                                authBloc
+                                                                    .user.id));
+                                                        Timer(
+                                                            Duration(
+                                                                milliseconds:
+                                                                    2900), () {
+                                                          _showToast(
+                                                              "Running the background process now.Please wait...");
+                                                          setState(() {});
+                                                        });
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
+                                                  .replaceAll(":00.000", ""),
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            )
+                                          ],
+                                        ))
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            Text(
+                                              "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
+                                                  .replaceAll(":00.000", ""),
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Container(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                      "Time left before next execution:"),
+                                                  SizedBox(height: 10.0),
+                                                  CountdownTimer(
+                                                    endTime: dataBloc
+                                                            .processedFiles[i]
+                                                            .nextExecution
+                                                            .millisecondsSinceEpoch +
+                                                        3000,
+                                                    textStyle: const TextStyle(
+                                                        fontSize: 30.0,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    onEnd: () {
+                                                      print(
+                                                          'now should wait for 3 seconds before requesting update from server');
+                                                      Timer(
+                                                          Duration(
+                                                              milliseconds:
+                                                                  100), () {
+                                                        dataBloc.add(
+                                                            FetchFilesForConfig(
+                                                                dataBloc
+                                                                    .currentConfig
+                                                                    .configName,
+                                                                authBloc
+                                                                    .user.id));
+                                                        Timer(
+                                                            Duration(
+                                                                milliseconds:
+                                                                    2900), () {
+                                                          _showToast(
+                                                              "Running the background process now.Please wait...");
+                                                          setState(() {});
+                                                        });
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                                "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
+                                                    .replaceAll(":00.000", ""),
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,

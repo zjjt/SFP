@@ -11,6 +11,12 @@ class FetchConfigs extends DataEvent {
   const FetchConfigs();
 }
 
+class FetchFilesForConfig extends DataEvent {
+  final String configName;
+  final String userId;
+  const FetchFilesForConfig(this.configName, this.userId);
+}
+
 class SelectConfig extends DataEvent {
   final int configPosition;
   const SelectConfig(this.configPosition);

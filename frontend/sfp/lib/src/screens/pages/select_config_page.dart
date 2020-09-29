@@ -25,12 +25,14 @@ class _SelectConfigPageState extends State<SelectConfigPage>
   int selectedConfigIndex;
   String description;
   bool isError = false;
+  bool proceed = false;
   @override
   void initState() {
     super.initState();
     // ignore: close_sinks
     selectedConfigIndex = -1;
     description = '';
+    proceed = false;
     authBloc = context.bloc<AuthBloc>();
     navBloc = context.bloc<NavBloc>();
     dataBloc = context.bloc<DataBloc>();
@@ -71,13 +73,17 @@ class _SelectConfigPageState extends State<SelectConfigPage>
         Timer(Duration(milliseconds: 100), () {
           animateBloc.add(LeavingPage());
           Timer(Duration(milliseconds: 500), () {
-            navBloc.add(GoFupload());
+            dataBloc.add(FetchFilesForConfig(
+                dataBloc.processConfigs[selectedConfigIndex].configName,
+                authBloc.user.id));
+            proceed = true;
           });
         });
       });
     } else {
       setState(() {
         isError = true;
+        proceed = false;
         description =
             "Please choose one of the options above before proceeding";
       });
@@ -95,113 +101,126 @@ class _SelectConfigPageState extends State<SelectConfigPage>
     return Container(
       width: appB.width,
       //height: 500,
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(vertical: 150.0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "What task do you want to process ?",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Assets.ubaRedColor,
-                      fontSize: 50.0,
-                    ),
-                  ),
-                  SizedBox(height: 50.0),
-                  Container(
-                    padding: Responsive.isMobile(context)
-                        ? const EdgeInsets.symmetric(horizontal: 30.0)
-                        : const EdgeInsets.all(0),
-                    child: Container(
-                      child: Column(
-                        children: [
-                          SlideTransition(
-                            position: _radioSlide,
-                            child: FadeTransition(
-                              opacity: _radioFadeIn,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  if (dataBloc.processConfigs != null)
-                                    for (int i = 0;
-                                        i < dataBloc.processConfigs.length;
-                                        i++)
-                                      Container(
-                                        child: Row(
-                                          children: [
-                                            Radio(
-                                              activeColor: Assets.ubaRedColor,
-                                              groupValue: selectedConfigIndex,
-                                              value: i,
-                                              hoverColor: Colors.red,
-                                              onChanged: (value) {
-                                                print(
-                                                    'selected ${dataBloc.processConfigs[value]}');
-                                                _setConfig(value);
-                                              },
-                                              //selected: false,
-                                            ),
-                                            SizedBox(width: 10.0),
-                                            Text(
-                                                dataBloc.processConfigs[i]
-                                                    .configName,
-                                                style: const TextStyle(
-                                                    color: Colors.grey)),
-                                          ],
-                                        ),
-                                      ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 40.0),
-                          Container(
-                            width: appB.width * 0.5,
-                            height: 40.0,
-                            child: BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, state) {
-                              return RaisedButton(
-                                onPressed: _proceed,
-                                color: Assets.ubaRedColor,
-                                hoverColor: Colors.black,
-                                textColor: Colors.white,
-                                child: Text("Proceed",
-                                    style: const TextStyle(fontSize: 16)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25.0),
-                                ),
-                              );
-                            }),
-                          ),
-                          SizedBox(height: 20.0),
-                          Container(
-                            child: Center(
-                              child: Text(
-                                description,
-                                textAlign: TextAlign.center,
-                                softWrap: true,
-                                style: TextStyle(
-                                    color: isError
-                                        ? Assets.ubaRedColor
-                                        : Colors.grey),
-                              ),
-                            ),
-                          ),
-                        ],
+      child: BlocListener<DataBloc, DataState>(
+        listener: (context, state) {
+          if (state is FileLoaded && proceed) {
+            if (state.fcount > 0) {
+              //we directly go to the result page
+              navBloc.add(GoResult());
+            } else {
+              //we can proceed to fileupload
+              navBloc.add(GoFupload());
+            }
+          }
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: 150.0),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "What task do you want to process ?",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Assets.ubaRedColor,
+                        fontSize: 50.0,
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 50.0),
+                    Container(
+                      padding: Responsive.isMobile(context)
+                          ? const EdgeInsets.symmetric(horizontal: 30.0)
+                          : const EdgeInsets.all(0),
+                      child: Container(
+                        child: Column(
+                          children: [
+                            SlideTransition(
+                              position: _radioSlide,
+                              child: FadeTransition(
+                                opacity: _radioFadeIn,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    if (dataBloc.processConfigs != null)
+                                      for (int i = 0;
+                                          i < dataBloc.processConfigs.length;
+                                          i++)
+                                        Container(
+                                          child: Row(
+                                            children: [
+                                              Radio(
+                                                activeColor: Assets.ubaRedColor,
+                                                groupValue: selectedConfigIndex,
+                                                value: i,
+                                                hoverColor: Colors.red,
+                                                onChanged: (value) {
+                                                  print(
+                                                      'selected ${dataBloc.processConfigs[value]}');
+                                                  _setConfig(value);
+                                                },
+                                                //selected: false,
+                                              ),
+                                              SizedBox(width: 10.0),
+                                              Text(
+                                                  dataBloc.processConfigs[i]
+                                                      .configName,
+                                                  style: const TextStyle(
+                                                      color: Colors.grey)),
+                                            ],
+                                          ),
+                                        ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 40.0),
+                            Container(
+                              width: appB.width * 0.5,
+                              height: 40.0,
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                  builder: (context, state) {
+                                return RaisedButton(
+                                  onPressed: _proceed,
+                                  color: Assets.ubaRedColor,
+                                  hoverColor: Colors.black,
+                                  textColor: Colors.white,
+                                  child: Text("Proceed",
+                                      style: const TextStyle(fontSize: 16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ),
+                                );
+                              }),
+                            ),
+                            SizedBox(height: 20.0),
+                            Container(
+                              child: Center(
+                                child: Text(
+                                  description,
+                                  textAlign: TextAlign.center,
+                                  softWrap: true,
+                                  style: TextStyle(
+                                      color: isError
+                                          ? Assets.ubaRedColor
+                                          : Colors.grey),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

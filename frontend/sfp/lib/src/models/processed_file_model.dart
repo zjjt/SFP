@@ -6,6 +6,7 @@ class ProcessedFileModel {
   final String configName;
   final bool processingStatus;
   final bool hasBeenExecutedOnce;
+  final bool canBeRemoved;
   final DateTime lastExecution;
   final DateTime nextExecution;
   final String dateProcessed;
@@ -18,6 +19,7 @@ class ProcessedFileModel {
       this.configName,
       this.processingStatus,
       this.hasBeenExecutedOnce,
+      this.canBeRemoved,
       this.lastExecution,
       this.nextExecution,
       this.dateProcessed,
@@ -31,6 +33,7 @@ class ProcessedFileModel {
         configName = parsedJSON['configName'],
         processingStatus = parsedJSON['processingStatus'],
         hasBeenExecutedOnce = parsedJSON['hasBeenExecutedOnce'],
+        canBeRemoved = parsedJSON['canBeRemoved'],
         lastExecution = DateTime.parse(parsedJSON['lastExecution']),
         nextExecution = DateTime.parse(parsedJSON['nextExecution']),
         dateProcessed = parsedJSON['dateProcessed'],

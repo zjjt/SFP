@@ -41,7 +41,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, new Date(0), new Date(0), new Date(), null);
+                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~17");
@@ -64,9 +64,20 @@ public class Processors {
                     lignesProcessing.add(lignesInitiales.get(lignesInitiales.size() - 1));
                     //we then update the processing lines
                     f.setFileLines(lignesProcessing);
-                    //#TODO reconcile with original file
+                    //reconcile with original file
                     List<Line> lignesGenerated = reconcileCanal(lignesProcessing, lignesInitiales);
                     f.setOutFile(lignesGenerated);
+                    //if today's date is before to the 25th we set the 25th of the current month
+                    //else we set today's date
+                    Date dateDebutCron=new GregorianCalendar(Calendar.YEAR,Calendar.MONTH,25).getTime();
+                    if(new Date().before(dateDebutCron)){
+                        System.out.println("the next execution will run on the 25th of the current month");
+                        f.setNextExecution(dateDebutCron);
+                    }else{
+                        System.out.println("the next execution will run from today");
+                        f.setNextExecution(new Date());
+                    }
+
                     treatedFiles.add(f);
                     System.out.println("INITIAL lines " + lignesInitiales.size() + " column count" + lignesInitiales.get(2).getLigne().entrySet().size());
                     System.out.println("PROCESSING lines " + lignesProcessing.size() + " column count" + lignesProcessing.get(2).getLigne().entrySet().size());
@@ -86,7 +97,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial file in binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, new Date(0), new Date(0), new Date(0), null);
+                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());

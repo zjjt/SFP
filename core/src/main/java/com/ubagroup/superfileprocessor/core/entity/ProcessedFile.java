@@ -20,18 +20,20 @@ public class ProcessedFile {
     private String configName;
     private boolean processingStatus;
     private boolean hasBeenExecutedOnce;
+    private boolean canBeRemoved;
     private Date lastExecution;
     private Date nextExecution;
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, boolean canBeRemoved, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
         this.configName = configName;
         this.processingStatus = processingStatus;
         this.hasBeenExecutedOnce = hasBeenExecutedOnce;
+        this.canBeRemoved = canBeRemoved;
         this.lastExecution = lastExecution;
         this.nextExecution = nextExecution;
         this.dateProcessed = dateProcessed;
@@ -129,5 +131,13 @@ public class ProcessedFile {
 
     public void setHasBeenExecutedOnce(boolean hasBeenExecutedOnce) {
         this.hasBeenExecutedOnce = hasBeenExecutedOnce;
+    }
+
+    public boolean isCanBeRemoved() {
+        return canBeRemoved;
+    }
+
+    public void setCanBeRemoved(boolean canBeRemoved) {
+        this.canBeRemoved = canBeRemoved;
     }
 }

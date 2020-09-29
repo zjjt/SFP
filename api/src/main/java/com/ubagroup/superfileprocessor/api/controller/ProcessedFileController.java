@@ -5,10 +5,7 @@ import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.service.ProcessedFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +48,19 @@ public class ProcessedFileController {
             System.out.println(m);
         }
         return m;
+    }
+    @GetMapping("/get-in-process")
+    public Map<String,Object> getProcessingFiles(@RequestParam(value = "uid") String userId,
+                                                 @RequestParam(value = "configname")String configName){
+        System.out.println("getting list of current files in processing for the uid "+userId+" for the config "+configName);
+        List<ProcessedFile> files=processedFileService.getAll(false,false,true,false,
+                new Date(0),new Date(0),new Date(0),userId,configName);
+        var m = new HashMap<String, Object>();
+        m.put("errors", false);
+        m.put("message", " "+files.size()+" found");
+        m.put("fichiers", files);
+        return m;
+
     }
 
     @PostMapping("/upload")

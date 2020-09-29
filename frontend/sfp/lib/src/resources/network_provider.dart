@@ -45,6 +45,21 @@ class NetworkProvider {
     }
   }
 
+  Future<Map<String, dynamic>> fetchCurrentProcessingFiles(
+      String configName, String userId) async {
+    print(
+        'in network provider trying to fetch the list of the files i currently processing for uid $userId and config $configName');
+    var response = await dio.get(
+        '$backend/files/get-in-process?uid=$userId&configname=$configName');
+    //print(response);
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> deleteFilesById(
       List<ProcessedFileModel> files) async {
     List<String> fileIds = [];

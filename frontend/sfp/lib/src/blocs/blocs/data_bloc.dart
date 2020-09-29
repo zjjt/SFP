@@ -44,6 +44,19 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         }
       }
     }
+    if (event is FetchFilesForConfig) {
+      final m = await repo.fetchCurrentProcessingFiles(
+          event.configName, event.userId);
+      processedFiles = [];
+      for (int i = 0; i < m['fichiers'].length; i++) {
+        print(m['fichiers'].length);
+        print(m['fichiers'][i]['configName']);
+        var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
+        processedFiles.add(pf);
+      }
+      print("processed files number ${processedFiles.length}");
+      yield FileLoaded(fcount: processedFiles.length);
+    }
     if (event is DoFileUpload) {
       yield FileUploading();
       try {

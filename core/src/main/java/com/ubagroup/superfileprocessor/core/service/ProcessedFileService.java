@@ -50,6 +50,8 @@ public class ProcessedFileService implements ProcessedFileInterface {
                 return processedFileRepository.findByUserIdAndProcessingStatus(userId,processingStatus);
             }else if(userId.isEmpty()&&!configName.isEmpty()){
                 return processedFileRepository.findByConfigNameAndProcessingStatus(configName,processingStatus);
+            }else if(!userId.isEmpty()&&!configName.isEmpty()){
+                return processedFileRepository.findByUserIdAndConfigName(userId,configName);
             }
             return processedFileRepository.findByProcessingStatus(processingStatus);
         }else{

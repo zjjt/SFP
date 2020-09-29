@@ -53,6 +53,18 @@ class Repository {
     return fup;
   }
 
+  Future<Map<String, dynamic>> fetchCurrentProcessingFiles(
+      String configName, String userId) async {
+    var files;
+    try {
+      files = await netProvider.fetchCurrentProcessingFiles(configName, userId);
+    } on NetWorkException {
+      print("couldnt reach the api ${files.message}");
+      return null;
+    }
+    return files;
+  }
+
   Future<bool> logOut(String username) async {
     bool result = false;
     try {
