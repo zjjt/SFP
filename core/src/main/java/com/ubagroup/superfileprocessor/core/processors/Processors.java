@@ -298,6 +298,9 @@ public class Processors {
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
 
+        //we remove canal account from the list of account
+        listAccount.remove(0);
+
 
         try (Connection connection = DriverManager.getConnection(OracleDBConfig.URL,
                 OracleDBConfig.USER,
@@ -307,7 +310,6 @@ public class Processors {
             System.out.println("in here trying to execute sql");
             Class.forName(OracleDBConfig.ORACLE_DRIVER);
             ResultSet rs = st.executeQuery(Queries.getAccountStatus(listAccount));
-
             while (rs.next()) {
                 //System.out.println("length of lines for sql read "+lignesDuFichier.size());
                 for (int i = 0; i < lignesDuFichier.size(); i++) {
