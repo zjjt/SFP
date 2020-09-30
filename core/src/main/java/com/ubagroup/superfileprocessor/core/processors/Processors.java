@@ -44,7 +44,7 @@ public class Processors {
                     ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
-                        l.removeKey("process_done~17");
+                        l.removeKey("process_done~18");
                         // System.out.println("removing process_done");
                     }
                     //we store then the initial file lines
@@ -60,6 +60,8 @@ public class Processors {
                         System.out.println("Exception Message : " + e.getMessage());
                         e.printStackTrace();
                     }
+                    //we reorder the processing lines based on the initial list
+                    lignesProcessing.sort(Comparator.comparing(l->(Integer)l.getLigne().get("LINENO~10")));
                     lignesProcessing.add(0, lignesInitiales.get(0));
                     lignesProcessing.add(lignesInitiales.get(lignesInitiales.size() - 1));
                     //we then update the processing lines
@@ -69,12 +71,14 @@ public class Processors {
                     f.setOutFile(lignesGenerated);
                     //if today's date is before to the 25th we set the 25th of the current month
                     //else we set today's date
-                    Date dateDebutCron=new GregorianCalendar(Calendar.YEAR,Calendar.MONTH,25).getTime();
+                    Date dateDebutCron=new GregorianCalendar(Calendar.getInstance().get(Calendar.YEAR),
+                            Calendar.getInstance().get(Calendar.MONTH),
+                            25).getTime();
                     if(new Date().before(dateDebutCron)){
                         System.out.println("the next execution will run on the 25th of the current month");
                         f.setNextExecution(dateDebutCron);
                     }else{
-                        System.out.println("the next execution will run from today");
+                        System.out.println("the next execution will run from today "+dateDebutCron);
                         f.setNextExecution(new Date());
                     }
 
@@ -222,14 +226,17 @@ public class Processors {
         //3 we proceed to debit and update the debited account immediately with the solde
         JSONParser parser=new JSONParser();
         try {
-            String jsonData="{\"rows\":[\n" +
+            String jsonData="{\"rows\":\n" +
+                    "[\n" +
+                    "{\"foracid\":\"101010002896\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"M\\/MME NIAMIEN JEAN CLAUDE\",\"schm_code\":\"CAC01\",\"solde\":9363331,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010005626\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"TANOH MICHEL\",\"schm_code\":\"CAC01\",\"solde\":920733,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010006883\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"DIARRA DRAMANE\",\"schm_code\":\"CAC01\",\"solde\":148790,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010012172\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"AKUE COME ADOVI\",\"schm_code\":\"CAC01\",\"solde\":576009,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
-                    "{\"foracid\":\"101010019386\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BOGUIFO AURELIA CLAUDE DESIRE NESSA\",\"schm_code\":\"CACDB\",\"solde\":-5185,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
                     "{\"foracid\":\"101010019355\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"WODJE LOUIS TEHOUA PRIVAT\",\"schm_code\":\"CAC01\",\"solde\":706983,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010019386\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BOGUIFO AURELIA CLAUDE DESIRE NESSA\",\"schm_code\":\"CACDB\",\"solde\":-5185,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
                     "{\"foracid\":\"101010029231\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"TOURE AMINATA\",\"schm_code\":\"CAC01\",\"solde\":211740,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010032026\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"GUEYE MONIQUE EPSE OBRE\",\"schm_code\":\"CAC01\",\"solde\":2695728,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
+                    "{\"foracid\":\"101010032613\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BROU ASSOUA DIDIER HERVE\",\"schm_code\":\"CAC01\",\"solde\":691334,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010033221\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAME KOUASSI  LETONDAL\",\"schm_code\":\"CAC01\",\"solde\":69135,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010035881\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAKOU AFFOUA\",\"schm_code\":\"CACDB\",\"solde\":-5504,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
                     "{\"foracid\":\"101010037267\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"LOUA ROJAS\",\"schm_code\":\"CAC01\",\"solde\":110666,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
@@ -246,7 +253,7 @@ public class Processors {
                     "{\"foracid\":\"101200000066\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"SAM LAURENT-SAMUEL\",\"schm_code\":\"CAC01\",\"solde\":4171238,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101200000330\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAKOU KOUABENAN ADJEHI JULIEN\",\"schm_code\":\"CAC20\",\"solde\":83425,\"acct_status\":\"A\",\"schm_desc\":\"CAC20 INDIV. FTC 2000XOF\"},\n" +
                     "{\"foracid\":\"101210000036\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"OUEDRAOGO SALIF ISSA\",\"schm_code\":\"CAC21\",\"solde\":1504894,\"acct_status\":\"A\",\"schm_desc\":\"CAC21 INDIV.FTC 2500 XOF\"},\n" +
-                    "{\"foracid\":\"102580008387\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"RESIDENCE SAINT MARTIN SARL\",\"schm_code\":\"CAC58\",\"solde\":574581,\"acct_status\":\"A\",\"schm_desc\":\"CPTE CC PME.SARL\\/SA PACK DOHO\"},\n" +
+                    "{\"foracid\":\"102630000396\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"SIDIBE DJINABOU ALIDA NADEGE\",\"schm_code\":\"SAC63\",\"solde\":110359,\"acct_status\":\"A\",\"schm_desc\":\"COMPTE �PARGNE UBA LIBER\"},\n" +
                     "{\"foracid\":\"299020000408\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"THOMPSON SOLANGE\",\"schm_code\":\"CAC02\",\"solde\":135115,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
                     "{\"foracid\":\"299020000590\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BAKARE LATIF\",\"schm_code\":\"CAC02\",\"solde\":508112,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"}\n" +
                     "]}";
@@ -263,13 +270,14 @@ public class Processors {
                     JSONObject json=(JSONObject)rows.get(index);
                     if (laligne.getLigne().get("ACCOUNT~4").equals(json.get("foracid"))) {
                        // System.out.println(laligne.getLigne().get("CUSTOMER_NAME~5") + "--" + json.get("foracid") + "--" + i);
-                        laligne.getLigne().put("ACCT_STATUS~10", json.get("acct_status"));
-                        laligne.getLigne().put("BALANCE~11", json.get("solde"));
-                        laligne.getLigne().put("FREEZECODE~12", json.get("frez_code"));
-                        laligne.getLigne().put("FREEZEREASON~13", json.get("frez_reason_code"));
-                        laligne.getLigne().put("ACCOUNTCLOSEDATE~14", json.get("acc_close_date"));
-                        laligne.getLigne().put("SCHM_CODE~15", json.get("schm_code"));
-                        laligne.getLigne().put("SCHM_DESC~16", json.get("schm_desc"));
+                        laligne.getLigne().put("LINENO~10", i);
+                        laligne.getLigne().put("ACCT_STATUS~11", json.get("acct_status"));
+                        laligne.getLigne().put("BALANCE~12", json.get("solde"));
+                        laligne.getLigne().put("FREEZECODE~13", json.get("frez_code"));
+                        laligne.getLigne().put("FREEZEREASON~14", json.get("frez_reason_code"));
+                        laligne.getLigne().put("ACCOUNTCLOSEDATE~15", json.get("acc_close_date"));
+                        laligne.getLigne().put("SCHM_CODE~16", json.get("schm_code"));
+                        laligne.getLigne().put("SCHM_DESC~17", json.get("schm_desc"));
                         newList.add(laligne);
 
                     }
@@ -320,13 +328,14 @@ public class Processors {
                     var laligne = lignesDuFichier.get(i).clone();
                     if (laligne.getLigne().get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
                         //System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
-                        laligne.getLigne().put("ACCT_STATUS~10", rs.getString("ACCT_STATUS"));
-                        laligne.getLigne().put("BALANCE~11", rs.getString("SOLDE"));
-                        laligne.getLigne().put("FREEZECODE~12", rs.getString("FREZ_CODE"));
-                        laligne.getLigne().put("FREEZEREASON~13", rs.getString("FREZ_REASON_CODE"));
-                        laligne.getLigne().put("ACCOUNTCLOSEDATE~14", rs.getString("account_close_date"));
-                        laligne.getLigne().put("SCHM_CODE~15", rs.getString("SCHM_CODE"));
-                        laligne.getLigne().put("SCHM_DESC~16", rs.getString("SCHM_DESC"));
+                        laligne.getLigne().put("LINENO~10", i);
+                        laligne.getLigne().put("ACCT_STATUS~11", rs.getString("ACCT_STATUS"));
+                        laligne.getLigne().put("BALANCE~12", rs.getString("SOLDE"));
+                        laligne.getLigne().put("FREEZECODE~13", rs.getString("FREZ_CODE"));
+                        laligne.getLigne().put("FREEZEREASON~14", rs.getString("FREZ_REASON_CODE"));
+                        laligne.getLigne().put("ACCOUNTCLOSEDATE~15", rs.getString("account_close_date"));
+                        laligne.getLigne().put("SCHM_CODE~16", rs.getString("SCHM_CODE"));
+                        laligne.getLigne().put("SCHM_DESC~17", rs.getString("SCHM_DESC"));
                         newList.add(laligne);
 
                     }
@@ -353,47 +362,47 @@ public class Processors {
             //we purposely skip the first and last line
             System.out.println("index is " + i + "\n" + processingLines.get(i).getLigne());
 
-            if (processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("A")
-                    || processingLines.get(i).getLigne().get("ACCT_STATUS~10").equals("I")) {
+            if (processingLines.get(i).getLigne().get("ACCT_STATUS~11").equals("A")
+                    || processingLines.get(i).getLigne().get("ACCT_STATUS~11").equals("I")) {
 
                 int amountToDebit = Integer.parseInt(processingLines.get(i).getLigne().get("AMOUNT_TO_DEBIT~9").toString().trim());
-                int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~11").toString().trim());
+                int currentBalance = Integer.parseInt(processingLines.get(i).getLigne().get("BALANCE~12").toString().trim());
                 System.out.println("solde: " + currentBalance + "\n debiter " + amountToDebit + "\n solde>debit ?" + (currentBalance >= amountToDebit));
                 //System.out.println(processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank());
                 if (currentBalance >= amountToDebit
-                        && processingLines.get(i).getLigne().get("FREEZECODE~12").toString().isBlank()
-                        && processingLines.get(i).getLigne().get("FREEZEREASON~13") == null
-                        && processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") == null
+                        && processingLines.get(i).getLigne().get("FREEZECODE~13").toString().isBlank()
+                        && processingLines.get(i).getLigne().get("FREEZEREASON~14") == null
+                        && processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~15") == null
                 ) {
 
-                    if (processingLines.get(i).getLigne().containsKey("process_done~17")
-                            && processingLines.get(i).getLigne().get("process_done~17").toString().equalsIgnoreCase("false")
-                            && !processingLines.get(i).getLigne().get("status_code~18").toString().equalsIgnoreCase("00")
+                    if (processingLines.get(i).getLigne().containsKey("process_done~18")
+                            && processingLines.get(i).getLigne().get("process_done~18").toString().equalsIgnoreCase("false")
+                            && !processingLines.get(i).getLigne().get("status_code~19").toString().equalsIgnoreCase("00")
                     ) {
                         System.out.println("we debit");
-                        processingLines.get(i).getLigne().put("process_done~17", true);
-                        processingLines.get(i).getLigne().put("status_code~18", "00");
+                        processingLines.get(i).getLigne().put("process_done~18", true);
+                        processingLines.get(i).getLigne().put("status_code~19", "00");
                     } else {
                         System.out.println("we debit");
-                        processingLines.get(i).getLigne().put("process_done~17", true);
-                        processingLines.get(i).getLigne().put("status_code~18", "00");
+                        processingLines.get(i).getLigne().put("process_done~18", true);
+                        processingLines.get(i).getLigne().put("status_code~19", "00");
                     }
 
                 } else {
-                    if (processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~14") != null) {
+                    if (processingLines.get(i).getLigne().get("ACCOUNTCLOSEDATE~15") != null) {
                         System.out.println("we cant debit");
-                        processingLines.get(i).getLigne().put("process_done~17", false);
-                        processingLines.get(i).getLigne().put("status_code~18", "04");
+                        processingLines.get(i).getLigne().put("process_done~18", false);
+                        processingLines.get(i).getLigne().put("status_code~19", "04");
                     } else {
                         System.out.println("we cant debit");
-                        processingLines.get(i).getLigne().put("process_done~17", false);
-                        processingLines.get(i).getLigne().put("status_code~18", "06");
+                        processingLines.get(i).getLigne().put("process_done~18", false);
+                        processingLines.get(i).getLigne().put("status_code~19", "06");
                     }
                 }
             } else {
                 System.out.println("we cant debit account isnt active " + processingLines.get(i).getLigne().get("ACCT_STATUS~10"));
-                processingLines.get(i).getLigne().put("process_done~17", false);
-                processingLines.get(i).getLigne().put("status_code~18", "06");
+                processingLines.get(i).getLigne().put("process_done~18", false);
+                processingLines.get(i).getLigne().put("status_code~19", "06");
 
             }
             //we reorder the map
@@ -422,7 +431,7 @@ public class Processors {
                     if (index != 0 && index != afterDebit.size() - 1) {
                         done.get(index).getLigne().put("AMOUNT_TO_DEBIT~9",
                                 done.get(index).getLigne().get("AMOUNT_TO_DEBIT~9").toString()
-                                        + afterDebit.get(index).getLigne().get("status_code~18"));
+                                        + afterDebit.get(index).getLigne().get("status_code~19"));
                     }
                     var m = done.get(index).getLigne();
                     done.get(index).setLigne(sortedLines(m));

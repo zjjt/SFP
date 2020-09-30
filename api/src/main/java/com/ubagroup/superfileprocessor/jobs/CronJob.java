@@ -31,35 +31,40 @@ public class CronJob {
     ProcessConfigService processConfigService;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     @Value("#{'${application.mode}'}")
-    private  String appmode;
+    private String appmode;
 
-    @Scheduled(cron="#{@getCanalCronTime}")
-    public void processCanalTask(){
+    @Scheduled(cron = "#{@getCanalCronTime}")
+    public void processCanalTask() {
         System.out.println("############## CANAL+ TASK RUNNING ##############");
         CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING));
         CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
-        ProcessConfig canalConfig=processConfigService.get("CANAL");
+        ProcessConfig canalConfig = processConfigService.get("CANAL");
         String description = descriptor.describe(cronParser.parse(canalConfig.getMetaparameters().getExecutionTime()));
-        System.out.println("JOB DESCRIPTION TIME: "+description);
-        Date dateFinCron=new GregorianCalendar(Calendar.YEAR,Calendar.MONTH+1,06).getTime();
-        System.out.println("job must be running before"+dateFinCron);
+        System.out.println("JOB DESCRIPTION TIME: " + description);
+        Date dateFinCron = new GregorianCalendar(Calendar.getInstance().get(Calendar.YEAR),
+                Calendar.getInstance().get(Calendar.MONTH)+1,
+                06).getTime();
+        Date dateDebutCron = new GregorianCalendar(Calendar.getInstance().get(Calendar.YEAR),
+                Calendar.getInstance().get(Calendar.MONTH),
+                24).getTime();
+        System.out.println("job must be running before "+ dateFinCron+"\nand starting after the "+dateDebutCron+" \n is today between the processing period ? "+(new Date().before(dateFinCron) && new Date().after(dateDebutCron)));
 
-        if(true/*new Date().before(dateFinCron)*/){
+        if (true/*new Date().before(dateFinCron)*/) {
             System.out.println("Step 1: checking if there are some file left to process");
-            List<ProcessedFile> listofFiles=processedFileService.getAll(false,false,
-                    true,false,new Date(),new Date(),new Date(),"","CANAL");
-            System.out.println(listofFiles.size()+" files remaining to process\n Step 1 done");
-            System.out.println("Step 2: Processing "+listofFiles.size()+" files now");
-            if(listofFiles.size()>0){
+            List<ProcessedFile> listofFiles = processedFileService.getAll(false, false,
+                    true, false, new Date(), new Date(), new Date(), "", "CANAL");
+            System.out.println(listofFiles.size() + " files remaining to process\n Step 1 done");
+            System.out.println("Step 2: Processing " + listofFiles.size() + " files now");
+            if (listofFiles.size() > 0) {
                 listofFiles.stream()
                         .parallel()
-                        .map(f->{
+                        .map(f -> {
                             //we
-                            Processors processor=new Processors();
+                            Processors processor = new Processors();
                             System.out.println("...getting account balance");
-                            if(appmode.equalsIgnoreCase("dev")){
+                            if (appmode.equalsIgnoreCase("dev")) {
                                 f.setFileLines(processor.getSoldeFromJson(f.getFileLines()));
-                            }else{
+                            } else {
                                 f.setFileLines(processor.getSolde(f.getFileLines()));
                             }
                             try {
@@ -71,12 +76,16 @@ public class CronJob {
                                 System.out.println("Exception Message : " + e.getMessage());
                                 e.printStackTrace();
                             }
-                            f.getFileLines().add(0,f.getInFile().get(0));
-                            f.getFileLines().add(f.getInFile().get(f.getInFile().size()-1));
+                            f.getFileLines().add(0, f.getInFile().get(0));
+                            f.getFileLines().add(f.getInFile().get(f.getInFile().size() - 1));
                             System.out.println("...generating the status codes");
                             List<Line> lignesGenerated = processor.reconcileCanal(f.getFileLines(), f.getInFile());
                             f.setOutFile(lignesGenerated);
                             System.out.println("...end of file processing");
+                            System.out.println("INITIAL lines " + f.getInFile().size() + " column count" + f.getInFile().get(2).getLigne().entrySet().size());
+                            System.out.println("PROCESSING lines " + f.getFileLines().size() + " column count" + f.getFileLines().get(2).getLigne().entrySet().size());
+                            System.out.println("GENERATED lines " + f.getOutFile().size() + " column count" + f.getOutFile().get(2).getLigne().entrySet().size());
+
                             return f;
                         })
                         .collect(Collectors.toList());
@@ -89,10 +98,10 @@ public class CronJob {
                 ZonedDateTime lastExecution = executionTime.lastExecution(now).get();
                 // Get date for next execution
                 ZonedDateTime nextExecution = executionTime.nextExecution(now).get();
-                System.out.println("Last execution: "+lastExecution+" next execution: "+nextExecution);
+                System.out.println("Last execution: " + lastExecution + " next execution: " + nextExecution);
                 listofFiles.stream()
                         .parallel()
-                        .map(f->{
+                        .map(f -> {
                             f.setLastExecution(Date.from(lastExecution.toInstant()));
                             f.setNextExecution(Date.from(nextExecution.toInstant()));
                             f.setHasBeenExecutedOnce(true);
@@ -100,18 +109,18 @@ public class CronJob {
                         })
                         .collect(Collectors.toList());
                 //now we update the properties on the file
-                if(processedFileService.saveProcessedFile(listofFiles)){
+                if (processedFileService.saveProcessedFile(listofFiles)) {
                     System.out.println("the files have been properly saved");
-                }else{
+                } else {
                     System.out.println("the files couldnt be saved properly check the code");
                 }
-            }else{
+            } else {
                 System.out.println("---there is no files to process ---");
             }
-        }else{
+        } else {
             System.out.println("---Waiting for the day to start CANAL+ ----");
         }
-        System.out.println("Scheduler processCanalTask task with duration : " + sdf.format(new Date())+"\n\n################ End of CANAL+ JOB ################");
+        System.out.println("Scheduler processCanalTask task with duration : " + sdf.format(new Date()) + "\n\n################ End of CANAL+ JOB ################");
 
     }
 }
