@@ -42,6 +42,7 @@ public class CronJob {
         String description = descriptor.describe(cronParser.parse(canalConfig.getMetaparameters().getExecutionTime()));
         System.out.println("JOB DESCRIPTION TIME: "+description);
         Date dateFinCron=new GregorianCalendar(Calendar.YEAR,Calendar.MONTH+1,06).getTime();
+        System.out.println("job must be running before"+dateFinCron);
 
         if(true/*new Date().before(dateFinCron)*/){
             System.out.println("Step 1: checking if there are some file left to process");

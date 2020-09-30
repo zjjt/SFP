@@ -253,7 +253,6 @@ public class Processors {
             Object obj= parser.parse(jsonData);
             JSONObject jsonObject=(JSONObject)obj;
             JSONArray rows=(JSONArray) jsonObject.get("rows");
-            Iterator<JSONObject> iterator=rows.iterator();
             for(int index=0;index<rows.size();index++){
                 for (int i = 0; i < lignesDuFichier.size(); i++) {
                     //we purposely skip the first and last line
