@@ -48,11 +48,10 @@ public class CronJob {
                 Calendar.getInstance().get(Calendar.MONTH),
                 24).getTime();
         System.out.println("job must be running before "+ dateFinCron+"\nand starting after the "+dateDebutCron+" \n is today between the processing period ? "+(new Date().before(dateFinCron) && new Date().after(dateDebutCron)));
-
-        if (true/*new Date().before(dateFinCron)*/) {
+        List<ProcessedFile> listofFiles = processedFileService.getAll(false, false,
+                true, false, new Date(), new Date(), new Date(), "", "CANAL");
+        if (true/*new Date().before(dateFinCron) && new Date().after(dateDebutCron)*/) {
             System.out.println("Step 1: checking if there are some file left to process");
-            List<ProcessedFile> listofFiles = processedFileService.getAll(false, false,
-                    true, false, new Date(), new Date(), new Date(), "", "CANAL");
             System.out.println(listofFiles.size() + " files remaining to process\n Step 1 done");
             System.out.println("Step 2: Processing " + listofFiles.size() + " files now");
             if (listofFiles.size() > 0) {
@@ -117,8 +116,26 @@ public class CronJob {
             } else {
                 System.out.println("---there is no files to process ---");
             }
+        }else if(new Date().compareTo(dateFinCron)==0){
+            System.out.println("---the CANAL+ file processing is done---");
+            listofFiles.stream()
+                    .parallel()
+                    .map(f->{
+                        f.setLastExecution(new Date(0));
+                        f.setNextExecution(new Date(0));
+                        f.setCanBeRemoved(true);
+                        f.setProcessingStatus(true);
+                        return f;
+                    })
+                    .collect(Collectors.toList());
+            if(processedFileService.saveProcessedFile(listofFiles)){
+                System.out.println("files saved properly now the user can download them");
+            }else{
+                System.out.println("there was a problem saving the files");
+            }
         } else {
             System.out.println("---Waiting for the day to start CANAL+ ----");
+
         }
         System.out.println("Scheduler processCanalTask task with duration : " + sdf.format(new Date()) + "\n\n################ End of CANAL+ JOB ################");
 

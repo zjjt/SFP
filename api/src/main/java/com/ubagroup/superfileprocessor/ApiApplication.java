@@ -38,7 +38,7 @@ public class ApiApplication implements CommandLineRunner {
     @Bean
     public String getCanalCronTime() {
         var list = processConfigService.getAll();
-        String executionTime = "0 */5 * * * *";
+        String executionTime = "0 */1 * * * *";
         if (list.size() > 0) {
             var c = processConfigService.get("CANAL");
             executionTime = c.getMetaparameters().getExecutionTime();
