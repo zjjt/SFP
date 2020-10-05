@@ -26,6 +26,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     }
     if (event is SelectConfig) {
       currentConfig = processConfigs[event.configPosition];
+      print("selected config is $currentConfig");
       yield ConfigSelected(currentConfig);
     }
     if (event is DiscardFiles) {

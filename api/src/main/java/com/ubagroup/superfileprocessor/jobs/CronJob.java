@@ -75,6 +75,8 @@ public class CronJob {
                                 System.out.println("Exception Message : " + e.getMessage());
                                 e.printStackTrace();
                             }
+                            //we reorder the processing lines based on the initial list
+                            f.getFileLines().sort(Comparator.comparing(l->(Integer)l.getLigne().get("LINENO~0")));
                             f.getFileLines().add(0, f.getInFile().get(0));
                             f.getFileLines().add(f.getInFile().get(f.getInFile().size() - 1));
                             System.out.println("...generating the status codes");

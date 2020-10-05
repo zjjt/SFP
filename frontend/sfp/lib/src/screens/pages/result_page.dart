@@ -396,12 +396,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               }
               i++;
             }
-
             for (int i = 0; i < headerList.length; i++) {
               headerList[i] = headerList[i].replaceAll(new RegExp("\\d"), "");
               headerList[i] = headerList[i].replaceAll("~", "");
             }
-            print('content of headerList is $headerList');
+            // if (headerList.remove("LINENO") &&
+            //     headerListInitial.remove("LINENO~0")) {
+            //   print("LINENO removed");
+            // }
+            print('content of headerList in sage is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
@@ -436,10 +439,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     }
                   } else {
                     //here we either have to deal with the first CANAL+ line or the lastone
-                    if (index == 0 &&
-                        i < file.inFile[index]['ligne'].keys.toList().length) {
-                      var element =
-                          file.inFile[index]['ligne'].keys.toList()[i];
+
+                    if (index == 0) {
+                      String element =
+                          i < file.inFile[index]['ligne'].keys.toList().length
+                              ? file.inFile[index]['ligne'].keys.toList()[i]
+                              : file.inFile[index]['ligne'].keys.toList().last;
                       print("the current element is $element");
                       // the indexes added to the keys are not starting from 0
                       if (element.contains("${i + 1}")) {
@@ -454,8 +459,23 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               textAlign: pw.TextAlign.center),
                         );
                       } else {
-                        print("this index $i doesnt exist in keys");
-                        return pw.Text("");
+                        print(
+                            "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
+                        int indexInEl = int.parse(
+                            element.replaceAll(RegExp(r'[^0-9]'), ''));
+                        print("the element index in json is $indexInEl");
+                        if (/*element.contains('$indexInEl')*/ headerListInitial[
+                                i] ==
+                            element) {
+                          print(
+                              "yes element is $element index is $index and i is $i");
+                          return pw.Container(
+                            padding: const pw.EdgeInsets.all(2.0),
+                            child: pw.Text(
+                                file.fileLines[index]['ligne'][element] ?? "",
+                                textAlign: pw.TextAlign.center),
+                          );
+                        }
                       }
                     } else if (index == file.inFile.length - 1 &&
                         i < file.inFile[index]['ligne'].keys.toList().length) {
@@ -491,7 +511,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               //return pw.TableRow();
             }));
             retour = pw.Table(
-              tableWidth: pw.TableWidth.max,
               border: pw.TableBorder(
                   top: true, left: true, right: true, bottom: true),
               children: tableLignes,
@@ -845,7 +864,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         pdf.addPage(pw.MultiPage(
                             pageFormat: pdfDart.PdfPageFormat(
                                 100 * pdfDart.PdfPageFormat.cm,
-                                25 * pdfDart.PdfPageFormat.cm,
+                                dataBloc.currentConfig.configName == "CANAL"
+                                    ? 25 * pdfDart.PdfPageFormat.cm
+                                    : 50 * pdfDart.PdfPageFormat.cm,
                                 marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
                             build: (pw.Context context) {
                               return _buildPdf(
@@ -1061,13 +1082,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(height: 50.0),
-                  if (dataBloc.currentConfig.metaparameters
-                      .containsKey("executionTime"))
+                  if (dataBloc.currentConfig.configName == "CANAL")
                     Container(
                       alignment: Alignment.topCenter,
                       margin: const EdgeInsets.only(bottom: 10.0),
                       child: Text(
-                          "${dataBloc.currentConfig.configName == "CANAL" ? 'CANAL+' : dataBloc.currentConfig.configName} configuration has some scheduled operations that are planned to run",
+                          "CANAL+ configuration has some scheduled operations that are planned to run",
                           textAlign: TextAlign.center),
                     ),
                   BlocListener<DataBloc, DataState>(

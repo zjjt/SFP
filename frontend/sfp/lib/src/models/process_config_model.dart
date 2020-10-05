@@ -24,4 +24,9 @@ class ProcessConfigModel {
         metaparameters = parsedJSON['metaparameters'],
         processingSteps = parsedJSON['processingSteps'],
         fileTypeAndSizeInMB = parsedJSON['fileTypeAndSizeInMB'];
+
+  @override
+  String toString() {
+    return '{\tid:$id;\n\configName:$configName;\n\tdescription:$description;\n\tmetaparameters:$metaparameters;\n\tfunctTypes:$functionnalityTypes\n\tprocessingSteps:$processingSteps\n\tfileTypeAndSize:$fileTypeAndSizeInMB}';
+  }
 }

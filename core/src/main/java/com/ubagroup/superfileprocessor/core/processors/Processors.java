@@ -63,7 +63,7 @@ public class Processors {
                         e.printStackTrace();
                     }
                     //we reorder the processing lines based on the initial list
-                    lignesProcessing.sort(Comparator.comparing(l->(Integer)l.getLigne().get("LINENO~10")));
+                    lignesProcessing.sort(Comparator.comparing(l->(Integer)l.getLigne().get("LINENO~0")));
                     lignesProcessing.add(0, lignesInitiales.get(0));
                     lignesProcessing.add(lignesInitiales.get(lignesInitiales.size() - 1));
                     //we then update the processing lines
@@ -108,8 +108,8 @@ public class Processors {
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());
                         List<Line> lignes = readCSV(file,configName);
-                        f.setFileLines(lignes);
                         f.setInFile(lignes);
+                        f.setFileLines(lignes);
                         f.setOutFile(lignes);
                         treatedFiles.add(f);
                     } catch ( Exception e) {
@@ -272,7 +272,7 @@ public class Processors {
                     JSONObject json=(JSONObject)rows.get(index);
                     if (laligne.getLigne().get("ACCOUNT~4").equals(json.get("foracid"))) {
                        // System.out.println(laligne.getLigne().get("CUSTOMER_NAME~5") + "--" + json.get("foracid") + "--" + i);
-                        laligne.getLigne().put("LINENO~10", i);
+                        laligne.getLigne().put("LINENO~0", i);
                         laligne.getLigne().put("ACCT_STATUS~11", json.get("acct_status"));
                         laligne.getLigne().put("BALANCE~12", json.get("solde"));
                         laligne.getLigne().put("FREEZECODE~13", json.get("frez_code"));
@@ -330,7 +330,7 @@ public class Processors {
                     var laligne = lignesDuFichier.get(i).clone();
                     if (laligne.getLigne().get("ACCOUNT~4").equals(rs.getString("FORACID"))) {
                         //System.out.println(laligne.get("CUSTOMER_NAME~5") + "--" + rs.getString("FORACID") + "--" + i);
-                        laligne.getLigne().put("LINENO~10", i);
+                        laligne.getLigne().put("LINENO~0", i);
                         laligne.getLigne().put("ACCT_STATUS~11", rs.getString("ACCT_STATUS"));
                         laligne.getLigne().put("BALANCE~12", rs.getString("SOLDE"));
                         laligne.getLigne().put("FREEZECODE~13", rs.getString("FREZ_CODE"));
@@ -459,12 +459,12 @@ public class Processors {
                       case "SAGE":
                           if(!e.contains(";")){
                               //we are on the first line
-                              m.put("LINENO~0",i);
+                              m.put("LINENO~0",Integer.toString(i));
                               m.put("CODESAGE~1",e.replaceAll("\"","").trim());
                               lignes.add(new Line(sortedLines(m)));
                           }else{
                               //we are on the other lines
-                              m.put("LINENO~0",i);
+                              m.put("LINENO~0",Integer.toString(i));
                               String[] elements=e.split(";");
                               for(int j=0;j<elements.length;j++){
                                switch(j){
@@ -502,7 +502,7 @@ public class Processors {
                                        m.put("MONTANT~11",elements[j].replaceAll("\"","").trim());
                                        break;
                                    case 11:
-                                       m.put("CODE_FIN~3",elements[j].replaceAll("\"","").trim());
+                                       m.put("CODE_FIN~12",elements[j].replaceAll("\"","").trim());
                                        break;
                                }
                               }
