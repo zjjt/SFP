@@ -1,0 +1,123 @@
+﻿{
+    "rowsFINCON": [
+        {
+            "COMPTE_LP": "64110",
+            "CODE_LP": "52",
+            "COMPTE_FINCON": "6411009526299006"
+        },
+        {
+            "COMPTE_LP": "64111",
+            "CODE_LP": "+10",
+            "COMPTE_FINCON": "6410009526299001"
+        },
+        {
+            "COMPTE_LP": "64112",
+            "CODE_LP": "+20/+40/+151/+684/+777/+778",
+            "COMPTE_FINCON": "6410009526299009"
+        },
+        {
+            "COMPTE_LP": "641131",
+            "CODE_LP": "+76/+89/-644/+694",
+            "COMPTE_FINCON": "6410009526299006"
+        },
+        {
+            "COMPTE_LP": "641132",
+            "CODE_LP": "+88",
+            "COMPTE_FINCON": "6410009526299002"
+        },
+        {
+            "COMPTE_LP": "64114",
+            "CODE_LP": "+686",
+            "COMPTE_FINCON": "6410009526299017"
+        },
+        {
+            "COMPTE_LP": "64115",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "6410009526299003"
+        },
+        {
+            "COMPTE_LP": "64116",
+            "CODE_LP": "+612",
+            "COMPTE_FINCON": "6410009526299004"
+        },
+        {
+            "COMPTE_LP": "641171",
+            "CODE_LP": "+788",
+            "COMPTE_FINCON": "6410009526299004"
+        },
+        {
+            "COMPTE_LP": "641172",
+            "CODE_LP": "+108",
+            "COMPTE_FINCON": "6410009526299004"
+        },
+        {
+            "COMPTE_LP": "64118",
+            "CODE_LP": "+102/+119",
+            "COMPTE_FINCON": "6410009526299008"
+        },
+        {
+            "COMPTE_LP": "64120",
+            "CODE_LP": "+160",
+            "COMPTE_FINCON": "6410009526299006"
+        },
+        {
+            "COMPTE_LP": "64121",
+            "CODE_LP": "+47/+64/+66/+68/+132",
+            "COMPTE_FINCON": "6410009526299006"
+        },
+        {
+            "COMPTE_LP": "64123",
+            "CODE_LP": "+41/+42/+43/+44",
+            "COMPTE_FINCON": "6410009526299009"
+        },
+        {
+            "COMPTE_LP": "64125",
+            "CODE_LP": "+793/+794",
+            "COMPTE_FINCON": "6410009526299007"
+        },
+        {
+            "COMPTE_LP": "64126",
+            "CODE_LP": "-3800  /+ 3802",
+            "COMPTE_FINCON": "6410009526299017"
+        },
+        {
+            "COMPTE_LP": "6421",
+            "CODE_LP": "+280/+285/+286",
+            "COMPTE_FINCON": "6420009526299001"
+        },
+        {
+            "COMPTE_LP": "64128",
+            "CODE_LP": "-680/+3821",
+            "COMPTE_FINCON": "6410009526299019"
+        },
+        {
+            "COMPTE_LP": "64127",
+            "CODE_LP": "+4960",
+            "COMPTE_FINCON": "6670009526299001"
+        },
+        {
+            "COMPTE_LP": "641129",
+            "CODE_LP": "+155/+157/+159",
+            "COMPTE_FINCON": "6410009526299020"
+        },
+        {
+            "COMPTE_LP": "641130",
+            "CODE_LP": "+640/+650",
+            "COMPTE_FINCON": "6410009526299021"
+        },
+        {
+            "COMPTE_LP": "642000",
+            "CODE_LP": "+776",
+            "COMPTE_FINCON": "6420009526299002"
+        },
+        {
+            "COMPTE_LP": "63111",
+            "CODE_LP": "+210/+282/+283/+284",
+            "COMPTE_FINCON": "6311009526299001"
+        },
+        {
+            "COMPTE_LP": "6423",
+            "COMPTE_FINCON": "6420009526299008"
+        }
+    ]
+}
