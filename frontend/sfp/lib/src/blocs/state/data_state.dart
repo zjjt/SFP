@@ -41,6 +41,8 @@ class FileUploaded extends DataState {
   List<Object> get props => [message, errors, processingTime];
 }
 
+class FileFetching extends DataState {}
+
 class FileLoaded extends DataState {
   final int fcount;
   const FileLoaded({this.fcount});

@@ -11,6 +11,8 @@ class FetchConfigs extends DataEvent {
   const FetchConfigs();
 }
 
+class PreparingFileFetching extends DataEvent {}
+
 class FetchFilesForConfig extends DataEvent {
   final String configName;
   final String userId;

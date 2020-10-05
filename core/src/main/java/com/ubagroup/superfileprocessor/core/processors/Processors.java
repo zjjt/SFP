@@ -1,5 +1,7 @@
 package com.ubagroup.superfileprocessor.core.processors;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import com.ubagroup.superfileprocessor.core.repository.oracle.Queries;
@@ -105,12 +107,12 @@ public class Processors {
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());
-                        List<Line> lignes = readXlsx(OPCPackage.open(file.getInputStream()));
+                        List<Line> lignes = readCSV(file,configName);
                         f.setFileLines(lignes);
                         f.setInFile(lignes);
                         f.setOutFile(lignes);
                         treatedFiles.add(f);
-                    } catch (IOException | InvalidFormatException e) {
+                    } catch ( Exception e) {
                         e.printStackTrace();
                     }
 
@@ -233,12 +235,12 @@ public class Processors {
                     "{\"foracid\":\"101010006883\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"DIARRA DRAMANE\",\"schm_code\":\"CAC01\",\"solde\":148790,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010012172\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"AKUE COME ADOVI\",\"schm_code\":\"CAC01\",\"solde\":576009,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010019355\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"WODJE LOUIS TEHOUA PRIVAT\",\"schm_code\":\"CAC01\",\"solde\":706983,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
-                    "{\"foracid\":\"101010019386\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BOGUIFO AURELIA CLAUDE DESIRE NESSA\",\"schm_code\":\"CACDB\",\"solde\":-5185,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
+                    "{\"foracid\":\"101010019386\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BOGUIFO AURELIA CLAUDE DESIRE NESSA\",\"schm_code\":\"CACDB\",\"solde\":-5185,\"acct_status\":\"A\",\"schm_desc\":\"CREANCES DOUTEUSES OU LI\"},\n" +
                     "{\"foracid\":\"101010029231\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"TOURE AMINATA\",\"schm_code\":\"CAC01\",\"solde\":211740,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010032026\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"GUEYE MONIQUE EPSE OBRE\",\"schm_code\":\"CAC01\",\"solde\":2695728,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010032613\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BROU ASSOUA DIDIER HERVE\",\"schm_code\":\"CAC01\",\"solde\":691334,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010033221\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAME KOUASSI  LETONDAL\",\"schm_code\":\"CAC01\",\"solde\":69135,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
-                    "{\"foracid\":\"101010035881\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAKOU AFFOUA\",\"schm_code\":\"CACDB\",\"solde\":-5504,\"acct_status\":\"A\",\"schm_desc\":\"CR�ANCES DOUTEUSES OU LI\"},\n" +
+                    "{\"foracid\":\"101010035881\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAKOU AFFOUA\",\"schm_code\":\"CACDB\",\"solde\":-5504,\"acct_status\":\"A\",\"schm_desc\":\"CREANCES DOUTEUSES OU LI\"},\n" +
                     "{\"foracid\":\"101010037267\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"LOUA ROJAS\",\"schm_code\":\"CAC01\",\"solde\":110666,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101010037908\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KONE CHEICK MOHAMED ABDEL KADER\",\"schm_code\":\"CAC01\",\"solde\":9900,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101020000017\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"ASSOUA SANDRINE KOUAME\",\"schm_code\":\"CAC02\",\"solde\":1692040,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
@@ -253,7 +255,7 @@ public class Processors {
                     "{\"foracid\":\"101200000066\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"SAM LAURENT-SAMUEL\",\"schm_code\":\"CAC01\",\"solde\":4171238,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PARICULIER\"},\n" +
                     "{\"foracid\":\"101200000330\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"KOUAKOU KOUABENAN ADJEHI JULIEN\",\"schm_code\":\"CAC20\",\"solde\":83425,\"acct_status\":\"A\",\"schm_desc\":\"CAC20 INDIV. FTC 2000XOF\"},\n" +
                     "{\"foracid\":\"101210000036\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"OUEDRAOGO SALIF ISSA\",\"schm_code\":\"CAC21\",\"solde\":1504894,\"acct_status\":\"A\",\"schm_desc\":\"CAC21 INDIV.FTC 2500 XOF\"},\n" +
-                    "{\"foracid\":\"102630000396\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"SIDIBE DJINABOU ALIDA NADEGE\",\"schm_code\":\"SAC63\",\"solde\":110359,\"acct_status\":\"A\",\"schm_desc\":\"COMPTE �PARGNE UBA LIBER\"},\n" +
+                    "{\"foracid\":\"102630000396\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"SIDIBE DJINABOU ALIDA NADEGE\",\"schm_code\":\"SAC63\",\"solde\":110359,\"acct_status\":\"A\",\"schm_desc\":\"COMPTE XPARGNE UBA LIBER\"},\n" +
                     "{\"foracid\":\"299020000408\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"THOMPSON SOLANGE\",\"schm_code\":\"CAC02\",\"solde\":135115,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"},\n" +
                     "{\"foracid\":\"299020000590\",\"frez_code\":\" \",\"frez_reason_code\":null,\"acc_close_date\":null,\"acct_name\":\"BAKARE LATIF\",\"schm_code\":\"CAC02\",\"solde\":508112,\"acct_status\":\"A\",\"schm_desc\":\"CPTE ORDINAIRE PERSONNEL\"}\n" +
                     "]}";
@@ -441,6 +443,85 @@ public class Processors {
     }
 
     //#########   SAGE processing
+    private List<Line> processSage(List<Line> lines){
+        return lines;
+    }
+    private List<Line> readCSV(MultipartFile file,String configName){
+        List<Line> lignes = new ArrayList<>();
+        try(var theCSV = new BufferedReader(new InputStreamReader(file.getInputStream()));
+            var reader= new CSVReader(theCSV)) {
+          String[] nextLine;
+          int i=0;
+          while((nextLine=reader.readNext())!=null){
+              for(var e:nextLine){
+                  Map<String,Object> m=new HashMap<>();
+                  switch(configName){
+                      case "SAGE":
+                          if(!e.contains(";")){
+                              //we are on the first line
+                              m.put("LINENO~0",i);
+                              m.put("CODESAGE~1",e.replaceAll("\"","").trim());
+                              lignes.add(new Line(sortedLines(m)));
+                          }else{
+                              //we are on the other lines
+                              m.put("LINENO~0",i);
+                              String[] elements=e.split(";");
+                              for(int j=0;j<elements.length;j++){
+                               switch(j){
+                                   case 0:
+                                       m.put("CODESAGE~1",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 1:
+                                       m.put("CODEOP~2",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 2:
+                                       m.put("OP_SAGE~3",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 3:
+                                       m.put("COMPTE_LP~4",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 4:
+                                       m.put("STATUS~5",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 5:
+                                       m.put("ENCODAGE~6",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 6:
+                                       m.put("OP_PERIOD~7",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 7:
+                                       m.put("LABEL_OP~8",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 8:
+                                       m.put("S~9",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 9:
+                                       m.put("OP_FINCON~10",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 10:
+                                       m.put("MONTANT~11",elements[j].replaceAll("\"","").trim());
+                                       break;
+                                   case 11:
+                                       m.put("CODE_FIN~3",elements[j].replaceAll("\"","").trim());
+                                       break;
+                               }
+                              }
+                              lignes.add(new Line(sortedLines(m)));
+                          }
+                          break;
+                      default:
+                          break;
+                  }
+
+              }
+              i++;
+          }
+        }catch (IOException | CsvValidationException e){
+            e.printStackTrace();
+
+        }
+        return lignes;
+    }
     private List<Line> readXlsx(OPCPackage file) {
 
         DataFormatter dataFormatter = new DataFormatter();

@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:pdf/pdf.dart' as pdfDart;
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sfp/assets.dart';
@@ -110,10 +109,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     }
                   } else {
                     //here we either have to deal with the first CANAL+ line or the lastone
-                    if (index == 0 &&
-                        i < file.inFile[index]['ligne'].keys.toList().length) {
-                      var element =
-                          file.inFile[index]['ligne'].keys.toList()[i];
+
+                    if (index == 0) {
+                      String element =
+                          i < file.inFile[index]['ligne'].keys.toList().length
+                              ? file.inFile[index]['ligne'].keys.toList()[i]
+                              : file.inFile[index]['ligne'].keys.toList().last;
                       print("the current element is $element");
                       // the indexes added to the keys are not starting from 0
                       if (element.contains("${i + 1}")) {
@@ -128,8 +129,23 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               textAlign: pw.TextAlign.center),
                         );
                       } else {
-                        print("this index $i doesnt exist in keys");
-                        return pw.Text("");
+                        print(
+                            "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
+                        int indexInEl = int.parse(
+                            element.replaceAll(RegExp(r'[^0-9]'), ''));
+                        print("the element index in json is $indexInEl");
+                        if (/*element.contains('$indexInEl')*/ headerListInitial[
+                                i] ==
+                            element) {
+                          print(
+                              "yes element is $element index is $index and i is $i");
+                          return pw.Container(
+                            padding: const pw.EdgeInsets.all(2.0),
+                            child: pw.Text(
+                                file.fileLines[index]['ligne'][element] ?? "",
+                                textAlign: pw.TextAlign.center),
+                          );
+                        }
                       }
                     } else if (index == file.inFile.length - 1 &&
                         i < file.inFile[index]['ligne'].keys.toList().length) {
@@ -173,21 +189,42 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           case "generated":
             int i = 0;
             List<String> headerList, headerListInitial;
-            headerList = file.inFile[i]['ligne'].keys.toList();
-            headerListInitial = file.inFile[i]['ligne'].keys.toList();
+            headerList = file.fileLines[i]['ligne'].keys.toList();
+            headerListInitial = file.fileLines[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
-            while (i < file.inFile.length - 1) {
+            while (i < file.fileLines.length - 1) {
               if (headerList.length <
-                  file.inFile[i]['ligne'].keys.toList().length) {
-                headerList = file.inFile[i]['ligne'].keys.toList();
-                headerListInitial = file.inFile[i]['ligne'].keys.toList();
+                  file.fileLines[i]['ligne'].keys.toList().length) {
+                headerList = file.fileLines[i]['ligne'].keys.toList();
+                headerListInitial = file.fileLines[i]['ligne'].keys.toList();
               }
               i++;
             }
+            //for the generated file we should remove some unecessary columns
+            //but those properties removed will be used to display and emphasize
+            //the status of the processing
+            /*headerList.remove("process_done~18");
+            headerListInitial.remove("process_done~18");
+            headerList.remove("process_done~18");
+            headerListInitial.remove("process_done~18");
+            headerList.remove("SCHM_DESC~17");
+            headerListInitial.remove("SCHM_DESC~17");
+            headerList.remove("SCHM_CODE~16");
+            headerListInitial.remove("SCHM_CODE~16");
+            headerList.remove("FREEZECODE~13");
+            headerListInitial.remove("FREEZECODE~13");
+            headerList.remove("FREEZEREASON~14");
+            headerListInitial.remove("FREEZEREASON~14");
+            headerList.remove("ACCOUNTCLOSEDATE~15");
+            headerListInitial.remove("ACCOUNTCLOSEDATE~15");
+            headerList.remove("LINENO~10");
+            headerListInitial.remove("LINENO~10");*/
+
             for (int i = 0; i < headerList.length; i++) {
               headerList[i] = headerList[i].replaceAll(new RegExp("\\d"), "");
               headerList[i] = headerList[i].replaceAll("~", "");
             }
+
             print('content of headerList is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
@@ -202,78 +239,131 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               }),
             ));
             //Content
-            tableLignes.addAll(List.generate(file.outFile.length, (index) {
+            tableLignes.addAll(List.generate(file.fileLines.length, (index) {
               return pw.TableRow(
                 children: List.generate(headerList.length, (i) {
-                  //match with the appropriate header
-                  if (file.outFile[index]['ligne'].keys.toList().length ==
-                      headerListInitial.length) {
-                    //if the content match the same length
-                    //print(
-                    //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
-                    if (file.outFile[index]['ligne'].keys.toList()[i] ==
-                        headerListInitial[i]) {
-                      //print("indeed they match");
+                  //here we either have to deal with the first CANAL+ line or the lastone
+                  if (index == 0) {
+                    String element =
+                        i < file.fileLines[index]['ligne'].keys.toList().length
+                            ? file.fileLines[index]['ligne'].keys
+                                .toList()[i]
+                                .toString()
+                            : file.fileLines[index]['ligne'].keys
+                                .toList()
+                                .last
+                                .toString();
+                    print("the current element is $element");
+                    // the indexes added to the keys are not starting from 0
+                    if (element.contains("${i + 1}")) {
+                      print(
+                          'element is $element and contains the id $i and value is ${file.fileLines[index]['ligne'][headerListInitial[i]]}');
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
-                            file.outFile[index]['ligne'][headerListInitial[i]],
+                            file.fileLines[index]['ligne']
+                                    [headerListInitial[i]] ??
+                                "",
                             textAlign: pw.TextAlign.center),
                       );
-                    }
-                  } else {
-                    //here we either have to deal with the first CANAL+ line or the lastone
-                    if (index == 0 &&
-                        i < file.outFile[index]['ligne'].keys.toList().length) {
-                      var element =
-                          file.outFile[index]['ligne'].keys.toList()[i];
-                      print("the current element is $element");
-                      // the indexes added to the keys are not starting from 0
-                      if (element.contains("${i + 1}")) {
+                    } else {
+                      print(
+                          "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
+                      int indexInEl =
+                          int.parse(element.replaceAll(RegExp(r'[^0-9]'), ''));
+                      print("the element index in json is $indexInEl");
+                      if (/*element.contains('$indexInEl')*/ headerListInitial[
+                              i] ==
+                          element) {
                         print(
-                            'element is $element and contains the id $i and value is ${file.outFile[index]['ligne'][headerListInitial[i]]}');
+                            "yes element is $element index is $index and i is $i");
                         return pw.Container(
                           padding: const pw.EdgeInsets.all(2.0),
                           child: pw.Text(
-                              file.outFile[index]['ligne']
-                                      [headerListInitial[i]] ??
-                                  "",
+                              file.fileLines[index]['ligne'][element] ?? "",
+                              textAlign: pw.TextAlign.center),
+                        );
+                      }
+                    }
+                  } else if (index == file.fileLines.length - 1 &&
+                      i < file.fileLines[index]['ligne'].keys.toList().length) {
+                    //here we take care of the last line of the canal + file
+                    print("last element ");
+                    String lastElement =
+                        file.fileLines[index]['ligne'].keys.toList()[i];
+                    print("last element $lastElement");
+                    if (lastElement == "LASTLINE") {
+                      var lastSplit = file.fileLines[index]['ligne']
+                              [lastElement]
+                          .split(RegExp("\\s+"));
+                      print(lastSplit);
+                      //we arbitrarily place the last line into random columns
+                      if (i == 0) {
+                        return pw.Container(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Text(
+                              '${lastSplit[0]}\t\t\t${lastSplit[1]}\t\t\t${lastSplit[2]}',
                               textAlign: pw.TextAlign.center),
                         );
                       } else {
-                        print("this index $i doesnt exist in keys");
                         return pw.Text("");
                       }
-                    } else if (index == file.outFile.length - 1 &&
-                        i < file.outFile[index]['ligne'].keys.toList().length) {
-                      //here we take care of the last line of the canal + file
-                      print("last element ");
-                      String lastElement =
-                          file.outFile[index]['ligne'].keys.toList()[i];
-                      print("last element $lastElement");
-                      if (lastElement == "LASTLINE") {
-                        var lastSplit = file.outFile[index]['ligne']
-                                [lastElement]
-                            .split(RegExp("\\s+"));
-                        print(lastSplit);
-                        //we arbitrarily place the last line into random columns
-                        if (i == 0) {
-                          return pw.Container(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Text(
-                                '${lastSplit[0]}\t\t\t${lastSplit[1]}\t\t\t${lastSplit[2]}',
-                                textAlign: pw.TextAlign.center),
-                          );
-                        } else {
-                          return pw.Text("");
-                        }
-                      } else {
-                        return pw.Text("");
-                      }
+                    } else {
+                      return pw.Text("");
                     }
-                    return pw.Text("");
+                  } else {
+                    //here is for the inner content
+                    String element =
+                        i < file.fileLines[index]['ligne'].keys.toList().length
+                            ? file.fileLines[index]['ligne'].keys
+                                .toList()[i]
+                                .toString()
+                            : file.fileLines[index]['ligne'].keys
+                                .toList()
+                                .last
+                                .toString();
+                    print("the current element is $element generated files");
+
+                    // print("current line is ${file.fileLines[index]['ligne']}");
+                    String theText = '';
+                    if (headerListInitial[i] == element) {
+                      print("yes they are equal");
+                      theText =
+                          file.fileLines[index]['ligne'][element].toString() ??
+                              "";
+                      print("element is $theText");
+                    }
+                    return pw.Container(
+                        color: file.fileLines[index]["ligne"]
+                                        ["status_code~19"] ==
+                                    "00" &&
+                                file.fileLines[index]["ligne"]
+                                    ["process_done~18"]
+                            ? pdfDart.PdfColor(0, 1, 0)
+                            : file.fileLines[index]["ligne"]
+                                        ["status_code~19"] ==
+                                    "04"
+                                /*&&
+                            file.fileLines[index]["ligne"]["process_done~18"]*/
+                                ? pdfDart.PdfColor(0, 0, 0)
+                                : file.fileLines[index]["ligne"]
+                                            ["status_code~19"] ==
+                                        "06"
+                                    ? pdfDart.PdfColor(1, 0, 0)
+                                    : pdfDart.PdfColor(1, 1, 1, 0),
+                        padding: const pw.EdgeInsets.all(2.0),
+                        child: pw.Text(
+                          theText,
+                          textAlign: pw.TextAlign.center,
+                          style: pw.TextStyle(
+                              color: file.fileLines[index]["ligne"]
+                                          ["status_code~19"] ==
+                                      "04"
+                                  ? pdfDart.PdfColor(1, 1, 1)
+                                  : pdfDart.PdfColor(0, 0, 0)),
+                        ));
                   }
-                  //return pw.Text("canal");
+                  return pw.Text("");
                 }),
               );
               //return pw.TableRow();
@@ -561,11 +651,389 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           msg: message,
           toastLength: Toast.LENGTH_LONG,
           timeInSecForIosWeb: 2,
-          gravity: ToastGravity.CENTER,
+          gravity: ToastGravity.BOTTOM,
           backgroundColor: Color.fromRGBO(237, 90, 90, 0.5),
           textColor: Colors.black,
           fontSize: 12.0);
     }
+  }
+
+  List<Widget> generateFileWidgets(pw.Document pdf, Size appB) {
+    List<Widget> l = List.generate(dataBloc.processedFiles.length, (i) {
+      // File inFile = MemoryFileSystem().file('original.pdf')
+      //   ..writeAsBytesSync(utf8.encode(
+      //       dataBloc.processedFiles[i].inFile['data']));
+      // print(inFile.readAsBytesSync());
+      // final inFilePDF = PdfImage.file(pdf.document,
+      //     bytes: inFile.readAsBytesSync());
+      int windex = i + 1;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10.0),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey[200])),
+        ),
+        child: Column(
+          children: [
+            if (dataBloc.processedFiles[i].processingStatus)
+              Text(
+                "The file is done processing.",
+                textAlign: TextAlign.center,
+              ),
+            if (dataBloc.processedFiles[i].lastExecution.year != 1970 &&
+                !dataBloc.processedFiles[i].processingStatus)
+              Responsive.isMobile(context)
+                  ? BlocBuilder<DataBloc, DataState>(
+                      builder: (context, state) {
+                        if (state is FileFetching) {
+                          return Container(
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  SpinKitRing(
+                                      color: Assets.ubaRedColor, size: 60.0),
+                                  SizedBox(height: 10.0),
+                                  Text("Fetching new execution times")
+                                ],
+                              ),
+                            ),
+                          );
+                        } else if (state is FileLoaded) {
+                          return Container(
+                              child: Column(
+                            children: [
+                              Text(
+                                "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
+                                    .replaceAll(":00.000", ""),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "Time left before next execution:",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 10.0),
+                                    CountdownTimer(
+                                      endTime: dataBloc
+                                              .processedFiles[i]
+                                              .nextExecution
+                                              .millisecondsSinceEpoch +
+                                          3000,
+                                      textStyle: const TextStyle(
+                                          fontSize: 30.0,
+                                          fontWeight: FontWeight.bold),
+                                      onEnd: () {
+                                        print(
+                                            'now should wait for 3 seconds before requesting update from server');
+                                        dataBloc.add(PreparingFileFetching());
+                                        Timer(Duration(milliseconds: 100), () {
+                                          dataBloc.add(FetchFilesForConfig(
+                                              dataBloc.currentConfig.configName,
+                                              authBloc.user.id));
+                                          Timer(Duration(milliseconds: 2900),
+                                              () {
+                                            _showToast(
+                                                "Running the background process now.Please wait...");
+                                          });
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
+                                    .replaceAll(":00.000", ""),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ));
+                        }
+                        return Container();
+                      },
+                    )
+                  : BlocBuilder<DataBloc, DataState>(builder: (context, state) {
+                      if (state is FileFetching) {
+                        return Container(
+                          child: Center(
+                            child: Column(
+                              children: [
+                                SpinKitRing(
+                                    color: Assets.ubaRedColor, size: 60.0),
+                                SizedBox(height: 10.0),
+                                Text("Fetching new execution times")
+                              ],
+                            ),
+                          ),
+                        );
+                      } else if (state is FileLoaded) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
+                                  .replaceAll(":00.000", ""),
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              child: Column(
+                                children: [
+                                  Text("Time left before next execution:"),
+                                  SizedBox(height: 10.0),
+                                  CountdownTimer(
+                                    endTime: dataBloc
+                                            .processedFiles[i]
+                                            .nextExecution
+                                            .millisecondsSinceEpoch +
+                                        3000,
+                                    textStyle: const TextStyle(
+                                        fontSize: 30.0,
+                                        fontWeight: FontWeight.bold),
+                                    onEnd: () {
+                                      print(
+                                          'now should wait for 3 seconds before requesting update from server');
+                                      dataBloc.add(PreparingFileFetching());
+                                      Timer(Duration(milliseconds: 100), () {
+                                        dataBloc.add(FetchFilesForConfig(
+                                            dataBloc.currentConfig.configName,
+                                            authBloc.user.id));
+                                        Timer(Duration(milliseconds: 2900), () {
+                                          _showToast(
+                                              "Running the background process now.Please wait...");
+                                        });
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                                "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
+                                    .replaceAll(":00.000", ""),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        );
+                      }
+                      return Container();
+                    }),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  height: Responsive.isMobile(context) ? 150 : 200,
+                  width: Responsive.isMobile(context) ? 150 : 200,
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
+                  child: Tooltip(
+                    message: "click to see the initial file you uploaded",
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                      onPressed: () {
+                        print("clear document");
+                        pdf = pw.Document();
+                        pdf.addPage(pw.MultiPage(
+                            pageFormat: pdfDart.PdfPageFormat(
+                                100 * pdfDart.PdfPageFormat.cm,
+                                25 * pdfDart.PdfPageFormat.cm,
+                                marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
+                            build: (pw.Context context) {
+                              return _buildPdf(
+                                  dataBloc.processedFiles[i],
+                                  "original",
+                                  dataBloc.currentConfig.configName);
+                            }));
+                        var doc = pdf.save();
+
+                        alertBloc.add(ShowAlert(
+                            whatToShow: null,
+                            isDoc: true,
+                            doc: doc,
+                            actions: [
+                              FlatButton(
+                                onPressed: () {
+                                  alertBloc.add(CloseAlert());
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("CLOSE")),
+                              )
+                            ],
+                            title: 'Original file $windex'));
+                        _showToast(kIsWeb
+                            ? "Use the mouse wheel to zoom in or out on the area of interest"
+                            : "Pinch with your fingers to zoom in or out of the document");
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.description_outlined,
+                            color: Assets.ubaRedColor,
+                            size: Responsive.isMobile(context) ? 50 : 80,
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Text(
+                            "Initial file",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize:
+                                    Responsive.isMobile(context) ? 14.0 : 20.0,
+                                fontWeight: FontWeight.w600),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  height: Responsive.isMobile(context) ? 150 : 200,
+                  width: Responsive.isMobile(context) ? 150 : 200,
+                  child: Tooltip(
+                    message:
+                        "click to see the new file generated after processing ",
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                      onPressed: () {
+                        pdf = pw.Document();
+                        pdf.addPage(pw.MultiPage(
+                            pageFormat: pdfDart.PdfPageFormat(
+                                100 * pdfDart.PdfPageFormat.cm,
+                                25 * pdfDart.PdfPageFormat.cm,
+                                marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
+                            build: (pw.Context context) {
+                              return _buildPdf(
+                                  dataBloc.processedFiles[i],
+                                  "generated",
+                                  dataBloc.currentConfig.configName);
+                            }));
+                        var doc = pdf.save();
+
+                        alertBloc.add(ShowAlert(
+                            whatToShow: null,
+                            isDoc: true,
+                            doc: doc,
+                            actions: [
+                              FlatButton(
+                                onPressed: () {
+                                  alertBloc.add(CloseAlert());
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("CLOSE")),
+                              )
+                            ],
+                            title: 'Original file $windex'));
+                        _showToast(kIsWeb
+                            ? "Use the mouse wheel to zoom in or out on the area of interest"
+                            : "Pinch with your fingers to zoom in or out of the document");
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.description_outlined,
+                              color: Assets.ubaRedColor,
+                              size: Responsive.isMobile(context) ? 50 : 80),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Text(
+                            "Generated file",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize:
+                                    Responsive.isMobile(context) ? 14.0 : 20.0,
+                                fontWeight: FontWeight.w600),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("File $windex"),
+                SizedBox(width: 50.0),
+                IconButton(
+                  color: Colors.black,
+                  tooltip: "Discard this file ?",
+                  icon: Icon(Icons.highlight_off),
+                  onPressed: () => alertBloc.add(ShowAlert(
+                    title: "Discard this file ?",
+                    whatToShow: Text(
+                        "Do you really want to discard this file ? the file will be removed from the processing pipeline."),
+                    actions: [
+                      FlatButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("CANCEL",
+                                  style:
+                                      const TextStyle(color: Colors.black)))),
+                      FlatButton(
+                          onPressed: () {
+                            print("i index $i");
+                            Navigator.of(context).pop();
+                            dataBloc.add(DiscardFiles(
+                                files: [dataBloc.processedFiles[--windex]]));
+                          },
+                          child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("DISCARD IT")))
+                    ],
+                  )),
+                )
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+    l.addAll([
+      SizedBox(height: 20.0),
+      Container(
+        width:
+            Responsive.isMobile(context) ? appB.width * 0.5 : appB.width * 0.15,
+        height: 40.0,
+        child: RaisedButton(
+          onPressed:
+              dataBloc.processedFiles.first.processingStatus ? () {} : null,
+          color: Colors.black,
+          textColor: Colors.white,
+          child: Text(
+            "Download files",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+        ),
+      )
+    ]);
+    return l;
   }
 
   @override
@@ -596,10 +1064,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   if (dataBloc.currentConfig.metaparameters
                       .containsKey("executionTime"))
                     Container(
-                      height: 30.0,
                       alignment: Alignment.topCenter,
+                      margin: const EdgeInsets.only(bottom: 10.0),
                       child: Text(
-                          "${dataBloc.currentConfig.configName} has some scheduled operations that are planned to run"),
+                          "${dataBloc.currentConfig.configName == "CANAL" ? 'CANAL+' : dataBloc.currentConfig.configName} configuration has some scheduled operations that are planned to run",
+                          textAlign: TextAlign.center),
                     ),
                   BlocListener<DataBloc, DataState>(
                     listener: (context, state) {
@@ -622,422 +1091,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           ? const EdgeInsets.symmetric(horizontal: 30.0)
                           : const EdgeInsets.all(0),
                       child: Column(
-                        children:
-                            List.generate(dataBloc.processedFiles.length, (i) {
-                          // File inFile = MemoryFileSystem().file('original.pdf')
-                          //   ..writeAsBytesSync(utf8.encode(
-                          //       dataBloc.processedFiles[i].inFile['data']));
-                          // print(inFile.readAsBytesSync());
-                          // final inFilePDF = PdfImage.file(pdf.document,
-                          //     bytes: inFile.readAsBytesSync());
-                          int windex = i + 1;
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10.0),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(color: Colors.grey[200])),
-                            ),
-                            child: Column(
-                              children: [
-                                if (dataBloc
-                                        .processedFiles[i].lastExecution.year !=
-                                    1970)
-                                  Responsive.isMobile(context)
-                                      ? Container(
-                                          child: Column(
-                                          children: [
-                                            Text(
-                                              "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
-                                                  .replaceAll(":00.000", ""),
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Container(
-                                              child: Column(
-                                                children: [
-                                                  Text(
-                                                    "Time left before next execution:",
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                  SizedBox(height: 10.0),
-                                                  CountdownTimer(
-                                                    endTime: dataBloc
-                                                            .processedFiles[i]
-                                                            .nextExecution
-                                                            .millisecondsSinceEpoch +
-                                                        3000,
-                                                    textStyle: const TextStyle(
-                                                        fontSize: 30.0,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    onEnd: () {
-                                                      print(
-                                                          'now should wait for 3 seconds before requesting update from server');
-                                                      Timer(
-                                                          Duration(
-                                                              milliseconds:
-                                                                  100), () {
-                                                        dataBloc.add(
-                                                            FetchFilesForConfig(
-                                                                dataBloc
-                                                                    .currentConfig
-                                                                    .configName,
-                                                                authBloc
-                                                                    .user.id));
-                                                        Timer(
-                                                            Duration(
-                                                                milliseconds:
-                                                                    2900), () {
-                                                          _showToast(
-                                                              "Running the background process now.Please wait...");
-                                                          setState(() {});
-                                                        });
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Text(
-                                              "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
-                                                  .replaceAll(":00.000", ""),
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            )
-                                          ],
-                                        ))
-                                      : Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            Text(
-                                              "Previous execution Time: ${DateTime(dataBloc.processedFiles[i].lastExecution.year, dataBloc.processedFiles[i].lastExecution.month, dataBloc.processedFiles[i].lastExecution.day, dataBloc.processedFiles[i].lastExecution.hour, dataBloc.processedFiles[i].lastExecution.minute)}"
-                                                  .replaceAll(":00.000", ""),
-                                              style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Container(
-                                              child: Column(
-                                                children: [
-                                                  Text(
-                                                      "Time left before next execution:"),
-                                                  SizedBox(height: 10.0),
-                                                  CountdownTimer(
-                                                    endTime: dataBloc
-                                                            .processedFiles[i]
-                                                            .nextExecution
-                                                            .millisecondsSinceEpoch +
-                                                        3000,
-                                                    textStyle: const TextStyle(
-                                                        fontSize: 30.0,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    onEnd: () {
-                                                      print(
-                                                          'now should wait for 3 seconds before requesting update from server');
-                                                      Timer(
-                                                          Duration(
-                                                              milliseconds:
-                                                                  100), () {
-                                                        dataBloc.add(
-                                                            FetchFilesForConfig(
-                                                                dataBloc
-                                                                    .currentConfig
-                                                                    .configName,
-                                                                authBloc
-                                                                    .user.id));
-                                                        Timer(
-                                                            Duration(
-                                                                milliseconds:
-                                                                    2900), () {
-                                                          _showToast(
-                                                              "Running the background process now.Please wait...");
-                                                          setState(() {});
-                                                        });
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Text(
-                                                "Next execution time: ${DateTime(dataBloc.processedFiles[i].nextExecution.year, dataBloc.processedFiles[i].nextExecution.month, dataBloc.processedFiles[i].nextExecution.day, dataBloc.processedFiles[i].nextExecution.hour, dataBloc.processedFiles[i].nextExecution.minute)}"
-                                                    .replaceAll(":00.000", ""),
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ],
-                                        ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      height: Responsive.isMobile(context)
-                                          ? 150
-                                          : 200,
-                                      width: Responsive.isMobile(context)
-                                          ? 150
-                                          : 200,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(20.0)),
-                                      child: Tooltip(
-                                        message:
-                                            "click to see the initial file you uploaded",
-                                        child: RaisedButton(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0)),
-                                          onPressed: () {
-                                            print("clicked");
-                                            pdf.addPage(pw.MultiPage(
-                                                pageFormat:
-                                                    pdfDart.PdfPageFormat(
-                                                        100 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm,
-                                                        25 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm,
-                                                        marginAll: 0.5 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm),
-                                                build: (pw.Context context) {
-                                                  return _buildPdf(
-                                                      dataBloc
-                                                          .processedFiles[i],
-                                                      "original",
-                                                      dataBloc.currentConfig
-                                                          .configName);
-                                                }));
-                                            var doc = pdf.save();
-
-                                            alertBloc.add(ShowAlert(
-                                                whatToShow: null,
-                                                isDoc: true,
-                                                doc: doc,
-                                                actions: [
-                                                  FlatButton(
-                                                    onPressed: () {
-                                                      alertBloc
-                                                          .add(CloseAlert());
-                                                    },
-                                                    child: Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Text("CLOSE")),
-                                                  )
-                                                ],
-                                                title:
-                                                    'Original file $windex'));
-                                            _showToast(kIsWeb
-                                                ? "Use the mouse wheel to zoom in or out on the area of interest"
-                                                : "Pinch with your fingers to zoom in or out of the document");
-                                          },
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.description_outlined,
-                                                color: Assets.ubaRedColor,
-                                                size:
-                                                    Responsive.isMobile(context)
-                                                        ? 50
-                                                        : 80,
-                                              ),
-                                              SizedBox(
-                                                height: 20.0,
-                                              ),
-                                              Text(
-                                                "Initial file",
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        Responsive.isMobile(
-                                                                context)
-                                                            ? 14.0
-                                                            : 20.0,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      height: Responsive.isMobile(context)
-                                          ? 150
-                                          : 200,
-                                      width: Responsive.isMobile(context)
-                                          ? 150
-                                          : 200,
-                                      child: Tooltip(
-                                        message:
-                                            "click to see the new file generated after processing ",
-                                        child: RaisedButton(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0)),
-                                          onPressed: () {
-                                            pdf.addPage(pw.MultiPage(
-                                                pageFormat:
-                                                    pdfDart.PdfPageFormat(
-                                                        100 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm,
-                                                        25 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm,
-                                                        marginAll: 0.5 *
-                                                            pdfDart
-                                                                .PdfPageFormat
-                                                                .cm),
-                                                build: (pw.Context context) {
-                                                  return _buildPdf(
-                                                      dataBloc
-                                                          .processedFiles[i],
-                                                      "generated",
-                                                      dataBloc.currentConfig
-                                                          .configName);
-                                                }));
-
-                                            final pdfController = PdfController(
-                                                document: PdfDocument.openData(
-                                                    pdf.save()));
-                                            alertBloc.add(ShowAlert(
-                                                whatToShow: Container(
-                                                  width: 1000.0,
-                                                  child: InteractiveViewer(
-                                                    child: PdfView(
-                                                      pageSnapping: false,
-                                                      documentLoader:
-                                                          SpinKitThreeBounce(
-                                                        size: 20.0,
-                                                        color:
-                                                            Assets.ubaRedColor,
-                                                      ),
-                                                      controller: pdfController,
-                                                    ),
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  FlatButton(
-                                                    onPressed: () {
-                                                      alertBloc
-                                                          .add(CloseAlert());
-                                                    },
-                                                    child: Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Text("CLOSE")),
-                                                  )
-                                                ],
-                                                title:
-                                                    'Generated file $windex'));
-                                            _showToast(kIsWeb
-                                                ? "Use the mouse wheel to zoom in or out on the area of interest"
-                                                : "Pinch with your fingers to zoom in or out of the document");
-                                          },
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.description_outlined,
-                                                  color: Assets.ubaRedColor,
-                                                  size: Responsive.isMobile(
-                                                          context)
-                                                      ? 50
-                                                      : 80),
-                                              SizedBox(
-                                                height: 20.0,
-                                              ),
-                                              Text(
-                                                "Generated file",
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        Responsive.isMobile(
-                                                                context)
-                                                            ? 14.0
-                                                            : 20.0,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10.0),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text("File $windex"),
-                                    SizedBox(width: 50.0),
-                                    IconButton(
-                                      color: Colors.black,
-                                      tooltip: "Discard this file ?",
-                                      icon: Icon(Icons.highlight_off),
-                                      onPressed: () => alertBloc.add(ShowAlert(
-                                        title: "Discard this file ?",
-                                        whatToShow: Text(
-                                            "Do you really want to discard this file ? the file will be removed from the processing pipeline."),
-                                        actions: [
-                                          FlatButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop(),
-                                              child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text("CANCEL",
-                                                      style: const TextStyle(
-                                                          color:
-                                                              Colors.black)))),
-                                          FlatButton(
-                                              onPressed: () {
-                                                print("i index $i");
-                                                Navigator.of(context).pop();
-                                                dataBloc.add(
-                                                    DiscardFiles(files: [
-                                                  dataBloc
-                                                      .processedFiles[--windex]
-                                                ]));
-                                              },
-                                              child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text("DISCARD IT")))
-                                        ],
-                                      )),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                        children: generateFileWidgets(pdf, appB),
                       ),
                     ),
                   ),

@@ -44,6 +44,9 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         }
       }
     }
+    if (event is PreparingFileFetching) {
+      yield FileFetching();
+    }
     if (event is FetchFilesForConfig) {
       final m = await repo.fetchCurrentProcessingFiles(
           event.configName, event.userId);

@@ -211,7 +211,7 @@ public class DefaultConfig {
             canalFileTypeandSize.put("size",10);
             canalFileTypeandSize.put("space_in_memory","mb");
             var sageFileTypeandSize=new HashMap<String,Object>();
-            sageFileTypeandSize.put("type","xlsx");
+            sageFileTypeandSize.put("type","CSV");
             sageFileTypeandSize.put("size",10);
             sageFileTypeandSize.put("space_in_memory","mb");
             var canalConfig=new ProcessConfig("CANAL", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
