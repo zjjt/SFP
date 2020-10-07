@@ -5,16 +5,16 @@ import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.service.ProcessedFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLConnection;
 import java.time.Instant;
 import java.util.*;
 
@@ -63,6 +63,34 @@ public class ProcessedFileController {
 
     }
 
+    @GetMapping("/generatefiles")
+    public List<String> generateFilePaths( @RequestParam(name = "configName") String configName,
+                                            @RequestParam(name = "userId") String userId, HttpServletRequest request){
+        System.out.println("generating files for config "+configName+" and userId "+userId);
+        List<String>filenames=processedFileService.generateFilePaths(configName,userId);
+        return filenames;
+    }
+    @GetMapping("/download/{filename:.+}")
+    public void download(HttpServletRequest request, HttpServletResponse response,
+                         @PathVariable("filename")String filename) throws IOException {
+        final String DEFAULT_DIR=new File("").getAbsolutePath();
+        System.out.println("filename is "+filename);
+        File file=new File(DEFAULT_DIR+"/"+filename);
+        System.out.println("file "+file.getName()+" it exists? "+file.exists());
+        if(file.exists()){
+            System.out.println("the file exists and is being prepared for download");
+            String mimeType= URLConnection.guessContentTypeFromName(file.getName());
+            if(mimeType==null){
+                mimeType="application/octet-stream";
+            }
+            response.setContentType(mimeType);
+            response.setHeader("Content-Disposition",String.format("attachment; filename=\""+file.getName()+"\""));
+            response.setContentLength((int) file.length());
+            InputStream inputStream=new BufferedInputStream(new FileInputStream(file));
+            FileCopyUtils.copy(inputStream,response.getOutputStream());
+        }
+
+    }
     @PostMapping("/upload")
     public Map<String, Object> uploadFile(@RequestParam("files[]") List<MultipartFile> files,
                                           @RequestParam(name = "configName") String configName,

@@ -29,6 +29,11 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       print("selected config is $currentConfig");
       yield ConfigSelected(currentConfig);
     }
+    if (event is DownloadFiles) {
+      List<String> urlList =
+          await repo.downloadFilesPath(event.userId, event.configName);
+      yield FilesDownloaded(urlList: urlList);
+    }
     if (event is DiscardFiles) {
       if (event.files.isNotEmpty) {
         //removing from local state variable

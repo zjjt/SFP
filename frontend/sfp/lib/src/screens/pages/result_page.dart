@@ -13,8 +13,6 @@ import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
-//import 'package:universal_html/html.dart';
-
 class ResultPage extends StatefulWidget {
   ResultPage({Key key}) : super(key: key);
 
@@ -47,6 +45,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     //launching entrence animation
     animateBloc.add(EnteringPage());
     docBloc.add(ResetDoc());
+  }
+
+  void _downloadFiles() {
+    //dispatch and generate the file on the servers
+    dataBloc.add(
+        DownloadFiles(authBloc.user.id, dataBloc.currentConfig.configName));
   }
 
   List<pw.Widget> _buildPdf(
@@ -472,7 +476,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           return pw.Container(
                             padding: const pw.EdgeInsets.all(2.0),
                             child: pw.Text(
-                                file.fileLines[index]['ligne'][element] ?? "",
+                                file.inFile[index]['ligne'][element] ?? "",
                                 textAlign: pw.TextAlign.center),
                           );
                         }
@@ -519,14 +523,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           case "generated":
             int i = 0;
             List<String> headerList, headerListInitial;
-            headerList = file.inFile[i]['ligne'].keys.toList();
-            headerListInitial = file.inFile[i]['ligne'].keys.toList();
+            headerList = file.fileLines[i]['ligne'].keys.toList();
+            headerListInitial = file.fileLines[i]['ligne'].keys.toList();
             //get maximum number of keys in the list of maps
-            while (i < file.inFile.length - 1) {
+            while (i < file.fileLines.length - 1) {
               if (headerList.length <
-                  file.inFile[i]['ligne'].keys.toList().length) {
-                headerList = file.inFile[i]['ligne'].keys.toList();
-                headerListInitial = file.inFile[i]['ligne'].keys.toList();
+                  file.fileLines[i]['ligne'].keys.toList().length) {
+                headerList = file.fileLines[i]['ligne'].keys.toList();
+                headerListInitial = file.fileLines[i]['ligne'].keys.toList();
               }
               i++;
             }
@@ -534,7 +538,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               headerList[i] = headerList[i].replaceAll(new RegExp("\\d"), "");
               headerList[i] = headerList[i].replaceAll("~", "");
             }
-            print('content of headerList is $headerList');
+            // if (headerList.remove("LINENO") &&
+            //     headerListInitial.remove("LINENO~0")) {
+            //   print("LINENO removed");
+            // }
+            print('content of headerList in sage is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
@@ -548,75 +556,27 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               }),
             ));
             //Content
-            tableLignes.addAll(List.generate(file.outFile.length, (index) {
+            tableLignes.addAll(List.generate(file.fileLines.length, (index) {
               return pw.TableRow(
                 children: List.generate(headerList.length, (i) {
                   //match with the appropriate header
-                  if (file.outFile[index]['ligne'].keys.toList().length ==
+                  if (file.fileLines[index]['ligne'].keys.toList().length ==
                       headerListInitial.length) {
                     //if the content match the same length
                     //print(
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
-                    if (file.outFile[index]['ligne'].keys.toList()[i] ==
+                    if (file.fileLines[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
                       //print("indeed they match");
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
-                            file.outFile[index]['ligne'][headerListInitial[i]],
+                            file.fileLines[index]['ligne']
+                                [headerListInitial[i]],
                             textAlign: pw.TextAlign.center),
                       );
                     }
                   } else {
-                    //here we either have to deal with the first CANAL+ line or the lastone
-                    if (index == 0 &&
-                        i < file.outFile[index]['ligne'].keys.toList().length) {
-                      var element =
-                          file.outFile[index]['ligne'].keys.toList()[i];
-                      print("the current element is $element");
-                      // the indexes added to the keys are not starting from 0
-                      if (element.contains("${i + 1}")) {
-                        print(
-                            'element is $element and contains the id $i and value is ${file.outFile[index]['ligne'][headerListInitial[i]]}');
-                        return pw.Container(
-                          padding: const pw.EdgeInsets.all(2.0),
-                          child: pw.Text(
-                              file.outFile[index]['ligne']
-                                      [headerListInitial[i]] ??
-                                  "",
-                              textAlign: pw.TextAlign.center),
-                        );
-                      } else {
-                        print("this index $i doesnt exist in keys");
-                        return pw.Text("");
-                      }
-                    } else if (index == file.outFile.length - 1 &&
-                        i < file.outFile[index]['ligne'].keys.toList().length) {
-                      //here we take care of the last line of the canal + file
-                      print("last element ");
-                      String lastElement =
-                          file.outFile[index]['ligne'].keys.toList()[i];
-                      print("last element $lastElement");
-                      if (lastElement == "LASTLINE") {
-                        var lastSplit = file.outFile[index]['ligne']
-                                [lastElement]
-                            .split(RegExp("\\s+"));
-                        print(lastSplit);
-                        //we arbitrarily place the last line into random columns
-                        if (i == 0) {
-                          return pw.Container(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Text(
-                                '${lastSplit[0]}\t\t\t${lastSplit[1]}\t\t\t${lastSplit[2]}',
-                                textAlign: pw.TextAlign.center),
-                          );
-                        } else {
-                          return pw.Text("");
-                        }
-                      } else {
-                        return pw.Text("");
-                      }
-                    }
                     return pw.Text("");
                   }
                   //return pw.Text("canal");
@@ -625,7 +585,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               //return pw.TableRow();
             }));
             retour = pw.Table(
-              tableWidth: pw.TableWidth.max,
               border: pw.TableBorder(
                   top: true, left: true, right: true, bottom: true),
               children: tableLignes,
@@ -935,7 +894,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         pdf.addPage(pw.MultiPage(
                             pageFormat: pdfDart.PdfPageFormat(
                                 100 * pdfDart.PdfPageFormat.cm,
-                                25 * pdfDart.PdfPageFormat.cm,
+                                dataBloc.currentConfig.configName == "CANAL"
+                                    ? 25 * pdfDart.PdfPageFormat.cm
+                                    : 50 * pdfDart.PdfPageFormat.cm,
                                 marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
                             build: (pw.Context context) {
                               return _buildPdf(
@@ -1036,21 +997,44 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
         width:
             Responsive.isMobile(context) ? appB.width * 0.5 : appB.width * 0.15,
         height: 40.0,
-        child: RaisedButton(
-          onPressed:
-              dataBloc.processedFiles.first.processingStatus ? () {} : null,
-          color: Colors.black,
-          textColor: Colors.white,
-          child: Text(
-            "Download files",
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25.0),
-          ),
+        child: BlocBuilder<DataBloc, DataState>(
+          builder: (context, state) {
+            if (state is FilesDownloaded) {
+              //trigger the download
+              if (kIsWeb) {
+                for (int i = 0; i < state.urlList.length; i++) {
+                  final content = "kilo";
+                  print("file url is ${state.urlList[i]}");
+                  // final anchor = html.AnchorElement(
+                  //     href:
+                  //         "data:/application/octet-stream;charset=utf-16le;base64,$content")
+                  //   ..setAttribute(
+                  //       "download",
+                  //       dataBloc.currentConfig.configName == "SAGE"
+                  //           ? "JOURNAL ENTRIES ${++i}.xlsx"
+                  //           : "")
+                  //   ..click();
+                }
+              }
+            }
+            return RaisedButton(
+              onPressed: dataBloc.processedFiles.first.processingStatus
+                  ? _downloadFiles
+                  : null,
+              color: Colors.black,
+              textColor: Colors.white,
+              child: Text(
+                "Download files",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.0),
+              ),
+            );
+          },
         ),
       )
     ]);

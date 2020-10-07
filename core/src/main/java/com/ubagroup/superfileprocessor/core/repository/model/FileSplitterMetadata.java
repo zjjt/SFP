@@ -29,6 +29,7 @@ public class FileSplitterMetadata {
     private Map<String, DbFieldsTranslation> mapToDbFields;
     private Map<String, List<Integer>> positions;
 
+
     public FileSplitterMetadata(List<String> dbFields, String executionTime, Date endingDate, Map<String, DbFieldsTranslation> mapToDbFields, Map<String, List<Integer>> positions) {
         this.dbFields = dbFields;
         this.executionTime = executionTime;

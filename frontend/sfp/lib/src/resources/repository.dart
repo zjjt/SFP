@@ -65,6 +65,18 @@ class Repository {
     return files;
   }
 
+  Future<List<String>> downloadFilesPath(
+      String userId, String configName) async {
+    var filesPath;
+    try {
+      filesPath = await netProvider.downloadFilesPath(userId, configName);
+    } on NetWorkException {
+      print("couldnt reach the api ${filesPath.message}");
+      return null;
+    }
+    return filesPath;
+  }
+
   Future<bool> logOut(String username) async {
     bool result = false;
     try {

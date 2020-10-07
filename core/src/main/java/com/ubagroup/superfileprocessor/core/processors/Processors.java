@@ -6,6 +6,7 @@ import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import com.ubagroup.superfileprocessor.core.repository.oracle.Queries;
 import com.ubagroup.superfileprocessor.core.utils.OracleDBConfig;
+import com.ubagroup.superfileprocessor.core.utils.Utils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -109,8 +110,10 @@ public class Processors {
                         System.out.println("original filename is " + file.getOriginalFilename());
                         List<Line> lignes = readCSV(file,configName);
                         f.setInFile(lignes);
-                        f.setFileLines(lignes);
-                        f.setOutFile(lignes);
+                        //now we process the different lines to apply fincon transforms
+                        f.setFileLines(processSage(lignes));
+                        f.setOutFile(processSage(lignes));
+                        f.setProcessingStatus(true);
                         treatedFiles.add(f);
                     } catch ( Exception e) {
                         e.printStackTrace();
@@ -444,8 +447,173 @@ public class Processors {
 
     //#########   SAGE processing
     private List<Line> processSage(List<Line> lines){
-        return lines;
+        System.out.println("Sagefile processing from FINCON journal data");
+        List<Line> newList = new ArrayList<>();
+        //1- we get the statuses of the accounts
+        //2- we store it in memory
+        //3 we proceed to debit and update the debited account immediately with the solde
+        JSONParser parser=new JSONParser();
+        try {
+            String jsonData = "{\n" +
+                    "    \"rows\": [\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64110\",\n" +
+                    "            \"CODE_LP\": \"52\",\n" +
+                    "            \"COMPTE_FINCON\": \"6411009526299006\",\n" +
+                    "            \"LABEL\": \"AVANTAGES NATURE ENSEMBLE DU PERSONNEL\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64111\",\n" +
+                    "            \"CODE_LP\": \"+10\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299001\",\n" +
+                    "            \"LABEL\": \"salaire de base\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64112\",\n" +
+                    "            \"CODE_LP\": \"+20/+40/+151/+684/+777/+778\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299009\",\n" +
+                    "            \"LABEL\": \"sursalaire\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641131\",\n" +
+                    "            \"CODE_LP\": \"+76/+89/-644/+694\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299006\",\n" +
+                    "            \"LABEL\": \"idemnité eau/élect/tél\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641132\",\n" +
+                    "            \"CODE_LP\": \"+88\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299002\",\n" +
+                    "            \"LABEL\": \"indemnité de logement\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64114\",\n" +
+                    "            \"CODE_LP\": \"+686\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299017\",\n" +
+                    "            \"LABEL\": \"indemnité de fonction non imposable\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64115\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299003\",\n" +
+                    "            \"LABEL\": \"PRIMES DE SCOLARITE\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64116\",\n" +
+                    "            \"CODE_LP\": \"+612\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299004\",\n" +
+                    "            \"LABEL\": \"prime de transport non imposable\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641171\",\n" +
+                    "            \"CODE_LP\": \"+788\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299004\",\n" +
+                    "            \"LABEL\": \"indemnité de transport /véhicule imposable\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641172\",\n" +
+                    "            \"CODE_LP\": \"+108\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299004\",\n" +
+                    "            \"LABEL\": \"indemnité de carburant\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64118\",\n" +
+                    "            \"CODE_LP\": \"+102/+119\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299008\",\n" +
+                    "            \"LABEL\": \"gratification 13è mois\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64120\",\n" +
+                    "            \"CODE_LP\": \"+160\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299006\",\n" +
+                    "            \"LABEL\": \"autres indemnités\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64121\",\n" +
+                    "            \"CODE_LP\": \"+47/+64/+66/+68/+132\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299006\",\n" +
+                    "            \"LABEL\": \"autres primes\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64123\",\n" +
+                    "            \"CODE_LP\": \"+41/+42/+43/+44\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299009\",\n" +
+                    "            \"LABEL\": \"heures supplémentaires\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64125\",\n" +
+                    "            \"CODE_LP\": \"+793/+794\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299007\",\n" +
+                    "            \"LABEL\": \"congés payés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64126\",\n" +
+                    "            \"CODE_LP\": \"-3800  /+ 3802\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299017\",\n" +
+                    "            \"LABEL\": \"arrondi de paie\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"6421\",\n" +
+                    "            \"CODE_LP\": \"+280/+285/+286\",\n" +
+                    "            \"COMPTE_FINCON\": \"6420009526299001\",\n" +
+                    "            \"LABEL\": \"charges sociales/cnps\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641129\",\n" +
+                    "            \"CODE_LP\": \"+155/+157/+159\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299020\",\n" +
+                    "            \"LABEL\": \"séparations imposables\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"641130\",\n" +
+                    "            \"CODE_LP\": \"+640/+650\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299021\",\n" +
+                    "            \"LABEL\": \"séparation non imposables\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"642000\",\n" +
+                    "            \"CODE_LP\": \"+776\",\n" +
+                    "            \"COMPTE_FINCON\": \"6420009526299002\",\n" +
+                    "            \"LABEL\": \"cotisation crrae\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"63111\",\n" +
+                    "            \"CODE_LP\": \"+210/+282/+283/+284\",\n" +
+                    "            \"COMPTE_FINCON\": \"6311009526299001\",\n" +
+                    "            \"LABEL\": \"charges patronales\"\n" +
+                    "        }\n" +
+                    "    ]\n" +
+                    "}";
+            Object obj = parser.parse(jsonData);
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray rows = (JSONArray) jsonObject.get("rows");
+            for(int index=0;index<rows.size();index++){
+                for(int i=0;i<lines.size();i++){
+                    if(i==0) continue;
+                    JSONObject json=(JSONObject) rows.get(index);
+                    Map<String,Object>m=new HashMap<>();
+                    if(lines.get(i).getLigne().get("COMPTE_LP~4").equals(json.get("COMPTE_LP"))){
+                        //we have found the account in the journal we get
+                        m.put("LINENO~0",Integer.toString(i));
+                        m.put("NAME~1",json.get("LABEL"));
+                        m.put("ACCOUNT_NO~2",json.get("COMPTE_FINCON"));
+                        m.put("AMOUNT~3",lines.get(i).getLigne().get("MONTANT~11"));
+                        m.put("NARRATION~4", Utils.getCurrentMonth()+Calendar.getInstance().get(Calendar.YEAR)+"SALARY");
+                        m.put("sol_id~5","");
+                        m.put("TRAN_TYPE~6",lines.get(i).getLigne().get("OP_FINCON~10"));
+                        m.put("currency~7","");
+                        m.put("report_code~8",lines.get(i).getLigne().get("ENCODAGE~6"));
+                        newList.add(new Line(sortedLines(m)));
+                    }
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return newList;
     }
+
     private List<Line> readCSV(MultipartFile file,String configName){
         List<Line> lignes = new ArrayList<>();
         try(var theCSV = new BufferedReader(new InputStreamReader(file.getInputStream()));
@@ -618,7 +786,7 @@ public class Processors {
         return lignes;
     }
 
-    private Map<String, Object> sortedLines(Map<String, Object> m) {
+    public static Map<String, Object> sortedLines(Map<String, Object> m) {
         Comparator<String> c = Comparator.comparingInt(k -> Integer.parseInt(k.split("~")[1]));
         Map<String, Object> sorted = m.keySet()
                 .stream()

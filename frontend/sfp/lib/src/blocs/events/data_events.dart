@@ -32,6 +32,13 @@ class DoFileUpload extends DataEvent {
   List<Object> get props => [files, userId];
 }
 
+class DownloadFiles extends DataEvent {
+  final String userId;
+  final String configName;
+  const DownloadFiles(this.userId, this.configName);
+  List<Object> get props => [userId, configName];
+}
+
 class DiscardFiles extends DataEvent {
   final List<ProcessedFileModel> files;
   const DiscardFiles({this.files});

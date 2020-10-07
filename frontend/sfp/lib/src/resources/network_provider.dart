@@ -60,6 +60,24 @@ class NetworkProvider {
     }
   }
 
+  Future<List<String>> downloadFilesPath(
+      String userId, String configName) async {
+    print(
+        'in network provider trying to fetch the list of the files path which processing is done for uid $userId and config $configName');
+    var response = await dio.get(
+        '$backend/files/generatefiles?userId=$userId&configName=$configName');
+    //print(response);
+    if (response.statusCode == 200) {
+      var data = response.data;
+      data.forEach((e) {
+        e = '$backend/files/download/$e';
+      });
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> deleteFilesById(
       List<ProcessedFileModel> files) async {
     List<String> fileIds = [];

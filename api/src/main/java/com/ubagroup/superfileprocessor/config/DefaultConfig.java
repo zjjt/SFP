@@ -215,7 +215,7 @@ public class DefaultConfig {
             sageFileTypeandSize.put("size",10);
             sageFileTypeandSize.put("space_in_memory","mb");
             var canalConfig=new ProcessConfig("CANAL", "Process the file sent by CANAL+ to handle customers account debit", canalFunctionality,canalMeta,canalProcessingSteps,canalFileTypeandSize);
-            var sageConfig=new ProcessConfig("SAGE", "HR process", sageFunctionality,null,sageProcessingSteps,sageFileTypeandSize);
+            var sageConfig=new ProcessConfig("SAGE", "SAGE to FINCON file processing and validating", sageFunctionality,null,sageProcessingSteps,sageFileTypeandSize);
 
             //inserting the default configs now
             processConfigRepository.deleteAll();

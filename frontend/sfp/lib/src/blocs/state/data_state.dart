@@ -56,6 +56,11 @@ class FilesDiscarded extends DataState {
   const FilesDiscarded({this.message, this.errors});
 }
 
+class FilesDownloaded extends DataState {
+  final List<String> urlList;
+  const FilesDownloaded({this.urlList});
+}
+
 class AllFilesDiscarded extends DataState {}
 
 class DataFailure extends DataState {
