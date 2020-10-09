@@ -32,6 +32,29 @@ class DoFileUpload extends DataEvent {
   List<Object> get props => [files, userId];
 }
 
+class CreateUserWithRole extends DataEvent {
+  final String username;
+  final String userId;
+  final List<String> mailOfUsers;
+  final String role;
+  final String configName;
+
+  const CreateUserWithRole(
+      {this.username,
+      this.userId,
+      this.mailOfUsers,
+      this.role,
+      this.configName});
+  List<Object> get props => [username, userId, mailOfUsers, configName];
+}
+
+class GetValidationProcess extends DataEvent {
+  final String initiatorId;
+  final String configName;
+  const GetValidationProcess({this.initiatorId, this.configName});
+  List<Object> get props => [initiatorId, configName];
+}
+
 class DownloadFiles extends DataEvent {
   final String userId;
   final String configName;

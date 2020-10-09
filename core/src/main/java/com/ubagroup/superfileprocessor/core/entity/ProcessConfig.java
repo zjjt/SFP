@@ -37,6 +37,7 @@ public class ProcessConfig {
     private List<String> functionnalityTypes;
     private FileSplitterMetadata metaparameters;
     private List<ProcessingSteps> processingSteps;
+
     private Map<String,Object> fileTypeAndSizeInMB;
 
     public ProcessConfig(String configName, String description, List<String> functionnalityTypes, FileSplitterMetadata metaparameters, List<ProcessingSteps> processingSteps, Map<String, Object> fileTypeAndSizeInMB) {
@@ -56,6 +57,7 @@ public class ProcessConfig {
     public Map<String, Object> getFileTypeAndSizeInMB() {
         return fileTypeAndSizeInMB;
     }
+
 
     public void setFileTypeAndSizeInMB(Map<String, Object> fileTypeAndSizeInMB) {
         this.fileTypeAndSizeInMB = fileTypeAndSizeInMB;

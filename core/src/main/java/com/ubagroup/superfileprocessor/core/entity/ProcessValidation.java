@@ -17,7 +17,7 @@ public class ProcessValidation {
     private String configName;
     private String initiatorId;
     /**
-     * a list of the different validators id and the current validation status in the form of a {"userid":"validationstatus"}.
+     * a list of the different validators id and the current validation status in the form of a {"usermailid":"validationstatus"}.
      * The different status allowed are:
      * OK,REJECTED,STANDBY
      * OK means ok for transmission
@@ -27,16 +27,26 @@ public class ProcessValidation {
      * STANDBY is the default status
      */
     private Map<String,String> validators;
+    private Map<String,String> validatiorMotives;
 
-    public ProcessValidation(String configName, String initiatorId, Map<String, String> validators) {
+    public ProcessValidation(String configName, String initiatorId, Map<String, String> validators, Map<String, String> validatiorMotives) {
         this.configName = configName;
         this.initiatorId = initiatorId;
         this.validators = validators;
+        this.validatiorMotives = validatiorMotives;
     }
 
     @Override
     public String toString() {
         return String.format("ProcessValidation:[id:%s\nconfigName:%s\n,initiatorId:%s\nvalidators:%s\n]",id,configName,initiatorId,validators);
+    }
+
+    public Map<String, String> getValidatiorMotives() {
+        return validatiorMotives;
+    }
+
+    public void setValidatiorMotives(Map<String, String> validatiorMotives) {
+        this.validatiorMotives = validatiorMotives;
     }
 
     public String getInitiatorId() {

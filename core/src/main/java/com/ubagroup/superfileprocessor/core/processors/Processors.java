@@ -114,6 +114,7 @@ public class Processors {
                         f.setFileLines(processSage(lignes));
                         f.setOutFile(processSage(lignes));
                         f.setProcessingStatus(true);
+                        f.setDateProcessed(new Date());
                         treatedFiles.add(f);
                     } catch ( Exception e) {
                         e.printStackTrace();
@@ -592,7 +593,9 @@ public class Processors {
                     if(i==0) continue;
                     JSONObject json=(JSONObject) rows.get(index);
                     Map<String,Object>m=new HashMap<>();
-                    if(lines.get(i).getLigne().get("COMPTE_LP~4").equals(json.get("COMPTE_LP"))){
+                    if(lines.get(i).getLigne().get("COMPTE_LP~4").equals(json.get("COMPTE_LP"))
+                            &&(!lines.get(i).getLigne().get("STATUS~5").equals("")
+                            && !lines.get(i).getLigne().get("ENCODAGE~6").equals("")) ){
                         //we have found the account in the journal we get
                         m.put("LINENO~0",Integer.toString(i));
                         m.put("NAME~1",json.get("LABEL"));

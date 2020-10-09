@@ -993,6 +993,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     });
     l.addAll([
       SizedBox(height: 20.0),
+      if (dataBloc.currentValidation != null &&
+          dataBloc.currentValidation.initiatorId == authBloc.user.id &&
+          dataBloc.currentConfig.functionnalityTypes.contains("VALIDATIONS"))
+        ValidatingProcess(
+          whoViewThis: "INITIATOR",
+        ),
+      if (dataBloc.currentValidation != null &&
+          dataBloc.currentValidation.initiatorId != authBloc.user.id &&
+          dataBloc.currentConfig.functionnalityTypes.contains("VALIDATIONS"))
+        ValidatingProcess(
+          whoViewThis: "VALIDATOR",
+        ),
       Container(
         width:
             Responsive.isMobile(context) ? appB.width * 0.5 : appB.width * 0.15,
@@ -1017,26 +1029,116 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                 }
               }
             }
-            return RaisedButton(
-              onPressed: dataBloc.processedFiles.first.processingStatus
-                  ? _downloadFiles
-                  : null,
-              color: Colors.black,
-              textColor: Colors.white,
-              child: Text(
-                "Download files",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.0),
-              ),
-            );
+            return dataBloc.currentValidation != null &&
+                    dataBloc.currentValidation.initiatorId ==
+                        authBloc.user.id &&
+                    dataBloc.currentConfig.functionnalityTypes.contains(
+                        "VALIDATIONS") //Initiator when validation started
+                ? RaisedButton(
+                    onPressed: dataBloc.validationProgress == 100
+                        ? () => print("can send the file to destinataire")
+                        : null,
+                    color: Assets.ubaRedColor,
+                    hoverColor: Colors.black,
+                    textColor: Colors.white,
+                    child: Text(
+                      "Send File",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25.0),
+                    ),
+                  )
+                : dataBloc.currentValidation != null &&
+                        dataBloc.currentValidation.initiatorId !=
+                            authBloc.user.id &&
+                        dataBloc.currentConfig.functionnalityTypes
+                            .contains("VALIDATIONS") //Validators
+                    ? Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            RaisedButton(
+                              onPressed: () {},
+                              color: Assets.ubaRedColor,
+                              hoverColor: Colors.black,
+                              textColor: Colors.white,
+                              child: Text(
+                                "Reject",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                              ),
+                            ),
+                            RaisedButton(
+                              onPressed: () {},
+                              color: Assets.ubaRedColor,
+                              hoverColor: Colors.black,
+                              textColor: Colors.white,
+                              child: Text(
+                                "Acknowledge",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : dataBloc.currentValidation == null &&
+                            dataBloc.currentConfig.functionnalityTypes.contains(
+                                "VALIDATIONS") //Initiator when validation hasnt started yet
+                        ? RaisedButton(
+                            onPressed:
+                                dataBloc.processedFiles.first.processingStatus
+                                    ? _downloadFiles
+                                    : null,
+                            color: Assets.ubaRedColor,
+                            hoverColor: Colors.black,
+                            textColor: Colors.white,
+                            child: Text(
+                              "Submit for review",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                            ),
+                          )
+                        : RaisedButton(
+                            onPressed:
+                                dataBloc.processedFiles.first.processingStatus
+                                    ? _downloadFiles
+                                    : null,
+                            color: Colors.black,
+                            textColor: Colors.white,
+                            child: Text(
+                              "Download files",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                            ),
+                          );
           },
         ),
-      )
+      ),
     ]);
     return l;
   }

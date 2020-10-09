@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sfp/src/models/process_config_model.dart';
+import 'package:sfp/src/models/process_validation_model.dart';
 
 abstract class DataState extends Equatable {
   const DataState();
@@ -59,6 +60,15 @@ class FilesDiscarded extends DataState {
 class FilesDownloaded extends DataState {
   final List<String> urlList;
   const FilesDownloaded({this.urlList});
+}
+
+class UsersCreated extends DataState {
+  const UsersCreated();
+}
+
+class ValidationProcessLoaded extends DataState {
+  final ProcessValidationModel processValidation;
+  const ValidationProcessLoaded(this.processValidation);
 }
 
 class AllFilesDiscarded extends DataState {}

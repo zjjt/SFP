@@ -48,8 +48,7 @@ dependencies:
   cronparse: ^0.1.1
   flutter_countdown_timer: ^1.1.0
   intl: ^0.16.1
-  excel: ^1.1.5
-  spreadsheet_decoder: ^1.2.0
+  flutter_xlider: ^3.4.0 
  
 dev_dependencies:
   flutter_test:

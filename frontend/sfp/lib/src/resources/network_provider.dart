@@ -30,13 +30,55 @@ class NetworkProvider {
     }
   }
 
+  Future<Map<String, dynamic>> getCurrentValidationProcess(
+      String initiatorId, String configName) async {
+    print(
+        'in network provider trying to get the current validation process pipeline from backend for initiator $initiatorId and $configName');
+    var response = await dio.get(
+        '$backend/validation?configName=$configName&initiatorId=$initiatorId');
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
+  Future<Map<String, dynamic>> createUsersWithRole(
+      String username,
+      String userId,
+      List<String> userMails,
+      String role,
+      String configName) async {
+    print(
+        'in network provider trying to create a user list as $role on the backend');
+    FormData formData = FormData.fromMap({
+      "username": username,
+      "userId": userId,
+      "usermailtocreate": userMails,
+      "role": role,
+      "configName": configName,
+    });
+
+    var response = await dio.post("$backend/user/createOrUpdateWithRole",
+        data: formData, onSendProgress: (int sent, int total) {
+      print("$sent/$total");
+    });
+
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> fetchUsers(
       String username, String password) async {
     print(
         'in network provider trying to fetch the user from backend with $username and $password');
     var response =
         await dio.get('$backend/user/with?username=$username&tp=$password');
-    print(response);
     if (response.statusCode == 200) {
       var data = response.data;
       return data;

@@ -136,11 +136,12 @@ public class DefaultConfig {
 
 
         if(userRepository.count()==0){
-            var valmap=new HashMap<String,String>();
-            valmap.put("canal+","test");
-            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020",  null, "ADMIN"));
-            userRepository.save(new User("test.sfp@ubagroup.com", "testman", null, "INITIATOR"));
-            userRepository.save(new User("testval.sfp@ubagroup.com", "testman", valmap, "INITIATOR"));
+            var valList=new ArrayList<>();
+            //var valmap=new HashMap<>();
+            //valmap.put("canal+","test");
+            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020",   "ADMIN", ""));
+            userRepository.save(new User("test.sfp@ubagroup.com", "testman", "INITIATOR", ""));
+            //userRepository.save(new User("testval.sfp@ubagroup.com", "testman", valmap, "VALIDATOR"));
 
             System.out.println("Admin user inserted in user collection");
 

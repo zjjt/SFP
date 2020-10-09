@@ -7,6 +7,7 @@ import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.ProcessedFileRepository;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,28 +112,81 @@ public class ProcessedFileService implements ProcessedFileInterface {
         return treated;
     }
 
+    private void sortSheet(Sheet sheet, int column, int rowStart) {
+        System.out.println("sorting the sheet ");
+        boolean sorting = true;
+        int lastrow = sheet.getLastRowNum();
+        while (sorting) {
+
+            for (Row row : sheet) {
+                if (row.getRowNum() < rowStart) continue;
+                if (lastrow == row.getRowNum()) break;
+                Row nextRow = sheet.getRow(row.getRowNum() + 1);
+                if (nextRow == null) continue;
+                String debcred1 = row.getCell(column).getStringCellValue();
+                String debcred2 = nextRow.getCell(column).getStringCellValue();
+                System.out.println("next row val is " + debcred2 + " and row val is " + debcred1);
+
+                if (debcred2.compareTo(debcred1) < 0) {
+                    sheet.shiftRows(nextRow.getRowNum(), nextRow.getRowNum(), -1);
+                    sheet.shiftRows(row.getRowNum(), row.getRowNum(), 1);
+                }
+            }
+            sorting = false;
+        }
+    }
+
+    /**
+     * inSertRow inserts a new row in between existing ones in an excel file
+     *
+     * @param sheet
+     * @param column
+     * @param whereRow
+     */
+    private void insertRow(Sheet sheet, int column, int whereRow, Object value) {
+        Row newRow = sheet.getRow(whereRow);
+        if (newRow != null) {
+            sheet.shiftRows(whereRow, sheet.getLastRowNum(), 1);
+        } else {
+            newRow = sheet.createRow(whereRow);
+        }
+        Cell total = newRow.createCell(column);
+        if (value instanceof Integer) {
+            total.setCellValue((Integer) value);
+        } else if (value instanceof Double) {
+            total.setCellValue((Double) value);
+        } else if (value instanceof Date) {
+            total.setCellValue((Date) value);
+        } else {
+            total.setCellValue((String) value);
+        }
+
+    }
+
     public List<String> generateFilePaths(String configName, String userId) {
         //get the files which are done processing for this user
         ProcessConfig laConfig = processConfigService.get(configName);
         List<ProcessedFile> lesFichiers = processedFileRepository.findByUserIdAndConfigNameAndProcessingStatus(userId, configName, true);
         //since there is a logic bug which happens when writing the headers to the file
         //then we prepend the lines with a header line
-        var m=new HashMap<String,Object>();
+        var m = new HashMap<String, Object>();
         //m.put("LINENO~0","");
-        m.put("NAME~1","");
-        m.put("ACCOUNT NO~2","");
-        m.put("AMOUNT~3","");
-        m.put("NARRATION~4","");
-        m.put("sol id~5","");
-        m.put("TRAN TYPE~6","");
-        m.put("currency~7","");
-        m.put("report code~8","");
+        if (laConfig.getConfigName().equalsIgnoreCase("SAGE")) {
+            m.put("NAME~1", "");
+            m.put("ACCOUNT NO~2", "");
+            m.put("AMOUNT~3", "");
+            m.put("NARRATION~4", "");
+            m.put("sol id~5", "");
+            m.put("TRAN TYPE~6", "");
+            m.put("currency~7", "");
+            m.put("report code~8", "");
+        }
 
 
         return lesFichiers.stream()
                 .parallel()
                 .map(f -> {
-                    String fileName="";
+                    String fileName = "";
                     System.out.println("checking config type " + laConfig.getFileTypeAndSizeInMB().get("type").toString().equalsIgnoreCase("CSV"));
                     if (laConfig.getFileTypeAndSizeInMB().get("type").toString().equalsIgnoreCase("CSV")) {
                         System.out.println("creating the excel files");
@@ -143,18 +197,18 @@ public class ProcessedFileService implements ProcessedFileInterface {
                         List<Line> leFichier = new ArrayList<>();
                         f.getOutFile().stream()
                                 .parallel()
-                                .forEachOrdered(l->{
+                                .forEachOrdered(l -> {
                                     try {
-                                       var ligne = l.clone();
-                                       ligne.getLigne().remove("LINENO~0");
-                                       var sorted=Processors.sortedLines(ligne.getLigne());
+                                        var ligne = l.clone();
+                                        ligne.getLigne().remove("LINENO~0");
+                                        var sorted = Processors.sortedLines(ligne.getLigne());
                                         leFichier.add(new Line(sorted));
                                     } catch (CloneNotSupportedException e) {
                                         e.printStackTrace();
                                     }
                                 });
 
-                        leFichier.add(0,new Line(Processors.sortedLines(m)));
+                        leFichier.add(0, new Line(Processors.sortedLines(m)));
 
                         for (var ligne : leFichier) {
                             Row row = sheet.createRow(rowCount);
@@ -163,9 +217,10 @@ public class ProcessedFileService implements ProcessedFileInterface {
                                 Cell cell = row.createCell(columnCount);
                                 if (rowCount == 0) {
                                     //we first fill in the header
-                                    var header=entry.getKey().replaceAll("\\d", "").replaceAll("~","");
+                                    var header = entry.getKey().replaceAll("\\d", "").replaceAll("~", "");
                                     cell.setCellValue((String) header);
                                 } else {
+
                                     //we can store the data
                                     if (entry.getValue() instanceof String) {
                                         cell.setCellValue((String) entry.getValue());
@@ -177,19 +232,43 @@ public class ProcessedFileService implements ProcessedFileInterface {
                             }
                             rowCount++;
                         }
+                        //we sort the lines generated based on debit credit D/C
+                        sortSheet(sheet, 5, 1);
+                        //we calculate the sum and totals
+                        int lastDebitRowIndex = 0;
+                        int lastCreditRowIndex = 0;
+                        int totalDebitOps = 0;
+                        int totalCreditOps = 0;
+                        for (Row row : sheet) {
+                            if (row.getCell(5).getStringCellValue().equalsIgnoreCase("D")) {
+                                totalDebitOps += Integer.parseInt(row.getCell(2).getStringCellValue());
+                                lastDebitRowIndex = row.getRowNum();
+                            } else if (row.getCell(5).getStringCellValue().equalsIgnoreCase("C")) {
+                                totalCreditOps += Integer.parseInt(row.getCell(2).getStringCellValue());
+                                lastCreditRowIndex = row.getRowNum();
+                            }
+                        }
+                        //we insert the total of debit operations
+                        if (totalDebitOps > 0) {
+                            insertRow(sheet, 2, lastDebitRowIndex+1, totalDebitOps);
+                        }
+                        if (totalCreditOps > 0) {
+                            insertRow(sheet, 2, lastCreditRowIndex+1, totalCreditOps);
+
+                        }
                         //now we create the file
                         Object s = f.hashCode();
-                        File file=new File(s+".xlsx");
+                        File file = new File(s + ".xlsx");
                         try {
-                            FileOutputStream fileOut=new FileOutputStream(file);
+                            FileOutputStream fileOut = new FileOutputStream(file);
                             workbook.write(fileOut);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        fileName=file.getName();
+                        fileName = file.getName();
 
                     }
-                   return fileName;
+                    return fileName;
                 })
                 .collect(Collectors.toList());
     }

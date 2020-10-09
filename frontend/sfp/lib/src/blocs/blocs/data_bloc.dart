@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/models/process_config_model.dart';
+import 'package:sfp/src/models/process_validation_model.dart';
 import 'package:sfp/src/resources/repository.dart';
 
 import '../blocs.dart';
@@ -10,7 +11,31 @@ class DataBloc extends Bloc<DataEvent, DataState> {
   List<ProcessConfigModel> processConfigs;
   List<ProcessedFileModel> processedFiles;
   ProcessConfigModel currentConfig;
+  ProcessValidationModel currentValidation;
+  double validationProgress;
+
   DataBloc(this.repo) : super(DataInitial());
+
+  double _calculateProgress() {
+    double p = 0;
+    Map<String, dynamic> validations = currentValidation.validators;
+    if (validations != null || validations.isNotEmpty) {
+      int nbrValidators = validations.keys.length;
+      int nbrValidated = 0;
+      validations.forEach((key, value) {
+        if (value.toString().contains("OK")) {
+          nbrValidated++;
+        }
+      });
+      if (nbrValidated == nbrValidators) {
+        p = 100;
+      } else {
+        p = (nbrValidated * 100) / nbrValidators;
+      }
+    }
+    print("current validation progress is ${p.roundToDouble()}");
+    return p.roundToDouble();
+  }
 
   @override
   Stream<DataState> mapEventToState(DataEvent event) async* {
@@ -24,16 +49,44 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         yield DataFailure("No internet connection");
       }
     }
+
     if (event is SelectConfig) {
       currentConfig = processConfigs[event.configPosition];
       print("selected config is $currentConfig");
       yield ConfigSelected(currentConfig);
     }
+
     if (event is DownloadFiles) {
-      List<String> urlList =
-          await repo.downloadFilesPath(event.userId, event.configName);
-      yield FilesDownloaded(urlList: urlList);
+      try {
+        List<String> urlList =
+            await repo.downloadFilesPath(event.userId, event.configName);
+        yield FilesDownloaded(urlList: urlList);
+      } on NetWorkException {
+        yield DataFailure("No internet connection");
+      }
     }
+
+    if (event is CreateUserWithRole) {
+      try {
+        await repo.createUsersWithRole(event.username, event.userId,
+            event.mailOfUsers, event.role, event.configName);
+      } on NetWorkException {
+        yield DataFailure("No internet connection");
+      }
+    }
+
+    if (event is GetValidationProcess) {
+      yield DataLoading();
+      try {
+        final val = await repo.getCurrentValidationProcess(
+            event.initiatorId, event.configName);
+        currentValidation = val["processValidation"];
+        validationProgress = _calculateProgress();
+      } on NetWorkException {
+        yield DataFailure("No internet connection");
+      }
+    }
+
     if (event is DiscardFiles) {
       if (event.files.isNotEmpty) {
         //removing from local state variable
@@ -50,6 +103,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         }
       }
     }
+
     if (event is PreparingFileFetching) {
       yield FileFetching();
     }
