@@ -12,6 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/models/models.dart';
+import 'package:sfp/src/widgets/validation_steps.dart';
 import 'package:sfp/src/widgets/widgets.dart';
 
 class ResultPage extends StatefulWidget {
@@ -48,9 +49,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     //launching entrence animation
     animateBloc.add(EnteringPage());
     docBloc.add(ResetDoc());
-    if (mounted) {
-      _getDocuments();
-    }
   }
 
   void _downloadFiles() {
@@ -59,15 +57,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
         DownloadFiles(authBloc.user.id, dataBloc.currentConfig.configName));
   }
 
-  Future<void> _getDocuments() async {
-    var initials = await compute(_buildDocument, "original");
-    var generated = await compute(_buildDocument, "generated");
-    setState(() {
-      docInitial = initials;
-      docGenerated = generated;
-      _showToast("The files are ready to be reviewed");
-    });
-  }
+  // Future<void> _getDocuments() async {
+  //   var initials = await compute(_buildDocument, "original");
+  //   var generated = await compute(_buildDocument, "generated");
+  //   setState(() {
+  //     docInitial = initials;
+  //     docGenerated = generated;
+  //     _showToast("The files are ready to be reviewed");
+  //   });
+  // }
 
   List<Uint8List> _buildDocument(String whichOne) {
     List<Uint8List> docs = [];
@@ -856,24 +854,37 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
                       onPressed: () {
-                        alertBloc.add(ShowAlert(
-                            whatToShow: null,
-                            isDoc: true,
-                            doc: docInitial[i],
-                            actions: [
-                              FlatButton(
-                                onPressed: () {
-                                  alertBloc.add(CloseAlert());
-                                },
-                                child: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text("CLOSE")),
-                              )
-                            ],
-                            title: 'Original file $windex'));
-                        _showToast(kIsWeb
-                            ? "Use the mouse wheel to zoom in or out on the area of interest"
-                            : "Pinch with your fingers to zoom in or out of the document");
+                        if (docInitial != null) {
+                          alertBloc.add(ShowAlert(
+                              whatToShow: null,
+                              isDoc: true,
+                              doc: docInitial[i],
+                              actions: [
+                                FlatButton(
+                                  onPressed: () {
+                                    alertBloc.add(CloseAlert());
+                                  },
+                                  child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text("CLOSE")),
+                                )
+                              ],
+                              title: 'Original file $windex'));
+                          _showToast(kIsWeb
+                              ? "Use the mouse wheel to zoom in or out on the area of interest"
+                              : "Pinch with your fingers to zoom in or out of the document");
+                        } else {
+                          _showToast(
+                              "Please wait while we are building the file");
+                          Timer(Duration(milliseconds: 500), () {
+                            setState(() async {
+                              docInitial =
+                                  await compute(_buildDocument, "original");
+                              _showToast(
+                                  "The file is now ready.Tap the button to view it");
+                            });
+                          });
+                        }
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -911,24 +922,37 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
                       onPressed: () {
-                        alertBloc.add(ShowAlert(
-                            whatToShow: null,
-                            isDoc: true,
-                            doc: docGenerated[i],
-                            actions: [
-                              FlatButton(
-                                onPressed: () {
-                                  alertBloc.add(CloseAlert());
-                                },
-                                child: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text("CLOSE")),
-                              )
-                            ],
-                            title: 'Original file $windex'));
-                        _showToast(kIsWeb
-                            ? "Use the mouse wheel to zoom in or out on the area of interest"
-                            : "Pinch with your fingers to zoom in or out of the document");
+                        if (docGenerated != null) {
+                          alertBloc.add(ShowAlert(
+                              whatToShow: null,
+                              isDoc: true,
+                              doc: docGenerated[i],
+                              actions: [
+                                FlatButton(
+                                  onPressed: () {
+                                    alertBloc.add(CloseAlert());
+                                  },
+                                  child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text("CLOSE")),
+                                )
+                              ],
+                              title: 'Generated file $windex'));
+                          _showToast(kIsWeb
+                              ? "Use the mouse wheel to zoom in or out on the area of interest"
+                              : "Pinch with your fingers to zoom in or out of the document");
+                        } else {
+                          _showToast(
+                              "Please wait while we are building the file");
+                          Timer(Duration(milliseconds: 500), () {
+                            setState(() async {
+                              docInitial =
+                                  await compute(_buildDocument, "generated");
+                              _showToast(
+                                  "The file is now ready.Tap the button to view it");
+                            });
+                          });
+                        }
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1105,10 +1129,25 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             dataBloc.currentConfig.functionnalityTypes.contains(
                                 "VALIDATIONS") //Initiator when validation hasnt started yet
                         ? RaisedButton(
-                            onPressed:
-                                dataBloc.processedFiles.first.processingStatus
-                                    ? _downloadFiles
-                                    : null,
+                            onPressed: () {
+                              alertBloc.add(ShowAlert(
+                                  whatToShow: ValidationSteps(),
+                                  isDoc: false,
+                                  doc: null,
+                                  actions: [
+                                    FlatButton(
+                                      onPressed: () {
+                                        alertBloc.add(CloseAlert());
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text("CLOSE")),
+                                    )
+                                  ],
+                                  title: 'Create the validation chain'));
+                              _showToast(
+                                  "Add or remove validators email ids. Each of them will be notified to approve of the file");
+                            },
                             color: Assets.ubaRedColor,
                             hoverColor: Colors.black,
                             textColor: Colors.white,
