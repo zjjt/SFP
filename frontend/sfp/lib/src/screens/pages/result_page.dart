@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   FToast ftoast;
   DocBloc docBloc;
   int currentPage, totalPages;
+  List<Uint8List> docInitial, docGenerated;
   @override
   void initState() {
     super.initState();
@@ -42,9 +44,13 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     totalPages = 0;
     ftoast = FToast();
     ftoast.init(context);
+
     //launching entrence animation
     animateBloc.add(EnteringPage());
     docBloc.add(ResetDoc());
+    if (mounted) {
+      _getDocuments();
+    }
   }
 
   void _downloadFiles() {
@@ -53,7 +59,39 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
         DownloadFiles(authBloc.user.id, dataBloc.currentConfig.configName));
   }
 
-  List<pw.Widget> _buildPdf(
+  Future<void> _getDocuments() async {
+    var initials = await compute(_buildDocument, "original");
+    var generated = await compute(_buildDocument, "generated");
+    setState(() {
+      docInitial = initials;
+      docGenerated = generated;
+      _showToast("The files are ready to be reviewed");
+    });
+  }
+
+  List<Uint8List> _buildDocument(String whichOne) {
+    List<Uint8List> docs = [];
+    for (int i = 0; i < dataBloc.processedFiles.length; i++) {
+      print("clear document");
+      var pdf = pw.Document();
+      pdf.addPage(pw.MultiPage(
+          pageFormat: pdfDart.PdfPageFormat(
+              100 * pdfDart.PdfPageFormat.cm,
+              dataBloc.currentConfig.configName == "CANAL"
+                  ? 25 * pdfDart.PdfPageFormat.cm
+                  : 50 * pdfDart.PdfPageFormat.cm,
+              marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
+          build: (pw.Context context) {
+            return _buildPdf(dataBloc.processedFiles[i], whichOne,
+                dataBloc.currentConfig.configName);
+          }));
+      var doc = pdf.save();
+      docs.add(doc);
+    }
+    return docs;
+  }
+
+  static List<pw.Widget> _buildPdf(
       ProcessedFileModel file, String which, String configName) {
     pw.Widget retour = pw.Container();
     print('building th pdf for $which');
@@ -636,7 +674,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     }
   }
 
-  List<Widget> generateFileWidgets(pw.Document pdf, Size appB) {
+  List<Widget> generateFileWidgets(Size appB) {
     List<Widget> l = List.generate(dataBloc.processedFiles.length, (i) {
       // File inFile = MemoryFileSystem().file('original.pdf')
       //   ..writeAsBytesSync(utf8.encode(
@@ -818,27 +856,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
                       onPressed: () {
-                        print("clear document");
-                        pdf = pw.Document();
-                        pdf.addPage(pw.MultiPage(
-                            pageFormat: pdfDart.PdfPageFormat(
-                                100 * pdfDart.PdfPageFormat.cm,
-                                dataBloc.currentConfig.configName == "CANAL"
-                                    ? 25 * pdfDart.PdfPageFormat.cm
-                                    : 50 * pdfDart.PdfPageFormat.cm,
-                                marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
-                            build: (pw.Context context) {
-                              return _buildPdf(
-                                  dataBloc.processedFiles[i],
-                                  "original",
-                                  dataBloc.currentConfig.configName);
-                            }));
-                        var doc = pdf.save();
-
                         alertBloc.add(ShowAlert(
                             whatToShow: null,
                             isDoc: true,
-                            doc: doc,
+                            doc: docInitial[i],
                             actions: [
                               FlatButton(
                                 onPressed: () {
@@ -890,26 +911,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0)),
                       onPressed: () {
-                        pdf = pw.Document();
-                        pdf.addPage(pw.MultiPage(
-                            pageFormat: pdfDart.PdfPageFormat(
-                                100 * pdfDart.PdfPageFormat.cm,
-                                dataBloc.currentConfig.configName == "CANAL"
-                                    ? 25 * pdfDart.PdfPageFormat.cm
-                                    : 50 * pdfDart.PdfPageFormat.cm,
-                                marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
-                            build: (pw.Context context) {
-                              return _buildPdf(
-                                  dataBloc.processedFiles[i],
-                                  "generated",
-                                  dataBloc.currentConfig.configName);
-                            }));
-                        var doc = pdf.save();
-
                         alertBloc.add(ShowAlert(
                             whatToShow: null,
                             isDoc: true,
-                            doc: doc,
+                            doc: docGenerated[i],
                             actions: [
                               FlatButton(
                                 onPressed: () {
@@ -1146,7 +1151,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Size appB = Size(MediaQuery.of(context).size.width, 80.0);
-    final pdf = pw.Document();
+    // Timer(Duration(milliseconds: 500), () {
+    //   _showToast("Please wait while we are building the file(s)");
+    // });
     return Container(
       width: appB.width,
       //height: 500,
@@ -1197,7 +1204,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           ? const EdgeInsets.symmetric(horizontal: 30.0)
                           : const EdgeInsets.all(0),
                       child: Column(
-                        children: generateFileWidgets(pdf, appB),
+                        children: generateFileWidgets(appB),
                       ),
                     ),
                   ),

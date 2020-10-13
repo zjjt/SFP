@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
@@ -26,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   DataBloc dataBloc;
   AlertBloc alertBloc;
   DocBloc docBloc;
+  FToast ftoast;
+
   bool isIntitialPage = true;
   Animation _fadeIn;
   AnimationController _fadeCtrl;

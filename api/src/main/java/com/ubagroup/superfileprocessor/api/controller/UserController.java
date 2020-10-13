@@ -28,6 +28,7 @@ public class UserController {
     @Autowired
     private ProcessValidationService processValidationService;
     @Value("#{'${application.mode}'}")
+
     private String appmode;
 
     @GetMapping
