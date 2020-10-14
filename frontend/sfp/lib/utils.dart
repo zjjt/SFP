@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:sfp/assets.dart';
 import 'package:universal_html/html.dart' as html;
 
 class Utils {
@@ -36,5 +37,11 @@ class Utils {
     });
     Uint8List bytes = Uint8List.fromList(list);
     return bytes;
+  }
+
+  static void log(dynamic s) {
+    if (Assets.env == "dev") {
+      print(s.toString());
+    }
   }
 }

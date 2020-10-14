@@ -14,6 +14,7 @@ import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/widgets/validation_steps.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 
 class ResultPage extends StatefulWidget {
   ResultPage({Key key}) : super(key: key);
@@ -45,7 +46,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     totalPages = 0;
     ftoast = FToast();
     ftoast.init(context);
-
+    alertBloc.add(CloseAlert());
     //launching entrence animation
     animateBloc.add(EnteringPage());
     docBloc.add(ResetDoc());
@@ -70,7 +71,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   List<Uint8List> _buildDocument(String whichOne) {
     List<Uint8List> docs = [];
     for (int i = 0; i < dataBloc.processedFiles.length; i++) {
-      print("clear document");
+      Utils.log("clear document");
       var pdf = pw.Document();
       pdf.addPage(pw.MultiPage(
           pageFormat: pdfDart.PdfPageFormat(
@@ -92,7 +93,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   static List<pw.Widget> _buildPdf(
       ProcessedFileModel file, String which, String configName) {
     pw.Widget retour = pw.Container();
-    print('building th pdf for $which');
+    Utils.log('building th pdf for $which');
     switch (configName) {
       case "CANAL":
         switch (which) {
@@ -114,12 +115,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               headerList[i] = headerList[i].replaceAll(new RegExp("\\d"), "");
               headerList[i] = headerList[i].replaceAll("~", "");
             }
-            print('content of headerList is $headerList');
+            Utils.log('content of headerList is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
               children: List.generate(headerList.length, (index) {
-                print(headerList[index]);
+                Utils.log(headerList[index]);
                 return pw.Container(
                   padding: const pw.EdgeInsets.all(2.0),
                   child: pw.Text(headerList[index],
@@ -135,11 +136,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   if (file.inFile[index]['ligne'].keys.toList().length ==
                       headerListInitial.length) {
                     //if the content match the same length
-                    //print(
+                    //Utils.log(
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
                     if (file.inFile[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
-                      //print("indeed they match");
+                      //Utils.log("indeed they match");
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
@@ -155,10 +156,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           i < file.inFile[index]['ligne'].keys.toList().length
                               ? file.inFile[index]['ligne'].keys.toList()[i]
                               : file.inFile[index]['ligne'].keys.toList().last;
-                      print("the current element is $element");
+                      Utils.log("the current element is $element");
                       // the indexes added to the keys are not starting from 0
                       if (element.contains("${i + 1}")) {
-                        print(
+                        Utils.log(
                             'element is $element and contains the id $i and value is ${file.inFile[index]['ligne'][headerListInitial[i]]}');
                         return pw.Container(
                           padding: const pw.EdgeInsets.all(2.0),
@@ -169,15 +170,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               textAlign: pw.TextAlign.center),
                         );
                       } else {
-                        print(
+                        Utils.log(
                             "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
                         int indexInEl = int.parse(
                             element.replaceAll(RegExp(r'[^0-9]'), ''));
-                        print("the element index in json is $indexInEl");
+                        Utils.log("the element index in json is $indexInEl");
                         if (/*element.contains('$indexInEl')*/ headerListInitial[
                                 i] ==
                             element) {
-                          print(
+                          Utils.log(
                               "yes element is $element index is $index and i is $i");
                           return pw.Container(
                             padding: const pw.EdgeInsets.all(2.0),
@@ -190,14 +191,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     } else if (index == file.inFile.length - 1 &&
                         i < file.inFile[index]['ligne'].keys.toList().length) {
                       //here we take care of the last line of the canal + file
-                      print("last element ");
+                      Utils.log("last element ");
                       String lastElement =
                           file.inFile[index]['ligne'].keys.toList()[i];
-                      print("last element $lastElement");
+                      Utils.log("last element $lastElement");
                       if (lastElement == "LASTLINE") {
                         var lastSplit = file.inFile[index]['ligne'][lastElement]
                             .split(RegExp("\\s+"));
-                        print(lastSplit);
+                        Utils.log(lastSplit);
                         //we arbitrarily place the last line into random columns
                         if (i == 0) {
                           return pw.Container(
@@ -265,12 +266,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               headerList[i] = headerList[i].replaceAll("~", "");
             }
 
-            print('content of headerList is $headerList');
+            Utils.log('content of headerList is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
               children: List.generate(headerList.length, (index) {
-                print(headerList[index]);
+                Utils.log(headerList[index]);
                 return pw.Container(
                   padding: const pw.EdgeInsets.all(2.0),
                   child: pw.Text(headerList[index],
@@ -293,10 +294,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                 .toList()
                                 .last
                                 .toString();
-                    print("the current element is $element");
+                    Utils.log("the current element is $element");
                     // the indexes added to the keys are not starting from 0
                     if (element.contains("${i + 1}")) {
-                      print(
+                      Utils.log(
                           'element is $element and contains the id $i and value is ${file.fileLines[index]['ligne'][headerListInitial[i]]}');
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
@@ -307,15 +308,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             textAlign: pw.TextAlign.center),
                       );
                     } else {
-                      print(
+                      Utils.log(
                           "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
                       int indexInEl =
                           int.parse(element.replaceAll(RegExp(r'[^0-9]'), ''));
-                      print("the element index in json is $indexInEl");
+                      Utils.log("the element index in json is $indexInEl");
                       if (/*element.contains('$indexInEl')*/ headerListInitial[
                               i] ==
                           element) {
-                        print(
+                        Utils.log(
                             "yes element is $element index is $index and i is $i");
                         return pw.Container(
                           padding: const pw.EdgeInsets.all(2.0),
@@ -328,15 +329,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   } else if (index == file.fileLines.length - 1 &&
                       i < file.fileLines[index]['ligne'].keys.toList().length) {
                     //here we take care of the last line of the canal + file
-                    print("last element ");
+                    Utils.log("last element ");
                     String lastElement =
                         file.fileLines[index]['ligne'].keys.toList()[i];
-                    print("last element $lastElement");
+                    Utils.log("last element $lastElement");
                     if (lastElement == "LASTLINE") {
                       var lastSplit = file.fileLines[index]['ligne']
                               [lastElement]
                           .split(RegExp("\\s+"));
-                      print(lastSplit);
+                      Utils.log(lastSplit);
                       //we arbitrarily place the last line into random columns
                       if (i == 0) {
                         return pw.Container(
@@ -362,16 +363,17 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                 .toList()
                                 .last
                                 .toString();
-                    print("the current element is $element generated files");
+                    Utils.log(
+                        "the current element is $element generated files");
 
-                    // print("current line is ${file.fileLines[index]['ligne']}");
+                    // Utils.log("current line is ${file.fileLines[index]['ligne']}");
                     String theText = '';
                     if (headerListInitial[i] == element) {
-                      print("yes they are equal");
+                      Utils.log("yes they are equal");
                       theText =
                           file.fileLines[index]['ligne'][element].toString() ??
                               "";
-                      print("element is $theText");
+                      Utils.log("element is $theText");
                     }
                     return pw.Container(
                         color: file.fileLines[index]["ligne"]
@@ -442,14 +444,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
             }
             // if (headerList.remove("LINENO") &&
             //     headerListInitial.remove("LINENO~0")) {
-            //   print("LINENO removed");
+            //   Utils.log("LINENO removed");
             // }
-            print('content of headerList in sage is $headerList');
+            Utils.log('content of headerList in sage is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
               children: List.generate(headerList.length, (index) {
-                print(headerList[index]);
+                Utils.log(headerList[index]);
                 return pw.Container(
                   padding: const pw.EdgeInsets.all(2.0),
                   child: pw.Text(headerList[index],
@@ -465,11 +467,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   if (file.inFile[index]['ligne'].keys.toList().length ==
                       headerListInitial.length) {
                     //if the content match the same length
-                    //print(
+                    //Utils.log(
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
                     if (file.inFile[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
-                      //print("indeed they match");
+                      //Utils.log("indeed they match");
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
@@ -485,10 +487,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                           i < file.inFile[index]['ligne'].keys.toList().length
                               ? file.inFile[index]['ligne'].keys.toList()[i]
                               : file.inFile[index]['ligne'].keys.toList().last;
-                      print("the current element is $element");
+                      Utils.log("the current element is $element");
                       // the indexes added to the keys are not starting from 0
                       if (element.contains("${i + 1}")) {
-                        print(
+                        Utils.log(
                             'element is $element and contains the id $i and value is ${file.inFile[index]['ligne'][headerListInitial[i]]}');
                         return pw.Container(
                           padding: const pw.EdgeInsets.all(2.0),
@@ -499,15 +501,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               textAlign: pw.TextAlign.center),
                         );
                       } else {
-                        print(
+                        Utils.log(
                             "this index $i doesnt exist in keys so we try checking if the number set as index in the element match the value of the index+1");
                         int indexInEl = int.parse(
                             element.replaceAll(RegExp(r'[^0-9]'), ''));
-                        print("the element index in json is $indexInEl");
+                        Utils.log("the element index in json is $indexInEl");
                         if (/*element.contains('$indexInEl')*/ headerListInitial[
                                 i] ==
                             element) {
-                          print(
+                          Utils.log(
                               "yes element is $element index is $index and i is $i");
                           return pw.Container(
                             padding: const pw.EdgeInsets.all(2.0),
@@ -520,14 +522,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     } else if (index == file.inFile.length - 1 &&
                         i < file.inFile[index]['ligne'].keys.toList().length) {
                       //here we take care of the last line of the canal + file
-                      print("last element ");
+                      Utils.log("last element ");
                       String lastElement =
                           file.inFile[index]['ligne'].keys.toList()[i];
-                      print("last element $lastElement");
+                      Utils.log("last element $lastElement");
                       if (lastElement == "LASTLINE") {
                         var lastSplit = file.inFile[index]['ligne'][lastElement]
                             .split(RegExp("\\s+"));
-                        print(lastSplit);
+                        Utils.log(lastSplit);
                         //we arbitrarily place the last line into random columns
                         if (i == 0) {
                           return pw.Container(
@@ -576,14 +578,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
             }
             // if (headerList.remove("LINENO") &&
             //     headerListInitial.remove("LINENO~0")) {
-            //   print("LINENO removed");
+            //   Utils.log("LINENO removed");
             // }
-            print('content of headerList in sage is $headerList');
+            Utils.log('content of headerList in sage is $headerList');
             List<pw.TableRow> tableLignes = [];
             //headers
             tableLignes.add(pw.TableRow(
               children: List.generate(headerList.length, (index) {
-                print(headerList[index]);
+                Utils.log(headerList[index]);
                 return pw.Container(
                   padding: const pw.EdgeInsets.all(2.0),
                   child: pw.Text(headerList[index],
@@ -599,11 +601,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   if (file.fileLines[index]['ligne'].keys.toList().length ==
                       headerListInitial.length) {
                     //if the content match the same length
-                    //print(
+                    //Utils.log(
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
                     if (file.fileLines[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
-                      //print("indeed they match");
+                      //Utils.log("indeed they match");
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
@@ -677,7 +679,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
       // File inFile = MemoryFileSystem().file('original.pdf')
       //   ..writeAsBytesSync(utf8.encode(
       //       dataBloc.processedFiles[i].inFile['data']));
-      // print(inFile.readAsBytesSync());
+      // Utils.log(inFile.readAsBytesSync());
       // final inFilePDF = PdfImage.file(pdf.document,
       //     bytes: inFile.readAsBytesSync());
       int windex = i + 1;
@@ -741,7 +743,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                           fontSize: 30.0,
                                           fontWeight: FontWeight.bold),
                                       onEnd: () {
-                                        print(
+                                        Utils.log(
                                             'now should wait for 3 seconds before requesting update from server');
                                         dataBloc.add(PreparingFileFetching());
                                         Timer(Duration(milliseconds: 100), () {
@@ -812,7 +814,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                         fontSize: 30.0,
                                         fontWeight: FontWeight.bold),
                                     onEnd: () {
-                                      print(
+                                      Utils.log(
                                           'now should wait for 3 seconds before requesting update from server');
                                       dataBloc.add(PreparingFileFetching());
                                       Timer(Duration(milliseconds: 100), () {
@@ -1003,7 +1005,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       const TextStyle(color: Colors.black)))),
                       FlatButton(
                           onPressed: () {
-                            print("i index $i");
+                            Utils.log("i index $i");
                             Navigator.of(context).pop();
                             dataBloc.add(DiscardFiles(
                                 files: [dataBloc.processedFiles[--windex]]));
@@ -1045,7 +1047,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               if (kIsWeb) {
                 for (int i = 0; i < state.urlList.length; i++) {
                   final content = "kilo";
-                  print("file url is ${state.urlList[i]}");
+                  Utils.log("file url is ${state.urlList[i]}");
                   // final anchor = html.AnchorElement(
                   //     href:
                   //         "data:/application/octet-stream;charset=utf-16le;base64,$content")
@@ -1065,7 +1067,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         "VALIDATIONS") //Initiator when validation started
                 ? RaisedButton(
                     onPressed: dataBloc.validationProgress == 100
-                        ? () => print("can send the file to destinataire")
+                        ? () => Utils.log("can send the file to destinataire")
                         : null,
                     color: Assets.ubaRedColor,
                     hoverColor: Colors.black,
@@ -1142,9 +1144,17 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       child: Container(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text("CLOSE")),
-                                    )
+                                    ),
+                                    FlatButton(
+                                      onPressed: () {
+                                        dataBloc.add(SubmitApprovalChain());
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text("SEND NOTIFICATION")),
+                                    ),
                                   ],
-                                  title: 'Create the validation chain'));
+                                  title: 'Create the approval chain'));
                               _showToast(
                                   "Add or remove validators email ids. Each of them will be notified to approve of the file");
                             },
@@ -1234,7 +1244,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       }
                       if (state is FilesDiscarded && !state.errors) {
                         setState(() {
-                          print("updating file list UI");
+                          Utils.log("updating file list UI");
                         });
                       }
                     },

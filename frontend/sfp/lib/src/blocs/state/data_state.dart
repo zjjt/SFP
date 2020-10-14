@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sfp/src/models/process_config_model.dart';
 import 'package:sfp/src/models/process_validation_model.dart';
+import 'package:sfp/utils.dart';
 
 abstract class DataState extends Equatable {
   const DataState();
@@ -51,6 +52,10 @@ class FileLoaded extends DataState {
 
 class FileUploading extends DataState {}
 
+class ApprovalChainSubmited extends DataState {}
+
+class StandByFormRequested extends DataState {}
+
 class FilesDiscarded extends DataState {
   final String message;
   final bool errors;
@@ -85,7 +90,7 @@ class DataFailure extends DataState {
         backgroundColor: Colors.grey,
         textColor: Colors.black,
         fontSize: 12.0);
-    print('no internet connetion $_message');
+    Utils.log('no internet connetion $_message');
   }
 
   String toString() => 'emiting DataFailure';

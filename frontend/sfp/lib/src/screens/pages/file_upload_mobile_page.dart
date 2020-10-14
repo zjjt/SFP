@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 
 class FileUploadMobilePage extends StatefulWidget {
   FileUploadMobilePage({Key key}) : super(key: key);
@@ -90,8 +91,8 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
       //for now we skip this check
 
       for (File file in filesW) {
-        //print('mime type is: ${lookupMimeType(file.readAsStringSync())}');
-        print("file path: ${file.uri}");
+        //Utils.log('mime type is: ${lookupMimeType(file.readAsStringSync())}');
+        Utils.log("file path: ${file.uri}");
 
         /*if (!file.path.endsWith(extension)) {
           Scaffold.of(context).showSnackBar(SnackBar(
@@ -104,7 +105,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
         }*/
       }
       setState(() {
-        print('file upload successfull\n .$extension');
+        Utils.log('file upload successfull\n .$extension');
         noFiles = filesW.length;
         files = filesW;
       });
@@ -114,7 +115,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
 
   @override
   Widget build(BuildContext context) {
-    print("in mobile file upload page");
+    Utils.log("in mobile file upload page");
     Size appB = Size(
         Responsive.isDesktop(context)
             ? MediaQuery.of(context).size.width / 3.0
@@ -226,7 +227,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                         animateBloc.add(LeavingPage());
                                         Timer(Duration(milliseconds: 500), () {
                                           navBloc.add(GoResult());
-                                          print("navigating to next step");
+                                          Utils.log("navigating to next step");
                                         });
                                       });
                                     });

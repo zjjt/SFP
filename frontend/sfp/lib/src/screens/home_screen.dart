@@ -10,6 +10,7 @@ import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/screens/screens.dart';
 import 'package:sfp/src/widgets/pdf_viewer.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String route = '/login';
@@ -85,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       bool isDoc,
       Uint8List doc}) {
     if (!isAlertUp) {
-      print('closing the displayed alert dialog');
+      Utils.log('closing the displayed alert dialog');
       Navigator.of(context).pop();
       return;
     }
@@ -95,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         barrierDismissible: alignement != null,
         builder: (context) {
           if (alignement != null) {
-            print('custom alert box');
+            Utils.log('custom alert box');
 
             return Stack(children: [
               alignement == Alignment.bottomRight
@@ -105,13 +106,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           } else if (isDoc) {
             var _pdfController =
                 PdfController(document: PdfDocument.openData(doc));
-            print(' document is here to show');
+            Utils.log(' document is here to show');
 
             return StatefulBuilder(
               builder: (context, setState) {
                 return BlocListener<DocBloc, DocState>(
                   listener: (context, state) {
-                    print(
+                    Utils.log(
                         "current state is $state and page is ${docBloc.currentPage}");
                     if (state is ChangePage) {
                       setState(() {
@@ -131,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
             );
           } else {
-            print('no document here to show');
+            Utils.log('no document here to show');
             return AlertDialog(
               title: Text(title),
               content: leWidget,
@@ -182,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   builder: (context, state) {
                     if (state.status == AuthStatus.authenticated) {
                       return CustomAppBar(
-                        helpOnPressed: () => print('Help pressed'),
+                        helpOnPressed: () => Utils.log('Help pressed'),
                         logOut: () {
                           authBloc.add(LogOut());
                         },
@@ -201,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         });
                       }
                       return CustomAppBar(
-                        helpOnPressed: () => print('Help pressed'),
+                        helpOnPressed: () => Utils.log('Help pressed'),
                         logOut: () => authBloc.add(LogOut()),
                         userConnected: false,
                       );
@@ -216,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               backgroundColor: Assets.ubaRedColor,
               child: const Icon(Icons.feedback),
               tooltip: "Is something wrong ? Contact IT Support",
-              onPressed: () => print('Should display support popup'),
+              onPressed: () => Utils.log('Should display support popup'),
             ),
             body: Container(
               child: Column(

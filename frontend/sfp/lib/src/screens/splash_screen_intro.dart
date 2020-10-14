@@ -52,7 +52,7 @@ class _SplashScreenIntroState extends State<SplashScreenIntro>
           seconds: 3,
           navigateAfterSeconds: HomeScreen(),
           title: Text(
-            "\n\nSuper File Processor\n\n\nBrought to you by the IT and OPS team\n UBA CI",
+            "\n\nSimple File Processor\n\n\nBrought to you by the IT and OPS team\n UBA CI",
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Assets.ubaRedColor,

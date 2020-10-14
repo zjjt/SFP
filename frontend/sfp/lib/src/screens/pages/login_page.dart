@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -86,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                         : const EdgeInsets.all(0),
                     child: BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
-                        print("state status is ${state.status}");
+                        Utils.log("state status is ${state.status}");
                         switch (state.status) {
                           case AuthStatus.unknown:
                             setState(() {

@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 
 class SelectConfigPage extends StatefulWidget {
   SelectConfigPage({Key key}) : super(key: key);
@@ -20,6 +22,7 @@ class _SelectConfigPageState extends State<SelectConfigPage>
   AnimationController _radioSlideController;
   AuthBloc authBloc;
   NavBloc navBloc;
+  AlertBloc alertBloc;
   DataBloc dataBloc;
   AnimateEntranceBloc animateBloc;
   int selectedConfigIndex;
@@ -37,6 +40,7 @@ class _SelectConfigPageState extends State<SelectConfigPage>
     navBloc = context.bloc<NavBloc>();
     dataBloc = context.bloc<DataBloc>();
     animateBloc = context.bloc<AnimateEntranceBloc>();
+    alertBloc = context.bloc<AlertBloc>();
     //launching entrence animation
     animateBloc.add(EnteringPage());
     _radioSlideController =
@@ -73,6 +77,30 @@ class _SelectConfigPageState extends State<SelectConfigPage>
         Timer(Duration(milliseconds: 100), () {
           animateBloc.add(LeavingPage());
           Timer(Duration(milliseconds: 500), () {
+            alertBloc.add(ShowAlert(
+              whatToShow: Container(
+                height: 200,
+                width: 200,
+                color: Colors.white,
+                padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: SpinKitRing(color: Assets.ubaRedColor, size: 80.0),
+                    ),
+                    SizedBox(height: 10.0),
+                    Text(
+                      "Please wait...",
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+              ),
+              isDoc: false,
+              title: '',
+              actions: [],
+            ));
             dataBloc.add(FetchFilesForConfig(
                 dataBloc.processConfigs[selectedConfigIndex].configName,
                 authBloc.user.id));
@@ -109,6 +137,7 @@ class _SelectConfigPageState extends State<SelectConfigPage>
               navBloc.add(GoResult());
             } else {
               //we can proceed to fileupload
+              alertBloc.add(CloseAlert());
               navBloc.add(GoFupload());
             }
           }
@@ -159,7 +188,7 @@ class _SelectConfigPageState extends State<SelectConfigPage>
                                                 value: i,
                                                 hoverColor: Colors.red,
                                                 onChanged: (value) {
-                                                  print(
+                                                  Utils.log(
                                                       'selected ${dataBloc.processConfigs[value]}');
                                                   _setConfig(value);
                                                 },

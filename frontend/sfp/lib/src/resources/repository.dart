@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/resources/resources.dart';
+import 'package:sfp/utils.dart';
 
 class Repository {
   Future<List<ProcessConfigModel>> fetchConfig() async {
@@ -9,10 +10,10 @@ class Repository {
     try {
       configs = await netProvider.fetchConfig();
     } on NetWorkException {
-      print("couldnt reach the api");
+      Utils.log("couldnt reach the api");
       return null;
     }
-    //print(configs);
+    //Utils.log(configs);
     return configs;
   }
 
@@ -23,7 +24,7 @@ class Repository {
       users = await netProvider.fetchUsers(username,
           username.contains("admin") ? password : _encodeToBase64(password));
     } on NetWorkException {
-      print("couldnt reach the api");
+      Utils.log("couldnt reach the api");
       return null;
     }
     return users;
@@ -35,7 +36,7 @@ class Repository {
     try {
       del = await netProvider.deleteFilesById(files);
     } on NetWorkException {
-      print("couldnt reach the api ${del.message}");
+      Utils.log("couldnt reach the api ${del.message}");
       return null;
     }
     return del;
@@ -47,7 +48,7 @@ class Repository {
     try {
       fup = await netProvider.uploadFiles(files, configName, userId, extension);
     } on NetWorkException {
-      print("couldnt reach the api ${fup.message}");
+      Utils.log("couldnt reach the api ${fup.message}");
       return null;
     }
     return fup;
@@ -59,7 +60,7 @@ class Repository {
     try {
       files = await netProvider.fetchCurrentProcessingFiles(configName, userId);
     } on NetWorkException {
-      print("couldnt reach the api ${files.message}");
+      Utils.log("couldnt reach the api ${files.message}");
       return null;
     }
     return files;
@@ -76,7 +77,7 @@ class Repository {
       val = await netProvider.createUsersWithRole(
           username, userId, userMails, role, configName);
     } on NetWorkException {
-      print("couldnt reach the api ${val.message}");
+      Utils.log("couldnt reach the api ${val.message}");
       return null;
     }
     return val;
@@ -89,7 +90,7 @@ class Repository {
       val = await netProvider.getCurrentValidationProcess(
           initiatorId, configName);
     } on NetWorkException {
-      print("couldnt reach the api ${val.message}");
+      Utils.log("couldnt reach the api ${val.message}");
       return null;
     }
     return val;
@@ -101,7 +102,7 @@ class Repository {
     try {
       filesPath = await netProvider.downloadFilesPath(userId, configName);
     } on NetWorkException {
-      print("couldnt reach the api ${filesPath.message}");
+      Utils.log("couldnt reach the api ${filesPath.message}");
       return null;
     }
     return filesPath;
@@ -112,7 +113,7 @@ class Repository {
     try {
       result = await netProvider.logOut(username);
     } on NetWorkException {
-      print("couldnt reach the api");
+      Utils.log("couldnt reach the api");
       return null;
     }
     return result;

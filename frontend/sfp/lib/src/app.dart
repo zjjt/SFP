@@ -19,7 +19,7 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         color: Colors.white,
-        title: 'Super File Processor',
+        title: 'Simple File Processor',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             //this is done to disable the transition caused after the splashscreen navigation

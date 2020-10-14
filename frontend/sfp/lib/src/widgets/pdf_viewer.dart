@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:native_pdf_view/native_pdf_view.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/utils.dart';
 
 class PdfViewer extends StatelessWidget {
   final PdfController controller;
@@ -24,7 +25,7 @@ class PdfViewer extends StatelessWidget {
               }
             },
             onPageChanged: (page) {
-              print("page is $page");
+              Utils.log("page is $page");
               docBloc.add(PageChanged(page));
             },
             pageSnapping: kIsWeb ? false : false,
@@ -83,7 +84,7 @@ class PdfViewer extends StatelessWidget {
                   }
 
                   _animationListener = () {
-                    //print(_animation.value);
+                    //Utils.log(_animation.value);
                     state.handleDoubleTap(
                         scale: _doubleTapAnimation.value,
                         doubleTapPosition: pointerDownPosition);

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/models/user_model.dart';
 import 'package:sfp/src/resources/repository.dart';
+import 'package:sfp/utils.dart';
 
 import '../blocs.dart';
 
@@ -12,7 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   @override
   Stream<AuthState> mapEventToState(AuthEvent event) async* {
     if (event is LoggingIn) {
-      print(
+      Utils.log(
           'trying to login with username:${event.username} and ${event.password}');
       yield AuthState.loading();
       try {
@@ -27,7 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } on NetWorkException {}
     }
     if (event is LogOut) {
-      print('user ${user.username} logging out');
+      Utils.log('user ${user.username} logging out');
       try {
         if (await repo.logOut(user.username)) {
           user = null;
@@ -40,19 +41,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   @override
   void onEvent(AuthEvent event) {
-    print(event);
+    Utils.log(event);
     super.onEvent(event);
   }
 
   @override
   void onChange(Change<AuthState> change) {
-    print(change);
+    Utils.log(change);
     super.onChange(change);
   }
 
   @override
   void onTransition(Transition<AuthEvent, AuthState> transition) {
-    print(transition);
+    Utils.log(transition);
     super.onTransition(transition);
   }
 }

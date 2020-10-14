@@ -14,13 +14,13 @@ class NetworkProvider {
 
   //fetching process configs from the backend
   Future<List<ProcessConfigModel>> fetchConfig() async {
-    print('in network provider fetching configs from backend');
+    Utils.log('in network provider fetching configs from backend');
     var response = await dio.get('$backend/PC');
     if (response.statusCode == 200) {
       List<dynamic> data = response.data;
       List<ProcessConfigModel> configs = [];
       data.forEach((element) {
-        //print(element);
+        //Utils.log(element);
         var c = ProcessConfigModel.fromJSON(element);
         configs.add(c);
       });
@@ -32,7 +32,7 @@ class NetworkProvider {
 
   Future<Map<String, dynamic>> getCurrentValidationProcess(
       String initiatorId, String configName) async {
-    print(
+    Utils.log(
         'in network provider trying to get the current validation process pipeline from backend for initiator $initiatorId and $configName');
     var response = await dio.get(
         '$backend/validation?configName=$configName&initiatorId=$initiatorId');
@@ -50,7 +50,7 @@ class NetworkProvider {
       List<String> userMails,
       String role,
       String configName) async {
-    print(
+    Utils.log(
         'in network provider trying to create a user list as $role on the backend');
     FormData formData = FormData.fromMap({
       "username": username,
@@ -62,7 +62,7 @@ class NetworkProvider {
 
     var response = await dio.post("$backend/user/createOrUpdateWithRole",
         data: formData, onSendProgress: (int sent, int total) {
-      print("$sent/$total");
+      Utils.log("$sent/$total");
     });
 
     if (response.statusCode == 200) {
@@ -75,7 +75,7 @@ class NetworkProvider {
 
   Future<Map<String, dynamic>> fetchUsers(
       String username, String password) async {
-    print(
+    Utils.log(
         'in network provider trying to fetch the user from backend with $username and $password');
     var response =
         await dio.get('$backend/user/with?username=$username&tp=$password');
@@ -89,11 +89,11 @@ class NetworkProvider {
 
   Future<Map<String, dynamic>> fetchCurrentProcessingFiles(
       String configName, String userId) async {
-    print(
+    Utils.log(
         'in network provider trying to fetch the list of the files i currently processing for uid $userId and config $configName');
     var response = await dio.get(
         '$backend/files/get-in-process?uid=$userId&configname=$configName');
-    //print(response);
+    //Utils.log(response);
     if (response.statusCode == 200) {
       var data = response.data;
       return data;
@@ -104,11 +104,11 @@ class NetworkProvider {
 
   Future<List<String>> downloadFilesPath(
       String userId, String configName) async {
-    print(
+    Utils.log(
         'in network provider trying to fetch the list of the files path which processing is done for uid $userId and config $configName');
     var response = await dio.get(
         '$backend/files/generatefiles?userId=$userId&configName=$configName');
-    //print(response);
+    //Utils.log(response);
     if (response.statusCode == 200) {
       var data = response.data;
       data.forEach((e) {
@@ -124,7 +124,7 @@ class NetworkProvider {
       List<ProcessedFileModel> files) async {
     List<String> fileIds = [];
     for (var f in files) {
-      print("f ids: ${f.id}");
+      Utils.log("f ids: ${f.id}");
       fileIds.add(f.id);
     }
     if (fileIds.isNotEmpty) {
@@ -132,7 +132,7 @@ class NetworkProvider {
         "file_ids": fileIds,
       });
       var response = await dio.post('$backend/files/delete', data: formData);
-      print(response);
+      Utils.log(response);
       if (response.statusCode == 200) {
         var data = response.data;
         return data;
@@ -146,7 +146,7 @@ class NetworkProvider {
 
   Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
       String configName, String userId, String extension) async {
-    print(
+    Utils.log(
         "in network provider trying to upload ${files.length} files for config ");
 
     List<MultipartFile> filesM = [];
@@ -162,7 +162,7 @@ class NetworkProvider {
             contentType: MediaType.parse("multipart/form-data")));
       }
     }
-    print('files to upload  ${filesM.length}');
+    Utils.log('files to upload  ${filesM.length}');
     var response;
     if (filesM.isNotEmpty) {
       FormData formData = FormData.fromMap({
@@ -171,11 +171,11 @@ class NetworkProvider {
         "userId": userId,
       });
 
-      print('files to upload  ${formData.files.length}');
+      Utils.log('files to upload  ${formData.files.length}');
 
       response = await dio.post("$backend/files/upload", data: formData,
           onSendProgress: (int sent, int total) {
-        print("$sent/$total");
+        Utils.log("$sent/$total");
       });
     }
     if (response.statusCode == 200) {
@@ -187,13 +187,13 @@ class NetworkProvider {
   }
 
   Future<bool> logOut(String username) async {
-    print('in network provider logging out the user');
+    Utils.log('in network provider logging out the user');
     var response =
         await dio.get('${Assets.backend}/user/logout?username=$username');
     if (response.statusCode == 200) {
       var data = response.data;
-      print("data logout $data");
-      print(data is bool);
+      Utils.log("data logout $data");
+      Utils.log(data is bool);
       return true;
     } else {
       throw NetWorkException();

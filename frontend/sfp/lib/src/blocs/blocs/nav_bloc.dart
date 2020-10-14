@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/src/blocs/state/state.dart';
+import 'package:sfp/utils.dart';
 
 import '../blocs.dart';
 
@@ -26,19 +27,19 @@ class NavBloc extends Bloc<NavEvent, NavState> {
 
   @override
   void onChange(Change<NavState> change) {
-    print(change);
+    Utils.log(change);
     super.onChange(change);
   }
 
   @override
   void onEvent(NavEvent event) {
-    print(event);
+    Utils.log(event);
     super.onEvent(event);
   }
 
   @override
   void onTransition(Transition<NavEvent, NavState> transition) {
-    print(transition);
+    Utils.log(transition);
     super.onTransition(transition);
   }
 }

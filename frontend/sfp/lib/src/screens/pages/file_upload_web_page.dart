@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
+import 'package:sfp/utils.dart';
 import 'package:universal_html/html.dart' as html;
 
 class FileUploadWebPage extends StatefulWidget {
@@ -86,8 +87,8 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
         type: FileType.custom, allowedExtensions: ['$extension']);
     if (filesW.length > 0) {
       for (html.File file in filesW) {
-        print(file.name);
-        print("file path: ${file.relativePath}");
+        Utils.log(file.name);
+        Utils.log("file path: ${file.relativePath}");
         if (!file.name.endsWith(extension)) {
           Scaffold.of(context).showSnackBar(SnackBar(
             content: Text(
@@ -99,7 +100,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
         }
       }
       setState(() {
-        print('file upload successfull\n .$extension');
+        Utils.log('file upload successfull\n .$extension');
         noFiles = filesW.length;
         files = filesW;
       });
@@ -110,7 +111,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
 
   @override
   Widget build(BuildContext context) {
-    print('in web file upload page');
+    Utils.log('in web file upload page');
     Size appB = Size(
         Responsive.isDesktop(context)
             ? MediaQuery.of(context).size.width / 3.0
@@ -221,7 +222,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                         animateBloc.add(LeavingPage());
                                         Timer(Duration(milliseconds: 500), () {
                                           navBloc.add(GoResult());
-                                          print("navigating to next step");
+                                          Utils.log("navigating to next step");
                                         });
                                       });
                                     });

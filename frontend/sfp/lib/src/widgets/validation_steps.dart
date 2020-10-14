@@ -1,6 +1,10 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sfp/assets.dart';
+import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/src/widgets/file_upload_val_web.dart';
+import 'package:sfp/utils.dart';
 
 class ValidationSteps extends StatefulWidget {
   ValidationSteps({Key key}) : super(key: key);
@@ -11,95 +15,149 @@ class ValidationSteps extends StatefulWidget {
 
 class _ValidationStepsState extends State<ValidationSteps> {
   int _validatorNumber;
-  List<TextEditingController> _validatorsCtrl = List<TextEditingController>();
   final _formKey = GlobalKey<FormState>();
-  final _validatorlistKey = GlobalKey<AnimatedListState>();
+  final _listKey = GlobalKey<AnimatedListState>();
+  final _filesUploadKey = GlobalKey<FileUploadValidatorWebState>();
   ListModel<int> _list;
+  List<TextEditingController> _emailCtrl;
+  DataBloc dataBloc;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    dataBloc = context.bloc<DataBloc>();
+    _emailCtrl = List<TextEditingController>();
     _validatorNumber = 1;
-    _validatorsCtrl.add(TextEditingController());
     _list = ListModel(
-        listKey: _validatorlistKey,
+        listKey: _listKey,
         initialItems: <int>[_validatorNumber],
         removedItemBuilder: _buildRemovedItem);
   }
 
+  void _removeBlankTextCtrl() {
+    _emailCtrl.forEach((element) {
+      if (element.text.isEmpty) {
+        _emailCtrl.remove(element);
+      }
+    });
+  }
+
   Widget _buildItem(
       BuildContext context, int index, Animation<double> animation) {
+    if (_emailCtrl.length > _list.length) {
+      //due to a bug we have to match
+      Utils.log(
+          "emailCtrllength:${_emailCtrl.length}\nelementList:${_list.length}\nremoving last ${_emailCtrl.length - _list.length}\nrange:(${(_emailCtrl.length - 1) - (_emailCtrl.length - _list.length)},${_emailCtrl.length})");
+      _emailCtrl.removeRange(
+          (_emailCtrl.length - 1) - (_emailCtrl.length - _list.length),
+          _emailCtrl.length);
+    }
+    _emailCtrl.add(TextEditingController());
+    Utils.log(
+        "adding 1 textController from _buildItem emailCtrllength: ${_emailCtrl.length} elementList length: ${_list.length}");
     return _ValidatorField(
         animation: animation,
         item: _list[index],
-        textEditingController: _validatorsCtrl[index]);
+        textEditingController: _emailCtrl[index]);
   }
 
   Widget _buildRemovedItem(
       int index, BuildContext context, Animation<double> animation) {
+    _emailCtrl.removeLast();
+
+    if (_emailCtrl.isEmpty) {
+      _emailCtrl.add(TextEditingController());
+    }
+    Utils.log(
+        "removing 1 textController from _buildRemovedItem length: ${_emailCtrl.length}");
+
     return _ValidatorField(
         animation: animation,
-        item: _list[index],
-        textEditingController: _validatorsCtrl[index]);
+        item: _list.length,
+        textEditingController: _emailCtrl.last);
   }
 
   void _insert() {
     final int index = _list.length;
-    print("lenght of email list is $index");
-    _list.insert(index - 1, index);
+    _list.insert(index, index + 1);
   }
 
   void _remove() {
+    _emailCtrl.removeLast();
+    if (_emailCtrl.isEmpty) {
+      _emailCtrl.add(TextEditingController());
+    }
     _list.removeAt(_list.indexOf(_list.length));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 500.0,
-      height: 300,
-      child: Column(
-        children: [
-          Container(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline,
-                      color: Assets.ubaRedColor),
-                  onPressed: _insert,
-                  tooltip: "Insert another member to the validation chain",
-                ),
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline,
-                      color: Assets.ubaRedColor),
-                  onPressed: _remove,
-                  tooltip: "Insert another member to the validation chain",
-                ),
-              ],
+    return BlocListener<DataBloc, DataState>(
+      listener: (context, state) {
+        if (state is ApprovalChainSubmited) {
+          Utils.log(
+              "number of validators added is ${_emailCtrl.length}\nthey are:\n");
+          _emailCtrl.forEach((element) {
+            Utils.log(element.text);
+          });
+          Utils.log(
+              "\n number of attachement files is ${_filesUploadKey.currentState.noFiles}");
+          if (_formKey.currentState.validate()) {
+          } else {
+            dataBloc.add(PutFormInStandBy());
+          }
+        }
+      },
+      child: Container(
+        width: 600.0,
+        height: 700,
+        child: Column(
+          children: [
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline,
+                        color: Assets.ubaRedColor),
+                    onPressed: _insert,
+                    tooltip: "Insert another member to the approval chain",
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline,
+                        color: Assets.ubaRedColor),
+                    onPressed: _remove,
+                    tooltip: "remove one member from the approval chain",
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            height: _list.length * 80.0,
-            child: Form(
-              key: _formKey,
-              child: AnimatedList(
-                  key: _validatorlistKey,
-                  initialItemCount: _list.length,
-                  itemBuilder: _buildItem),
+            Container(
+              height: 300,
+              child: Form(
+                key: _formKey,
+                child: AnimatedList(
+                    key: _listKey,
+                    initialItemCount: _list.length,
+                    itemBuilder: _buildItem),
+              ),
             ),
-          ),
-          SizedBox(height: 5.0),
-          Divider(),
-          Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Join files by clicking the button below"),
-              ],
-            ),
-          )
-        ],
+            SizedBox(height: 5.0),
+            Divider(),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Join files by clicking the button below"),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  FileUploadValidatorWeb(key: _filesUploadKey)
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

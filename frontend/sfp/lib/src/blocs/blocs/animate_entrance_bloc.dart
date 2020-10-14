@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sfp/utils.dart';
 
 import '../blocs.dart';
 
@@ -21,20 +22,20 @@ class AnimateEntranceBloc
 
   @override
   void onChange(Change<AnimateEntranceState> change) {
-    print(change);
+    Utils.log(change);
     super.onChange(change);
   }
 
   @override
   void onEvent(AnimateEntranceEvent event) {
-    print(event);
+    Utils.log(event);
     super.onEvent(event);
   }
 
   @override
   void onTransition(
       Transition<AnimateEntranceEvent, AnimateEntranceState> transition) {
-    print(transition);
+    Utils.log(transition);
     super.onTransition(transition);
   }
 }

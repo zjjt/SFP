@@ -3,6 +3,7 @@ import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/models/process_config_model.dart';
 import 'package:sfp/src/models/process_validation_model.dart';
 import 'package:sfp/src/resources/repository.dart';
+import 'package:sfp/utils.dart';
 
 import '../blocs.dart';
 
@@ -33,7 +34,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         p = (nbrValidated * 100) / nbrValidators;
       }
     }
-    print("current validation progress is ${p.roundToDouble()}");
+    Utils.log("current validation progress is ${p.roundToDouble()}");
     return p.roundToDouble();
   }
 
@@ -52,7 +53,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
 
     if (event is SelectConfig) {
       currentConfig = processConfigs[event.configPosition];
-      print("selected config is $currentConfig");
+      Utils.log("selected config is $currentConfig");
       yield ConfigSelected(currentConfig);
     }
 
@@ -66,10 +67,19 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       }
     }
 
+    if (event is SubmitApprovalChain) {
+      yield ApprovalChainSubmited();
+    }
+    if (event is PutFormInStandBy) {
+      yield StandByFormRequested();
+    }
+
     if (event is CreateUserWithRole) {
+      yield DataLoading();
       try {
-        await repo.createUsersWithRole(event.username, event.userId,
-            event.mailOfUsers, event.role, event.configName);
+        final result = await repo.createUsersWithRole(event.username,
+            event.userId, event.mailOfUsers, event.role, event.configName);
+        if (!result['errors']) {}
       } on NetWorkException {
         yield DataFailure("No internet connection");
       }
@@ -112,12 +122,12 @@ class DataBloc extends Bloc<DataEvent, DataState> {
           event.configName, event.userId);
       processedFiles = [];
       for (int i = 0; i < m['fichiers'].length; i++) {
-        print(m['fichiers'].length);
-        print(m['fichiers'][i]['configName']);
+        Utils.log(m['fichiers'].length);
+        Utils.log(m['fichiers'][i]['configName']);
         var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
         processedFiles.add(pf);
       }
-      print("processed files number ${processedFiles.length}");
+      Utils.log("processed files number ${processedFiles.length}");
       yield FileLoaded(fcount: processedFiles.length);
     }
     if (event is DoFileUpload) {
@@ -132,12 +142,12 @@ class DataBloc extends Bloc<DataEvent, DataState> {
               currentConfig.fileTypeAndSizeInMB['type']);
           processedFiles = [];
           for (int i = 0; i < m['fichiers'].length; i++) {
-            print(m['fichiers'].length);
-            print(m['fichiers'][i]['configName']);
+            Utils.log(m['fichiers'].length);
+            Utils.log(m['fichiers'][i]['configName']);
             var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
             processedFiles.add(pf);
           }
-          print("processed files number ${processedFiles.length}");
+          Utils.log("processed files number ${processedFiles.length}");
           yield FileUploaded(
               errors: m['errors'],
               message: m['message'],
@@ -157,19 +167,19 @@ class DataBloc extends Bloc<DataEvent, DataState> {
 
   @override
   void onEvent(DataEvent event) {
-    print(event);
+    Utils.log(event);
     super.onEvent(event);
   }
 
   @override
   void onChange(Change<DataState> change) {
-    print(change);
+    Utils.log(change);
     super.onChange(change);
   }
 
   @override
   void onTransition(Transition<DataEvent, DataState> transition) {
-    print(transition);
+    Utils.log(transition);
     super.onTransition(transition);
   }
 }

@@ -54,7 +54,7 @@ class _AppBarDesktop extends StatelessWidget {
         ),
       ),
       title: Text(
-        "Super File Processor",
+        "Simple File Processor",
         style: const TextStyle(
           color: Colors.white,
           fontSize: 16.0,
@@ -108,7 +108,7 @@ class _AppBarMobile extends StatelessWidget {
         child: Image.asset(Assets.ubaRedSigleT, fit: BoxFit.cover),
       ),
       title: Text(
-        "Super File Processor",
+        "Simple File Processor",
         style: const TextStyle(
           color: Assets.ubaRedColor,
           fontSize: 16.0,
