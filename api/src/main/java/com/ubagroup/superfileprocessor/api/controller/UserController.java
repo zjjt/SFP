@@ -7,12 +7,16 @@ import com.ubagroup.superfileprocessor.core.service.LogEntryService;
 import com.ubagroup.superfileprocessor.core.service.ProcessValidationService;
 import com.ubagroup.superfileprocessor.core.service.UserService;
 import com.ubagroup.superfileprocessor.utils.Utils;
+import org.bson.BsonBinarySubType;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -41,18 +45,22 @@ public class UserController {
     @PostMapping("/createOrUpdateWithRole")
     public Map<String, Object> createUser(@RequestParam(value = "username") String username,
                                           @RequestParam(value = "userId") String userId,
+                                          @RequestParam(value = "fileId") String fileIdToValidate,
                                           @RequestParam(value = "usermailtocreate[]") List<String> usermailtocreate,
+                                          @RequestParam(value="filenames[]",required = false)List<String> filenames,
+                                          @RequestParam(value = "attachments[]",required = false) List<MultipartFile> attachments,
                                           @RequestParam(value = "role", required = false) String role,
                                           @RequestParam(value = "configName", required = false) String configName,
 
-                                          HttpServletRequest request) {
+                                          HttpServletRequest request) throws IOException {
         System.out.println("creating users with " + username + "and role: " + role + " API-----called");
 
         var m = new HashMap<String, Object>();
         List<LogEntry> log = new ArrayList<>();
         List<User> userList = new ArrayList<>();
 
-        for (var mail : usermailtocreate) {
+        for (int i = 0; i < usermailtocreate.size(); i++) {
+            var mail = usermailtocreate.get(i);
             //we check if the username is a valid email
             if (!Utils.isValidEmail(username) && !Utils.isValidEmail(mail)) {
                 m.put("errors", true);
@@ -61,22 +69,35 @@ public class UserController {
                 return m;
             }
             List<User> listUsers;
+
             listUsers = userService.get(mail);
-            if (listUsers.isEmpty() || listUsers.contains(null) && !role.isEmpty()) {//TESTED
+            if (listUsers.isEmpty() || listUsers.contains(null) || (listUsers.size() > 0 && listUsers.get(i).getRole().equalsIgnoreCase("INITIATOR")) && !role.isEmpty()) {//TESTED
                 //we couldnt find the user in the db and we couldnt get a list of roles
                 //so we generate a OTP
                 int randomPin = (int) (Math.random() * 9000) + 1000;
                 String otp = String.valueOf(randomPin);
-                User user = new User(mail, otp, role, userId);
+                User user = new User(mail, otp, fileIdToValidate, role, userId);
                 System.out.println(user);
                 var thisUser = userService.storeUser(user);
                 //We immediately insert him in the validation process for the current config for this particular user who
                 //initiated the file processing
                 ProcessValidation processValidation = processValidationService.getOne(configName, userId);
-                if (processValidation.equals(null)) {
+                if (processValidation==null) {
                     var map = new HashMap<String, String>();
                     map.put(thisUser.getId(), "STANDBY");
-                    processValidation = new ProcessValidation(configName, userId, map, null);
+                    var listOfAttachments=new ArrayList<Map<String,Object>>();
+                    if(attachments!=null){
+                        System.out.println("some files are joined as attachments "+attachments.size());
+                        for (int j=0;j<attachments.size();j++) {
+                            var addedF=new HashMap<String,Object>();
+                            addedF.put("filename", filenames.get(j));
+                            addedF.put("binary",new Binary(BsonBinarySubType.BINARY,attachments.get(j).getBytes()));
+                            System.out.println("f is "+filenames.get(j)+"\n content of addedF "+addedF);
+                            listOfAttachments.add(addedF);
+                        }
+                    }
+                    System.out.println("length of list of attachments "+listOfAttachments.size());
+                    processValidation = new ProcessValidation(configName, userId, listOfAttachments, map, null);
                     processValidationService.saveOne(processValidation);
                 } else {
                     //here we add the user to the current map of validators
@@ -155,7 +176,7 @@ public class UserController {
                         if (listUsers.isEmpty() || listUsers.contains(null)) {//TESTED
                             //we couldnt find the user in the db and we couldnt get a list of roles
                             //so we create the user as an INITIATOR
-                            User user = new User(usernameOrRole, password, "INITIATOR", "");
+                            User user = new User(usernameOrRole, password, "", "INITIATOR", "");
                             System.out.println(user);
                             userService.storeUser(user);
                             listUsers.clear();
@@ -183,7 +204,7 @@ public class UserController {
                             if (listUsers.isEmpty() || listUsers.contains(null)) {//TESTED
                                 //we couldnt find the user in the db and we couldnt get a list of roles
                                 //so we create the user as an INITIATOR
-                                User user = new User(usernameOrRole, password, "INITIATOR", "");
+                                User user = new User(usernameOrRole, password, "", "INITIATOR", "");
                                 System.out.println(user);
                                 userService.storeUser(user);
                                 listUsers.clear();

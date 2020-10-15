@@ -16,6 +16,7 @@ public interface ProcessedFileRepository extends MongoRepository<ProcessedFile,S
      List<ProcessedFile> findByUserIdAndConfigName(String uid,String configName);
     List<ProcessedFile> findByUserIdAndConfigNameAndDateProcessedIsBetween(String uid,String configName,Date one,Date two);
      List<ProcessedFile> findByDateProcessedBetween(Date one,Date two);
+     List<ProcessedFile> findByProcessingId(String processingId);
      List<ProcessedFile> findByProcessingStatus(boolean processingStatus);
     //DELETE
      void deleteByDateProcessedAndUserId(Date date,String userId);

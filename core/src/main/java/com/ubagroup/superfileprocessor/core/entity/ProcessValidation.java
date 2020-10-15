@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +18,11 @@ public class ProcessValidation {
     private String configName;
     private String initiatorId;
     /**
+     * a list of files submitted as attachments the format of the whole object is a list of maps
+     *
+     */
+    private List<Map<String,Object>> addedFiles;
+    /**
      * a list of the different validators id and the current validation status in the form of a {"usermailid":"validationstatus"}.
      * The different status allowed are:
      * OK,REJECTED,STANDBY
@@ -29,9 +35,10 @@ public class ProcessValidation {
     private Map<String,String> validators;
     private Map<String,String> validatiorMotives;
 
-    public ProcessValidation(String configName, String initiatorId, Map<String, String> validators, Map<String, String> validatiorMotives) {
+    public ProcessValidation(String configName, String initiatorId, List<Map<String,Object>> addedFiles, Map<String, String> validators, Map<String, String> validatiorMotives) {
         this.configName = configName;
         this.initiatorId = initiatorId;
+        this.addedFiles = addedFiles;
         this.validators = validators;
         this.validatiorMotives = validatiorMotives;
     }
@@ -79,5 +86,13 @@ public class ProcessValidation {
 
     public void setConfigName(String configName) {
         this.configName = configName;
+    }
+
+    public List<Map<String,Object>> getAddedFiles() {
+        return addedFiles;
+    }
+
+    public void setAddedFiles(List<Map<String,Object>> addedFiles) {
+        this.addedFiles = addedFiles;
     }
 }

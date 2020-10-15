@@ -11,11 +11,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     @Id
     private String id;
-    @Indexed(unique = true)
     private String username;
 
     @Indexed(unique = true)
     private String password;
+    private String fileIdToValidate;
 
     /**
      * The default roles are ADMIN,INITIATOR and VALIDATORS# where # represents a number that can be incremented indefinitely
@@ -24,9 +24,10 @@ public class User {
      */
     private String role;
     private String creatorId;
-    public User(String username, String password, String role, String creatorId) {
+    public User(String username, String password, String fileIdToValidate, String role, String creatorId) {
         this.username = username;
         this.password = password;
+        this.fileIdToValidate = fileIdToValidate;
         this.role = role;
         this.creatorId = creatorId.equalsIgnoreCase("")?"SYSTEM":creatorId;
     }
@@ -76,5 +77,13 @@ public class User {
 
     public void setCreatorId(String creatorId) {
         this.creatorId = creatorId;
+    }
+
+    public String getFileIdToValidate() {
+        return fileIdToValidate;
+    }
+
+    public void setFileIdToValidate(String fileIdToValidate) {
+        this.fileIdToValidate = fileIdToValidate;
     }
 }

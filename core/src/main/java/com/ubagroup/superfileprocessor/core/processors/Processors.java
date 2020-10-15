@@ -11,7 +11,6 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -44,7 +43,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
+                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~18");
@@ -104,7 +103,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial file in binary format in mongo
-                    ProcessedFile f = new ProcessedFile(null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
+                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());

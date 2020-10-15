@@ -29,7 +29,7 @@ public class ProcessedFileService implements ProcessedFileInterface {
 
     @Override
     public List<ProcessedFile> getAll(boolean between, boolean byDate, boolean treated,
-                                      boolean processingStatus, Date one, Date two, Date when, String userId, String configName)
+                                      boolean processingStatus, Date one, Date two, Date when, String userId, String configName,String fileId)
             throws IllegalArgumentException {
         if (between) {
             //we check between a period
@@ -60,9 +60,12 @@ public class ProcessedFileService implements ProcessedFileInterface {
                 return processedFileRepository.findByConfigNameAndProcessingStatus(configName, processingStatus);
             } else if (!userId.isEmpty() && !configName.isEmpty()) {
                 return processedFileRepository.findByUserIdAndConfigName(userId, configName);
+            }else if(userId.isEmpty() && configName.isEmpty() && !fileId.isEmpty()){
+                return processedFileRepository.findByProcessingId(fileId);
             }
             return processedFileRepository.findByProcessingStatus(processingStatus);
-        } else {
+        }
+        else {
             //return everything
             return processedFileRepository.findAll();
         }

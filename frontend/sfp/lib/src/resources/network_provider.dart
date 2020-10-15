@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/resources/repository.dart';
@@ -47,15 +48,38 @@ class NetworkProvider {
   Future<Map<String, dynamic>> createUsersWithRole(
       String username,
       String userId,
+      String fileId,
       List<String> userMails,
+      List<dynamic> files,
       String role,
       String configName) async {
     Utils.log(
         'in network provider trying to create a user list as $role on the backend');
+    List<MultipartFile> filesM = [];
+    List<String> filenames = [];
+    for (var i = 0; i < files.length; i++) {
+      if (files[i] is File) {
+        filesM.add(MultipartFile.fromBytes(files[i].readAsBytesSync(),
+            filename: basename(files[i].path),
+            contentType: MediaType.parse("multipart/form-data")));
+        filenames.add(basename(files[i].path));
+      } else {
+        filesM.add(MultipartFile.fromBytes(
+            await Utils.convertHtmlFileToBytes(files[i]),
+            filename: files[i].name,
+            contentType: MediaType.parse("multipart/form-data")));
+        filenames.add(files[i].name);
+      }
+    }
+    Utils.log("length of files is ${filesM.length}");
+
     FormData formData = FormData.fromMap({
       "username": username,
       "userId": userId,
+      "fileId": fileId,
       "usermailtocreate": userMails,
+      "filenames": filenames,
+      "attachments": filesM,
       "role": role,
       "configName": configName,
     });
@@ -93,6 +117,21 @@ class NetworkProvider {
         'in network provider trying to fetch the list of the files i currently processing for uid $userId and config $configName');
     var response = await dio.get(
         '$backend/files/get-in-process?uid=$userId&configname=$configName');
+    //Utils.log(response);
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchCurrentProcessingFilesToValidate(
+      String fileId) async {
+    Utils.log(
+        'in network provider trying to fetch the list of the files to validate currently processing for processing task $fileId');
+    var response =
+        await dio.get('$backend/files/get-in-process?fileId=$fileId');
     //Utils.log(response);
     if (response.statusCode == 200) {
       var data = response.data;

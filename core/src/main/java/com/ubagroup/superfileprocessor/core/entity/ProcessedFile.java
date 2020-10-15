@@ -2,6 +2,7 @@ package com.ubagroup.superfileprocessor.core.entity;
 
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -14,6 +15,8 @@ import java.util.List;
 public class ProcessedFile {
     @Id
     private String id;
+    @Indexed(unique = true)
+    private String processingId;
     private List<Line> inFile;
     private List<Line> outFile;
     private String userId;
@@ -26,7 +29,8 @@ public class ProcessedFile {
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile(List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, boolean canBeRemoved, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile( String processingId,List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, boolean canBeRemoved, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
+        this.processingId=processingId;
         this.inFile = inFile;
         this.outFile = outFile;
         this.userId = userId;
@@ -139,5 +143,13 @@ public class ProcessedFile {
 
     public void setCanBeRemoved(boolean canBeRemoved) {
         this.canBeRemoved = canBeRemoved;
+    }
+
+    public String getProcessingId() {
+        return processingId;
+    }
+
+    public void setProcessingId(String processingId) {
+        this.processingId = processingId;
     }
 }

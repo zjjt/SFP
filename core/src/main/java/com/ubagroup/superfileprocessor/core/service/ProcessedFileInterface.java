@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ProcessedFileInterface {
-    List<ProcessedFile> getAll(boolean between, boolean byDate, boolean treated,boolean processingStatus, Date one, Date two, Date when,String userId,String configName);
+    List<ProcessedFile> getAll(boolean between, boolean byDate, boolean treated,boolean processingStatus, Date one, Date two, Date when,String userId,String configName,String fileId);
     void delete(Map<String,Object> arg);
     boolean saveProcessedFile(List<ProcessedFile> files);
     List<String> generateFilePaths(String configName, String userId);

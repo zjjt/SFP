@@ -98,6 +98,7 @@ public class DefaultConfig {
         processedFileRepository.deleteAll();
         processTypeRepository.deleteAll();
         processedFileRepository.deleteAll();
+        processValidationRepository.deleteAll();
         userRepository.deleteAll();
     }
     private  void showEntete(){
@@ -139,8 +140,8 @@ public class DefaultConfig {
             var valList=new ArrayList<>();
             //var valmap=new HashMap<>();
             //valmap.put("canal+","test");
-            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020",   "ADMIN", ""));
-            userRepository.save(new User("test.sfp@ubagroup.com", "testman", "INITIATOR", ""));
+            userRepository.save(new User("admin.sfp@ubagroup.com", "sfp2020", "", "ADMIN", ""));
+            userRepository.save(new User("test.sfp@ubagroup.com", "testman", "", "INITIATOR", ""));
             //userRepository.save(new User("testval.sfp@ubagroup.com", "testman", valmap, "VALIDATOR"));
 
             System.out.println("Admin user inserted in user collection");

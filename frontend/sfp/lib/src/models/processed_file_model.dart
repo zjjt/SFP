@@ -1,5 +1,6 @@
 class ProcessedFileModel {
   final String id;
+  final String processingId;
   final List<dynamic> inFile;
   final List<dynamic> outFile;
   final String userId;
@@ -13,6 +14,7 @@ class ProcessedFileModel {
   final List<dynamic> fileLines;
   const ProcessedFileModel(
       {this.id,
+      this.processingId,
       this.inFile,
       this.outFile,
       this.userId,
@@ -26,7 +28,8 @@ class ProcessedFileModel {
       this.fileLines});
 
   ProcessedFileModel.fromJSON(Map<String, dynamic> parsedJSON)
-      : id = parsedJSON['id'],
+      : processingId = parsedJSON['processingId'],
+        id = parsedJSON['id'],
         inFile = parsedJSON['inFile'],
         outFile = parsedJSON['outFile'],
         userId = parsedJSON['userId'],

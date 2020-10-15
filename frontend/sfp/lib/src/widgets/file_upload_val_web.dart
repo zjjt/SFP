@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart'
     if (dart.library.html) 'package:file_picker_web/file_picker_web.dart';
-import 'package:file_picker_platform_interface/file_picker_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,25 +40,14 @@ class FileUploadValidatorWebState extends State<FileUploadValidatorWeb>
     //here we upload the files based on the file type config in the current
     //selected configuration
     var filesW;
-    String extension = dataBloc.currentConfig.fileTypeAndSizeInMB['type'];
-    filesW = await FilePicker.getMultiFile(
-        type: FileType.custom, allowedExtensions: ['$extension']);
+    filesW = await FilePicker.getMultiFile();
     if (filesW.length > 0) {
       for (html.File file in filesW) {
         Utils.log(file.name);
         Utils.log("file path: ${file.relativePath}");
-        if (!file.name.endsWith(extension)) {
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text(
-                'Please select files with the extension of $extension',
-                style: const TextStyle(color: Colors.white)),
-            backgroundColor: Colors.black,
-          ));
-          return;
-        }
       }
       setState(() {
-        Utils.log('file upload successfull\n .$extension');
+        Utils.log('file upload successfull\n');
         noFiles = filesW.length;
         files = filesW;
       });

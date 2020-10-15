@@ -9,4 +9,13 @@ public  class Utils {
         String month=months[cal.get(Calendar.MONTH)];
         return month;
     }
+    public static String getRandomString(int n){
+        String AlphaNumString="ABCDEFGHIJKLMNOPQRSTUVWXYZ"+"0123456789"+"abcdefghijklmnopqrstuvwxyz";
+        StringBuilder stringBuilder=new StringBuilder(n);
+        for(int i=0;i<n;i++){
+            int index=(int)(AlphaNumString.length()*Math.random());
+            stringBuilder.append(AlphaNumString.charAt(index));
+        }
+        return stringBuilder.toString();
+    }
 }

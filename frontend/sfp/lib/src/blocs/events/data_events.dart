@@ -19,6 +19,11 @@ class FetchFilesForConfig extends DataEvent {
   const FetchFilesForConfig(this.configName, this.userId);
 }
 
+class FetchFilesToValidate extends DataEvent {
+  final String fileProcessId;
+  const FetchFilesToValidate(this.fileProcessId);
+}
+
 class SelectConfig extends DataEvent {
   final int configPosition;
   const SelectConfig(this.configPosition);
@@ -37,17 +42,32 @@ class SubmitApprovalChain extends DataEvent {}
 class CreateUserWithRole extends DataEvent {
   final String username;
   final String userId;
+  final String processingId;
   final List<String> mailOfUsers;
+  final List<String> filenames;
+  final files;
   final String role;
   final String configName;
 
   const CreateUserWithRole(
       {this.username,
       this.userId,
+      this.processingId,
       this.mailOfUsers,
+      this.filenames,
+      this.files,
       this.role,
       this.configName});
-  List<Object> get props => [username, userId, mailOfUsers, configName];
+  List<Object> get props => [
+        username,
+        userId,
+        processingId,
+        mailOfUsers,
+        filenames,
+        files,
+        role,
+        configName
+      ];
 }
 
 class GetValidationProcess extends DataEvent {

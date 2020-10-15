@@ -49,7 +49,7 @@ public class CronJob {
                 24).getTime();
         System.out.println("job must be running before "+ dateFinCron+"\nand starting after the "+dateDebutCron+" \n is today between the processing period ? "+(new Date().before(dateFinCron) && new Date().after(dateDebutCron)));
         List<ProcessedFile> listofFiles = processedFileService.getAll(false, false,
-                true, false, new Date(), new Date(), new Date(), "", "CANAL");
+                true, false, new Date(), new Date(), new Date(), "", "CANAL","");
         if (true/*new Date().before(dateFinCron) && new Date().after(dateDebutCron)*/) {
             System.out.println("Step 1: checking if there are some file left to process");
             System.out.println(listofFiles.size() + " files remaining to process\n Step 1 done");

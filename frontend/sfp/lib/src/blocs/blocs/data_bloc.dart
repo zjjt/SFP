@@ -77,9 +77,20 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     if (event is CreateUserWithRole) {
       yield DataLoading();
       try {
-        final result = await repo.createUsersWithRole(event.username,
-            event.userId, event.mailOfUsers, event.role, event.configName);
-        if (!result['errors']) {}
+        final result = await repo.createUsersWithRole(
+            event.username,
+            event.userId,
+            event.processingId,
+            event.mailOfUsers,
+            event.files,
+            event.role,
+            event.configName);
+        if (!result['errors']) {
+          yield UsersCreated();
+        } else {
+          yield DataFailure(
+              "The approval chain couldn't be created. A unexpected problem occured.");
+        }
       } on NetWorkException {
         yield DataFailure("No internet connection");
       }
@@ -120,6 +131,19 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     if (event is FetchFilesForConfig) {
       final m = await repo.fetchCurrentProcessingFiles(
           event.configName, event.userId);
+      processedFiles = [];
+      for (int i = 0; i < m['fichiers'].length; i++) {
+        Utils.log(m['fichiers'].length);
+        Utils.log(m['fichiers'][i]['configName']);
+        var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
+        processedFiles.add(pf);
+      }
+      Utils.log("processed files number ${processedFiles.length}");
+      yield FileLoaded(fcount: processedFiles.length);
+    }
+    if (event is FetchFilesToValidate) {
+      final m =
+          await repo.fetchCurrentProcessingFilesToValidate(event.fileProcessId);
       processedFiles = [];
       for (int i = 0; i < m['fichiers'].length; i++) {
         Utils.log(m['fichiers'].length);

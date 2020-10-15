@@ -24,7 +24,7 @@ public class ProcessedFileController {
     @Autowired
     ProcessedFileService processedFileService;
     @Value("#{'${application.mode}'}")
-    private  String appmode;
+    private String appmode;
 
     @PostMapping("/delete")
     public Map<String, Object> deleteFiles(@RequestParam("file_ids[]") List<String> ids) {
@@ -49,48 +49,52 @@ public class ProcessedFileController {
         }
         return m;
     }
+
     @GetMapping("/get-in-process")
-    public Map<String,Object> getProcessingFiles(@RequestParam(value = "uid") String userId,
-                                                 @RequestParam(value = "configname")String configName){
-        System.out.println("getting list of current files in processing for the uid "+userId+" for the config "+configName);
-        List<ProcessedFile> files=processedFileService.getAll(false,false,true,false,
-                new Date(0),new Date(0),new Date(0),userId,configName);
+    public Map<String, Object> getProcessingFiles(@RequestParam(value = "uid",required = false) String userId,
+                                                  @RequestParam(value = "configname",required = false) String configName,
+                                                  @RequestParam(value = "fileId",required = false) String fileId) {
+        System.out.println("getting list of current files in processing for the uid " + userId + " for the config " + configName);
+        List<ProcessedFile> files = processedFileService.getAll(false, false, true, false,
+                new Date(0), new Date(0), new Date(0), userId, configName,fileId);
         var m = new HashMap<String, Object>();
         m.put("errors", false);
-        m.put("message", " "+files.size()+" found");
+        m.put("message", " " + files.size() + " found");
         m.put("fichiers", files);
         return m;
 
     }
 
     @GetMapping("/generatefiles")
-    public List<String> generateFilePaths( @RequestParam(name = "configName") String configName,
-                                            @RequestParam(name = "userId") String userId, HttpServletRequest request){
-        System.out.println("generating files for config "+configName+" and userId "+userId);
-        List<String>filenames=processedFileService.generateFilePaths(configName,userId);
+    public List<String> generateFilePaths(@RequestParam(name = "configName") String configName,
+                                          @RequestParam(name = "userId") String userId, HttpServletRequest request) {
+        System.out.println("generating files for config " + configName + " and userId " + userId);
+        List<String> filenames = processedFileService.generateFilePaths(configName, userId);
         return filenames;
     }
+
     @GetMapping("/download/{filename:.+}")
     public void download(HttpServletRequest request, HttpServletResponse response,
-                         @PathVariable("filename")String filename) throws IOException {
-        final String DEFAULT_DIR=new File("").getAbsolutePath();
-        System.out.println("filename is "+filename);
-        File file=new File(DEFAULT_DIR+"/"+filename);
-        System.out.println("file "+file.getName()+" it exists? "+file.exists());
-        if(file.exists()){
+                         @PathVariable("filename") String filename) throws IOException {
+        final String DEFAULT_DIR = new File("").getAbsolutePath();
+        System.out.println("filename is " + filename);
+        File file = new File(DEFAULT_DIR + "/" + filename);
+        System.out.println("file " + file.getName() + " it exists? " + file.exists());
+        if (file.exists()) {
             System.out.println("the file exists and is being prepared for download");
-            String mimeType= URLConnection.guessContentTypeFromName(file.getName());
-            if(mimeType==null){
-                mimeType="application/octet-stream";
+            String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+            if (mimeType == null) {
+                mimeType = "application/octet-stream";
             }
             response.setContentType(mimeType);
-            response.setHeader("Content-Disposition",String.format("attachment; filename=\""+file.getName()+"\""));
+            response.setHeader("Content-Disposition", String.format("attachment; filename=\"" + file.getName() + "\""));
             response.setContentLength((int) file.length());
-            InputStream inputStream=new BufferedInputStream(new FileInputStream(file));
-            FileCopyUtils.copy(inputStream,response.getOutputStream());
+            InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+            FileCopyUtils.copy(inputStream, response.getOutputStream());
         }
 
     }
+
     @PostMapping("/upload")
     public Map<String, Object> uploadFile(@RequestParam("files[]") List<MultipartFile> files,
                                           @RequestParam(name = "configName") String configName,
@@ -106,7 +110,7 @@ public class ProcessedFileController {
             long start = Instant.now().toEpochMilli();
 
             try {
-                treatedFiles = processedFileService.processFiles(files, userId, configName,appmode);
+                treatedFiles = processedFileService.processFiles(files, userId, configName, appmode);
                 //the files have been processed and now we need to read from the db and save into db
             } catch (ClassNotFoundException e) {
                 long end = Instant.now().toEpochMilli();

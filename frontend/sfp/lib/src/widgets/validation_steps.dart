@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,11 +23,15 @@ class _ValidationStepsState extends State<ValidationSteps> {
   ListModel<int> _list;
   List<TextEditingController> _emailCtrl;
   DataBloc dataBloc;
+  AuthBloc authBloc;
+  AlertBloc alertBloc;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     dataBloc = context.bloc<DataBloc>();
+    authBloc = context.bloc<AuthBloc>();
+    alertBloc = context.bloc<AlertBloc>();
     _emailCtrl = List<TextEditingController>();
     _validatorNumber = 1;
     _list = ListModel(
@@ -97,15 +103,65 @@ class _ValidationStepsState extends State<ValidationSteps> {
         if (state is ApprovalChainSubmited) {
           Utils.log(
               "number of validators added is ${_emailCtrl.length}\nthey are:\n");
+          var listOfMail = List<String>();
           _emailCtrl.forEach((element) {
             Utils.log(element.text);
+            if (element.text.isNotEmpty) {
+              listOfMail.add(element.text);
+            }
           });
           Utils.log(
               "\n number of attachement files is ${_filesUploadKey.currentState.noFiles}");
           if (_formKey.currentState.validate()) {
+            dataBloc.add(CreateUserWithRole(
+                username: authBloc.user.username,
+                userId: authBloc.user.id,
+                processingId: dataBloc.processedFiles.first.processingId,
+                mailOfUsers: listOfMail,
+                files: _filesUploadKey.currentState.files,
+                role: "VALIDATORS",
+                configName: dataBloc.currentConfig.configName));
           } else {
             dataBloc.add(PutFormInStandBy());
           }
+        } else if (state is UsersCreated) {
+          alertBloc.add(CloseAlert());
+          Timer(Duration(milliseconds: 200), () {
+            alertBloc.add(ShowAlert(
+                whatToShow: Container(
+                  height: 200,
+                  width: 200,
+                  color: Colors.white,
+                  padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                          child: Icon(Icons.done,
+                              color: Assets.ubaRedColor, size: 70.0)),
+                      SizedBox(height: 10.0),
+                      Text(
+                        "The approval chain has been created and each person has been notified via mail",
+                        textAlign: TextAlign.center,
+                      )
+                    ],
+                  ),
+                ),
+                isDoc: false,
+                title: '',
+                actions: [
+                  FlatButton(
+                      onPressed: () {
+                        alertBloc.add(CloseAlert());
+                        authBloc.add(LogOut());
+                        //here the validation box must show on the result page
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("OK",
+                              style: const TextStyle(color: Colors.black)))),
+                ]));
+          });
         }
       },
       child: Container(

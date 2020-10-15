@@ -66,16 +66,30 @@ class Repository {
     return files;
   }
 
+  Future<Map<String, dynamic>> fetchCurrentProcessingFilesToValidate(
+      String fileId) async {
+    var files;
+    try {
+      files = await netProvider.fetchCurrentProcessingFilesToValidate(fileId);
+    } on NetWorkException {
+      Utils.log("couldnt reach the api ${files.message}");
+      return null;
+    }
+    return files;
+  }
+
   Future<Map<String, dynamic>> createUsersWithRole(
       String username,
       String userId,
+      String fileId,
       List<String> userMails,
+      List<dynamic> files,
       String role,
       String configName) async {
     var val;
     try {
       val = await netProvider.createUsersWithRole(
-          username, userId, userMails, role, configName);
+          username, userId, fileId, userMails, files, role, configName);
     } on NetWorkException {
       Utils.log("couldnt reach the api ${val.message}");
       return null;
