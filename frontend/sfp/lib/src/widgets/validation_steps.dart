@@ -40,6 +40,15 @@ class _ValidationStepsState extends State<ValidationSteps> {
         removedItemBuilder: _buildRemovedItem);
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _emailCtrl.forEach((element) {
+      element.dispose();
+    });
+  }
+
   void _removeBlankTextCtrl() {
     _emailCtrl.forEach((element) {
       if (element.text.isEmpty) {
