@@ -33,14 +33,14 @@ public class ProcessValidation {
      * STANDBY is the default status
      */
     private Map<String,String> validators;
-    private Map<String,String> validatiorMotives;
+    private Map<String,String> validatorMotives;
 
-    public ProcessValidation(String configName, String initiatorId, List<Map<String,Object>> addedFiles, Map<String, String> validators, Map<String, String> validatiorMotives) {
+    public ProcessValidation(String configName, String initiatorId, List<Map<String,Object>> addedFiles, Map<String, String> validators, Map<String, String> validatorMotives) {
         this.configName = configName;
         this.initiatorId = initiatorId;
         this.addedFiles = addedFiles;
         this.validators = validators;
-        this.validatiorMotives = validatiorMotives;
+        this.validatorMotives = validatorMotives;
     }
 
     @Override
@@ -48,12 +48,12 @@ public class ProcessValidation {
         return String.format("ProcessValidation:[id:%s\nconfigName:%s\n,initiatorId:%s\nvalidators:%s\n]",id,configName,initiatorId,validators);
     }
 
-    public Map<String, String> getValidatiorMotives() {
-        return validatiorMotives;
+    public Map<String, String> getValidatorMotives() {
+        return validatorMotives;
     }
 
-    public void setValidatiorMotives(Map<String, String> validatiorMotives) {
-        this.validatiorMotives = validatiorMotives;
+    public void setValidatorMotives(Map<String, String> validatorMotives) {
+        this.validatorMotives = validatorMotives;
     }
 
     public String getInitiatorId() {

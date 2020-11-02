@@ -14,9 +14,11 @@ class NetworkProvider {
   final dio = Dio();
 
   //fetching process configs from the backend
-  Future<List<ProcessConfigModel>> fetchConfig() async {
-    Utils.log('in network provider fetching configs from backend');
-    var response = await dio.get('$backend/PC');
+  Future<List<ProcessConfigModel>> fetchConfig(String configName) async {
+    Utils.log('in network provider fetching configs $configName from backend');
+    var response = configName.isEmpty
+        ? await dio.get('$backend/PC')
+        : await dio.get('$backend/PC?name=$configName');
     if (response.statusCode == 200) {
       List<dynamic> data = response.data;
       List<ProcessConfigModel> configs = [];
@@ -31,12 +33,24 @@ class NetworkProvider {
     }
   }
 
-  Future<Map<String, dynamic>> getCurrentValidationProcess(
-      String initiatorId, String configName) async {
+  Future<Map<String, dynamic>> updateValidation(
+      String validatorId,
+      String validation,
+      String validationType,
+      String configName,
+      String initiatorId,
+      String rejectionMotive) async {
     Utils.log(
-        'in network provider trying to get the current validation process pipeline from backend for initiator $initiatorId and $configName');
-    var response = await dio.get(
-        '$backend/validation?configName=$configName&initiatorId=$initiatorId');
+        'in network provider updatiing validations for $configName and for the $validationType type');
+    FormData formData = FormData.fromMap({
+      "validatorId": validatorId,
+      "validation": validation,
+      "validationType": validationType,
+      "configName": configName,
+      "initiatorId": initiatorId,
+      "rejectionMotive": rejectionMotive ?? "",
+    });
+    var response = await dio.post('$backend/validation', data: formData);
     if (response.statusCode == 200) {
       var data = response.data;
       return data;
@@ -45,12 +59,26 @@ class NetworkProvider {
     }
   }
 
-  Future<Map<String, dynamic>> getValidatorNames(List<String> ids) async {
+  Future<Map<String, dynamic>> getCurrentValidationProcess(
+      String initiatorId, String configName, String whichValidator) async {
+    Utils.log(
+        'in network provider trying to get the current validation process pipeline from backend for initiator $initiatorId and $configName and validator type of $whichValidator');
+    var response = await dio.get(
+        '$backend/validation?configName=$configName&initiatorId=$initiatorId&validatorType=$whichValidator');
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
+  Future<Map<String, dynamic>> getValidatorNames(
+      List<String> ids, String validatorType) async {
     Utils.log(
         'in network provider trying to get the list of usernames for the list of ids $ids');
-    FormData formData = FormData.fromMap({
-      "ids": ids,
-    });
+    FormData formData =
+        FormData.fromMap({"ids": ids, "validatorType": validatorType});
     var response =
         await dio.post('$backend/user/getvalidatorusernames', data: formData);
     if (response.statusCode == 200) {

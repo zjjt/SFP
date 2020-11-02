@@ -34,6 +34,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   int currentPage, totalPages;
   var firstTotalValue, secondTotalValue;
   List<Uint8List> docInitial, docGenerated;
+  TextEditingController _rejectionController;
   @override
   void initState() {
     super.initState();
@@ -45,15 +46,17 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     docBloc = context.bloc<DocBloc>();
     currentPage = 1;
     totalPages = 0;
+    _rejectionController = TextEditingController();
     ftoast = FToast();
     ftoast.init(context);
     alertBloc.add(CloseAlert());
     //if(dataBloc.processedFiles.isNotEmpty)
     dataBloc.add(GetValidationProcess(
-        configName: dataBloc.currentConfig.configName,
+        configName: dataBloc.currentConfigName,
         initiatorId: authBloc.user.role == "INITIATOR"
             ? authBloc.user.id
-            : authBloc.user.role == "VALIDATOR"
+            : authBloc.user.role == "VALIDATOR" ||
+                    authBloc.user.role == "CONTROLLER"
                 ? authBloc.user.creatorId
                 : authBloc.user.id));
     //launching entrence animation
@@ -61,10 +64,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     docBloc.add(ResetDoc());
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _rejectionController.dispose();
+  }
+
   void _downloadFiles() {
     //dispatch and generate the file on the servers
-    dataBloc.add(
-        DownloadFiles(authBloc.user.id, dataBloc.currentConfig.configName));
+    dataBloc.add(DownloadFiles(authBloc.user.id, dataBloc.currentConfigName));
   }
 
   // Future<void> _getDocuments() async {
@@ -85,13 +93,13 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
       pdf.addPage(pw.MultiPage(
           pageFormat: pdfDart.PdfPageFormat(
               100 * pdfDart.PdfPageFormat.cm,
-              dataBloc.currentConfig.configName == "CANAL"
+              dataBloc.currentConfigName == "CANAL"
                   ? 25 * pdfDart.PdfPageFormat.cm
                   : 50 * pdfDart.PdfPageFormat.cm,
               marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
           build: (pw.Context context) {
             return _buildPdf(dataBloc.processedFiles[i], map['which'],
-                dataBloc.currentConfig.configName, map['dataBloc']);
+                dataBloc.currentConfigName, map['dataBloc']);
           }));
       var doc = pdf.save();
       docs.add(doc);
@@ -778,7 +786,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                         dataBloc.add(PreparingFileFetching());
                                         Timer(Duration(milliseconds: 100), () {
                                           dataBloc.add(FetchFilesForConfig(
-                                              dataBloc.currentConfig.configName,
+                                              dataBloc.currentConfigName,
                                               authBloc.user.id));
                                           Timer(Duration(milliseconds: 2900),
                                               () {
@@ -849,7 +857,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       dataBloc.add(PreparingFileFetching());
                                       Timer(Duration(milliseconds: 100), () {
                                         dataBloc.add(FetchFilesForConfig(
-                                            dataBloc.currentConfig.configName,
+                                            dataBloc.currentConfigName,
                                             authBloc.user.id));
                                         Timer(Duration(milliseconds: 2900), () {
                                           _showToast(
@@ -985,7 +993,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                   children: [
                                     Text('Generated file $windex'),
                                     Spacer(),
-                                    dataBloc.currentConfig.configName == "CANAL"
+                                    dataBloc.currentConfigName == "CANAL"
                                         ? Container(
                                             child: Row(
                                               mainAxisAlignment:
@@ -1018,8 +1026,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                               ],
                                             ),
                                           )
-                                        : dataBloc.currentConfig.configName ==
-                                                "SAGE"
+                                        : dataBloc.currentConfigName == "SAGE"
                                             ? Container(
                                                 child: Row(
                                                   mainAxisAlignment:
@@ -1164,22 +1171,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     });
     l.addAll([
       SizedBox(height: 20.0),
-      if (dataBloc.currentValidation != null &&
-          dataBloc.currentValidation.initiatorId == authBloc.user.id &&
-          dataBloc.currentConfig.functionnalityTypes.contains("VALIDATIONS"))
+      if (dataBloc.currentControlValidation != null)
         ValidatingProcess(
-          whoViewThis: "INITIATOR",
+          whichProcess: "CONTROLLER",
         ),
-      if (dataBloc.currentValidation != null &&
-          dataBloc.currentValidation.initiatorId != authBloc.user.id &&
-          dataBloc.currentConfig.functionnalityTypes.contains("VALIDATIONS"))
+      if (dataBloc.currentValidation != null)
         ValidatingProcess(
-          whoViewThis: "VALIDATOR",
+          whichProcess: "VALIDATOR",
         ),
       Container(
-        width:
-            Responsive.isMobile(context) ? appB.width * 0.5 : appB.width * 0.15,
-        height: 40.0,
         child: BlocBuilder<DataBloc, DataState>(
           builder: (context, state) {
             if (state is FilesDownloaded) {
@@ -1200,13 +1200,15 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                 }
               }
             }
-            return dataBloc.currentValidation != null &&
-                    dataBloc.currentValidation.initiatorId ==
+            return dataBloc.currentControlValidation != null &&
+                    dataBloc.currentValidation != null &&
+                    dataBloc.currentControlValidation.initiatorId ==
                         authBloc.user.id &&
-                    dataBloc.currentConfig.functionnalityTypes.contains(
-                        "VALIDATIONS") //Initiator when validation started
+                    dataBloc.currentConfig.functionnalityTypes
+                        .contains("CONTROL") //Initiator when validation started
                 ? RaisedButton(
-                    onPressed: dataBloc.validationProgress == 100
+                    onPressed: dataBloc.validationProgress == 100 &&
+                            dataBloc.validationControlProgress == 100
                         ? () => Utils.log("can send the file to destinataire")
                         : null,
                     color: Assets.ubaRedColor,
@@ -1223,108 +1225,278 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(25.0),
                     ),
                   )
-                : dataBloc.currentValidation != null &&
-                        dataBloc.currentValidation.initiatorId !=
+                : (dataBloc.currentValidation != null ||
+                            dataBloc.currentControlValidation != null) &&
+                        dataBloc.currentControlValidation.initiatorId !=
                             authBloc.user.id &&
                         dataBloc.currentConfig.functionnalityTypes
-                            .contains("VALIDATIONS") //Validators
+                            .contains("VALIDATIONS") // Controllers Validators
                     ? Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        width: 500,
+                        child: ButtonBar(
+                          alignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisSize: MainAxisSize.max,
                           children: [
-                            RaisedButton(
-                              onPressed: () {},
-                              color: Assets.ubaRedColor,
-                              hoverColor: Colors.black,
-                              textColor: Colors.white,
-                              child: Text(
-                                "Reject",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                            Container(
+                              width: MediaQuery.of(context).orientation ==
+                                      Orientation.portrait
+                                  ? appB.width
+                                  : appB.width * 0.5,
+                              height: 40.0,
+                              child: RaisedButton(
+                                onPressed: () {
+                                  alertBloc.add(ShowAlert(
+                                    title: Text("Are you sure ?"),
+                                    whatToShow: Container(
+                                      height: 300,
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                              "You have decided to reject the current file(s) processed.Would you please state the reason in the field below ?"),
+                                          SizedBox(height: 20.0),
+                                          TextField(
+                                              controller: _rejectionController,
+                                              maxLines: 5,
+                                              decoration: InputDecoration(
+                                                suffixIcon: Icon(
+                                                  Icons.person_outline,
+                                                  color: Assets.ubaRedColor,
+                                                ),
+                                                labelText: "what happened ?",
+                                                labelStyle: TextStyle(
+                                                  color: Assets.ubaRedColor,
+                                                  fontSize: 15.0,
+                                                ),
+                                                focusedBorder:
+                                                    UnderlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: Assets.ubaRedColor,
+                                                  ),
+                                                ),
+                                              )),
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      FlatButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _rejectionController.clear();
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "CANCEL",
+                                            style: const TextStyle(
+                                                color: Colors.black),
+                                          ),
+                                        ),
+                                      ),
+                                      FlatButton(
+                                          onPressed: () {
+                                            dataBloc.add(UpdateValidation(
+                                                authBloc.user.id,
+                                                "REJECTED",
+                                                authBloc.user.role,
+                                                dataBloc.currentConfigName,
+                                                authBloc.user.creatorId,
+                                                rejectionMotive:
+                                                    _rejectionController.text));
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("CONFIRM")))
+                                    ],
+                                  ));
+                                },
+                                color: Colors.black,
+                                hoverColor: Colors.black,
+                                textColor: Colors.white,
+                                child: Text(
+                                  "Reject",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25.0),
+                                ),
                               ),
                             ),
-                            RaisedButton(
-                              onPressed: () {},
-                              color: Assets.ubaRedColor,
-                              hoverColor: Colors.black,
-                              textColor: Colors.white,
-                              child: Text(
-                                "Acknowledge",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                            Container(
+                              width: MediaQuery.of(context).orientation ==
+                                      Orientation.portrait
+                                  ? appB.width
+                                  : appB.width * 0.5,
+                              height: 40.0,
+                              child: RaisedButton(
+                                onPressed: () {
+                                  dataBloc.add(UpdateValidation(
+                                      authBloc.user.id,
+                                      "OK",
+                                      authBloc.user.role,
+                                      dataBloc.currentConfigName,
+                                      authBloc.user.creatorId));
+                                },
+                                color: Assets.ubaRedColor,
+                                hoverColor: Colors.black,
+                                textColor: Colors.white,
+                                child: Text(
+                                  "Acknowledge",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25.0),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       )
-                    : dataBloc.currentValidation == null &&
+                    : (dataBloc.currentValidation == null ||
+                                dataBloc.currentControlValidation == null) &&
                             dataBloc.currentConfig.functionnalityTypes.contains(
                                 "VALIDATIONS") //Initiator when validation hasnt started yet
                         ? RaisedButton(
                             onPressed: () {
-                              alertBloc.add(ShowAlert(
-                                  whatToShow: ValidationSteps(),
-                                  isDoc: false,
-                                  doc: null,
-                                  actions: [
-                                    FlatButton(
-                                      onPressed: () {
-                                        alertBloc.add(CloseAlert());
-                                      },
-                                      child: Container(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text("CLOSE")),
-                                    ),
-                                    FlatButton(
-                                      onPressed: () {
-                                        alertBloc.add(ShowAlert(
-                                          whatToShow: Container(
-                                            height: 200,
-                                            width: 200,
-                                            color: Colors.white,
-                                            padding: EdgeInsets.fromLTRB(
-                                                24.0, 0.0, 24.0, 24.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Center(
-                                                  child: SpinKitRing(
-                                                      color: Assets.ubaRedColor,
-                                                      size: 80.0),
-                                                ),
-                                                SizedBox(height: 10.0),
-                                                Text(
-                                                  "Please wait...",
-                                                  textAlign: TextAlign.center,
-                                                )
-                                              ],
+                              if (dataBloc.currentControlValidation == null) {
+                                alertBloc.add(ShowAlert(
+                                    whatToShow: ValidationSteps(
+                                        defaultRole: "CONTROLLER"),
+                                    isDoc: false,
+                                    doc: null,
+                                    actions: [
+                                      FlatButton(
+                                        onPressed: () {
+                                          alertBloc.add(CloseAlert());
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text("CLOSE")),
+                                      ),
+                                      FlatButton(
+                                        onPressed: () {
+                                          alertBloc.add(ShowAlert(
+                                            whatToShow: Container(
+                                              height: 200,
+                                              width: 200,
+                                              color: Colors.white,
+                                              padding: EdgeInsets.fromLTRB(
+                                                  24.0, 0.0, 24.0, 24.0),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Center(
+                                                    child: SpinKitRing(
+                                                        color:
+                                                            Assets.ubaRedColor,
+                                                        size: 80.0),
+                                                  ),
+                                                  SizedBox(height: 10.0),
+                                                  Text(
+                                                    "Please wait...",
+                                                    textAlign: TextAlign.center,
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          isDoc: false,
-                                          title: Container(),
-                                          actions: [],
-                                        ));
-                                        dataBloc.add(SubmitApprovalChain());
-                                      },
-                                      child: Container(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text("SEND NOTIFICATION")),
+                                            isDoc: false,
+                                            title: Container(),
+                                            actions: [],
+                                          ));
+                                          dataBloc.add(SubmitApprovalChain());
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text("SEND NOTIFICATION")),
+                                      ),
+                                    ],
+                                    title: Text('Create the approval chain')));
+                                _showToast(
+                                    "Add or remove controllers email ids. Each of them will be notified to approve of the file");
+                              } else if (dataBloc.validationControlProgress ==
+                                      100 &&
+                                  dataBloc.currentValidation == null) {
+                                alertBloc.add(ShowAlert(
+                                    whatToShow: ValidationSteps(
+                                      defaultRole: "VALIDATOR",
                                     ),
-                                  ],
-                                  title: Text('Create the approval chain')));
-                              _showToast(
-                                  "Add or remove validators email ids. Each of them will be notified to approve of the file");
+                                    isDoc: false,
+                                    doc: null,
+                                    actions: [
+                                      FlatButton(
+                                        onPressed: () {
+                                          alertBloc.add(CloseAlert());
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text("CLOSE")),
+                                      ),
+                                      FlatButton(
+                                        onPressed: () {
+                                          alertBloc.add(ShowAlert(
+                                            whatToShow: Container(
+                                              height: 200,
+                                              width: 200,
+                                              color: Colors.white,
+                                              padding: EdgeInsets.fromLTRB(
+                                                  24.0, 0.0, 24.0, 24.0),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Center(
+                                                    child: SpinKitRing(
+                                                        color:
+                                                            Assets.ubaRedColor,
+                                                        size: 80.0),
+                                                  ),
+                                                  SizedBox(height: 10.0),
+                                                  Text(
+                                                    "Please wait...",
+                                                    textAlign: TextAlign.center,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            isDoc: false,
+                                            title: Container(),
+                                            actions: [],
+                                          ));
+                                          dataBloc.add(SubmitApprovalChain());
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text("SEND NOTIFICATION")),
+                                      ),
+                                    ],
+                                    title: Text('Create the approval chain')));
+                                _showToast(
+                                    "Add or remove validators email ids. Each of them will be notified to approve of the file");
+                              } else {
+                                alertBloc.add(ShowAlert(
+                                    whatToShow: Text(
+                                        "Some approvals are still required to move forward !"),
+                                    isDoc: false,
+                                    doc: null,
+                                    actions: [
+                                      FlatButton(
+                                        onPressed: () {
+                                          alertBloc.add(CloseAlert());
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text("CLOSE")),
+                                      ),
+                                    ]));
+                              }
                             },
                             color: Assets.ubaRedColor,
                             hoverColor: Colors.black,
@@ -1341,6 +1513,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             ),
                           )
                         : RaisedButton(
+                            //last button which download files
                             onPressed:
                                 dataBloc.processedFiles.first.processingStatus
                                     ? _downloadFiles
@@ -1384,7 +1557,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "${dataBloc.currentConfig.configName == "CANAL" ? 'CANAL+' : dataBloc.currentConfig.configName}\nFile processing control",
+                    "${dataBloc.currentConfigName == "CANAL" ? 'CANAL+' : dataBloc.currentConfigName}\nFile processing control",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Assets.ubaRedColor,
@@ -1392,7 +1565,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(height: 50.0),
-                  if (dataBloc.currentConfig.configName == "CANAL")
+                  if (dataBloc.currentConfigName == "CANAL")
                     Container(
                       alignment: Alignment.topCenter,
                       margin: const EdgeInsets.only(bottom: 10.0),
@@ -1417,6 +1590,51 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       }
                       if (state is ValidationProcessLoaded) {
                         setState(() {});
+                      }
+                      if (state is ValidationUpdated) {
+                        alertBloc.add(ShowAlert(
+                          title: Text("Thank you"),
+                          whatToShow: Text(
+                              "You will now be logged out and redirected to the login screen\n\nAre you done ?"),
+                          actions: [
+                            FlatButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "CANCEL",
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                            FlatButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  authBloc.add(LogOut());
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text("LEAVE APP")))
+                          ],
+                        ));
+                      }
+                      if (state is ValidationUpdateFailed) {
+                        alertBloc.add(ShowAlert(
+                          title: Text("Ooops... "),
+                          whatToShow: Text(state.message),
+                          actions: [
+                            FlatButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "OK",
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ));
                       }
                     },
                     child: Container(

@@ -43,7 +43,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
-                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
+                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~18");
@@ -103,7 +103,7 @@ public class Processors {
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial file in binary format in mongo
-                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null, null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
+                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());
@@ -559,6 +559,18 @@ public class Processors {
                     "            \"LABEL\": \"charges sociales/cnps\"\n" +
                     "        },\n" +
                     "        {\n" +
+                    "            \"COMPTE_LP\": \"64128\",\n" +
+                    "            \"CODE_LP\": \"-680/+3821\",\n" +
+                    "            \"COMPTE_FINCON\": \"6410009526299019\",\n" +
+                    "            \"LABEL\": \"provisions congés payés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"64127\",\n" +
+                    "            \"CODE_LP\": \"+4960\",\n" +
+                    "            \"COMPTE_FINCON\": \"6670009526299001\",\n" +
+                    "            \"LABEL\": \"retraite\"\n" +
+                    "        },\n" +
+                    "        {\n" +
                     "            \"COMPTE_LP\": \"641129\",\n" +
                     "            \"CODE_LP\": \"+155/+157/+159\",\n" +
                     "            \"COMPTE_FINCON\": \"6410009526299020\",\n" +
@@ -581,9 +593,123 @@ public class Processors {
                     "            \"CODE_LP\": \"+210/+282/+283/+284\",\n" +
                     "            \"COMPTE_FINCON\": \"6311009526299001\",\n" +
                     "            \"LABEL\": \"charges patronales\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"6423\",\n" +
+                    "            \"COMPTE_FINCON\": \"6420009526299008\",\n" +
+                    "            \"LABEL\": \"charges cmu\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33241\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3324009526299001\",\n" +
+                    "            \"LABEL\": \"rémunérations dues\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321211\",\n" +
+                    "            \"CODE_LP\": \"IS\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299012\",\n" +
+                    "            \"LABEL\": \"IS\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321212\",\n" +
+                    "            \"CODE_LP\": \"CN\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299012\",\n" +
+                    "            \"LABEL\": \"cn\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321213\",\n" +
+                    "            \"CODE_LP\": \"IGR\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299012\",\n" +
+                    "            \"LABEL\": \"igr\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"332122\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299023\",\n" +
+                    "            \"LABEL\": \"crn salariés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321231\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299012\",\n" +
+                    "            \"LABEL\": \"charges patronales is\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321232\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299024\",\n" +
+                    "            \"LABEL\": \"charges patronales ta\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321233\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299024\",\n" +
+                    "            \"LABEL\": \"charges patronales fpc\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3321234\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3321009526299025\",\n" +
+                    "            \"LABEL\": \"charges patronales fpc regul\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"332211\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3322009526299001\",\n" +
+                    "            \"LABEL\": \"cnps salariés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"332212\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"3322009526299001\",\n" +
+                    "            \"LABEL\": \"cnps employeur\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33242\",\n" +
+                    "            \"CODE_LP\": \"+3821\",\n" +
+                    "            \"COMPTE_FINCON\": \"3825009526299006\",\n" +
+                    "            \"LABEL\": \"provisions congés payés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"5111\",\n" +
+                    "            \"CODE_LP\": \"NA\",\n" +
+                    "            \"COMPTE_FINCON\": \"5110009526299001\",\n" +
+                    "            \"LABEL\": \"prov retraite et séparation\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33195\",\n" +
+                    "            \"CODE_LP\": \"1502\",\n" +
+                    "            \"COMPTE_FINCON\": \"3311009526299028\",\n" +
+                    "            \"LABEL\": \"avance scolarité\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"382500\",\n" +
+                    "            \"CODE_LP\": \"633\",\n" +
+                    "            \"COMPTE_FINCON\": \"3825009526299005\",\n" +
+                    "            \"LABEL\": \"monetisation status car\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33194\",\n" +
+                    "            \"CODE_LP\": \"+632/-660\",\n" +
+                    "            \"COMPTE_FINCON\": \"3824009526299007\",\n" +
+                    "            \"LABEL\": \"Charges de personnel à payer sur congés\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33196\",\n" +
+                    "            \"CODE_LP\": \"631\",\n" +
+                    "            \"COMPTE_FINCON\": \"3311009526299008\",\n" +
+                    "            \"LABEL\": \"avance treizième mois \"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"33193\",\n" +
+                    "            \"CODE_LP\": \"+630/+761/+1501/+1056\",\n" +
+                    "            \"COMPTE_FINCON\": \"3311009526299006\",\n" +
+                    "            \"LABEL\": \"avance sur salaires\"\n" +
                     "        }\n" +
                     "    ]\n" +
-                    "}";
+                    "}\n" +
+                    "\n";
             Object obj = parser.parse(jsonData);
             JSONObject jsonObject = (JSONObject) obj;
             JSONArray rows = (JSONArray) jsonObject.get("rows");

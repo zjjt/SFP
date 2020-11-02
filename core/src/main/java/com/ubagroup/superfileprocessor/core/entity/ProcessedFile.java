@@ -29,7 +29,7 @@ public class ProcessedFile {
     private Date dateProcessed;
     private List<Line> fileLines;
 
-    public ProcessedFile( String processingId,List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, boolean canBeRemoved, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
+    public ProcessedFile(String processingId, List<Line> inFile, List<Line> outFile, String userId, String configName, boolean processingStatus, boolean hasBeenExecutedOnce, boolean canBeRemoved, Date lastExecution, Date nextExecution, Date dateProcessed, List<Line> fileLines) {
         this.processingId=processingId;
         this.inFile = inFile;
         this.outFile = outFile;
@@ -144,6 +144,7 @@ public class ProcessedFile {
     public void setCanBeRemoved(boolean canBeRemoved) {
         this.canBeRemoved = canBeRemoved;
     }
+
 
     public String getProcessingId() {
         return processingId;

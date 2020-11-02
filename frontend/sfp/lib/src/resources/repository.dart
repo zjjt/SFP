@@ -5,16 +5,32 @@ import 'package:sfp/src/resources/resources.dart';
 import 'package:sfp/utils.dart';
 
 class Repository {
-  Future<List<ProcessConfigModel>> fetchConfig() async {
+  Future<List<ProcessConfigModel>> fetchConfig(String configName) async {
     List<ProcessConfigModel> configs;
     try {
-      configs = await netProvider.fetchConfig();
+      configs = await netProvider.fetchConfig(configName);
     } on NetWorkException {
       Utils.log("couldnt reach the api");
       return null;
     }
     //Utils.log(configs);
     return configs;
+  }
+
+  Future<Map<String, dynamic>> updateValidation(
+      String validatorId,
+      String validation,
+      String validationType,
+      String configName,
+      String initiatorId,
+      String rejectionMotive) async {
+    try {
+      return await netProvider.updateValidation(validatorId, validation,
+          validationType, configName, initiatorId, rejectionMotive);
+    } on NetWorkException {
+      Utils.log("couldnt reach the api");
+      return null;
+    }
   }
 
   Future<Map<String, dynamic>> fetchUsers(
@@ -110,11 +126,11 @@ class Repository {
   }
 
   Future<Map<String, dynamic>> getCurrentValidationProcess(
-      String initiatorId, String configName) async {
+      String initiatorId, String configName, String whichValidator) async {
     var val;
     try {
       val = await netProvider.getCurrentValidationProcess(
-          initiatorId, configName);
+          initiatorId, configName, whichValidator);
     } on NetWorkException {
       Utils.log("couldnt reach the api ${val.message}");
       return null;
@@ -122,10 +138,11 @@ class Repository {
     return val;
   }
 
-  Future<Map<String, dynamic>> getValidatorNames(List<String> ids) async {
+  Future<Map<String, dynamic>> getValidatorNames(
+      List<String> ids, String validatorType) async {
     var names;
     try {
-      names = await netProvider.getValidatorNames(ids);
+      names = await netProvider.getValidatorNames(ids, validatorType);
     } on NetWorkException {
       Utils.log("couldnt reach the api ${names.message}");
       return null;

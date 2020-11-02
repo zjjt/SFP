@@ -27,6 +27,8 @@ public class DefaultConfig {
     @Autowired
     private ProcessValidationRepository processValidationRepository;
     @Autowired
+    private ProcessControlValidationRepository processControlValidationRepository;
+    @Autowired
     private  UserRepository userRepository;
     @Value("#{'${application.mode}'}")
     private  String appmode;
@@ -99,6 +101,7 @@ public class DefaultConfig {
         processTypeRepository.deleteAll();
         processedFileRepository.deleteAll();
         processValidationRepository.deleteAll();
+        processControlValidationRepository.deleteAll();
         userRepository.deleteAll();
     }
     private  void showEntete(){
@@ -109,7 +112,7 @@ public class DefaultConfig {
         var pVCount=processValidationRepository.count();
         var uCount=userRepository.count();
 
-        System.out.println("\n\n***Super File Processor started***\n\n=======================App by ZJJT AKA the TECHNIKING for UBA Cote d'ivoire september 2020=======================\n\n\n");
+        System.out.println("\n\n***Simple File Processor started***\n\n=======================App by ZJJT AKA the TECHNIKING for UBA Cote d'ivoire september 2020=======================\n\n\n");
         System.out.println("Document count in Log collection: "+logCount );
         System.out.println("Document count in process_config collection: "+pCCount);
         System.out.println("Document count in processed_file collection: "+pFCount);
@@ -130,7 +133,7 @@ public class DefaultConfig {
         showEntete();
         //checking now if we should empty or re insert initial configuration data
         if(processTypeRepository.count()==0){
-            processTypeRepository.saveAll(Arrays.asList(new ProcessType("FILE_UPLOAD"),new ProcessType("TXT_SPLITTER"),new ProcessType("VALIDATIONS"),new ProcessType("ALLOW_DOWNLOAD"),new ProcessType("ALLOW_MAIL_SENDING")));
+            processTypeRepository.saveAll(Arrays.asList(new ProcessType("FILE_UPLOAD"),new ProcessType("TXT_SPLITTER"),new ProcessType("CONTROL"),new ProcessType("VALIDATIONS"),new ProcessType("ALLOW_DOWNLOAD"),new ProcessType("ALLOW_MAIL_SENDING")));
             System.out.println("processing types inserted in process_type collection");
         }
 
@@ -159,7 +162,7 @@ public class DefaultConfig {
             //CANAL+ PROCESS
             canalFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("TXT_SPLITTER").getType(),processTypeRepository.findFirstByType("ALLOW_DOWNLOAD").getType()));
             //HR PAY SENDING PROCESS
-            sageFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("VALIDATIONS").getType(),processTypeRepository.findFirstByType("ALLOW_MAIL_SENDING").getType()));
+            sageFunctionality.addAll(Arrays.asList(processTypeRepository.findFirstByType("FILE_UPLOAD").getType(),processTypeRepository.findFirstByType("CONTROL").getType(),processTypeRepository.findFirstByType("VALIDATIONS").getType(),processTypeRepository.findFirstByType("ALLOW_MAIL_SENDING").getType()));
             //the developer should not forget that the above PROCESS_TYPES are mapped with the PROCESSING_STEPS described below
             //any chnages in the processes above should then be reflected in the processing steps because they are dependant on each other
             //for building the UI accordingly

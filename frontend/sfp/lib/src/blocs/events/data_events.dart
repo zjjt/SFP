@@ -19,6 +19,18 @@ class FetchFilesForConfig extends DataEvent {
   const FetchFilesForConfig(this.configName, this.userId);
 }
 
+class UpdateValidation extends DataEvent {
+  final String validatorId;
+  final String validation;
+  final String validationType;
+  final String configName;
+  final String initiatorId;
+  final String rejectionMotive;
+  const UpdateValidation(this.validatorId, this.validation, this.validationType,
+      this.configName, this.initiatorId,
+      {this.rejectionMotive});
+}
+
 class FetchFilesToValidate extends DataEvent {
   final String fileProcessId;
   const FetchFilesToValidate(this.fileProcessId);
@@ -73,8 +85,10 @@ class CreateUserWithRole extends DataEvent {
 class GetValidationProcess extends DataEvent {
   final String initiatorId;
   final String configName;
-  const GetValidationProcess({this.initiatorId, this.configName});
-  List<Object> get props => [initiatorId, configName];
+  final String whichValidators;
+  const GetValidationProcess(
+      {this.initiatorId, this.configName, this.whichValidators});
+  List<Object> get props => [initiatorId, configName, whichValidators];
 }
 
 class PutFormInStandBy extends DataEvent {}

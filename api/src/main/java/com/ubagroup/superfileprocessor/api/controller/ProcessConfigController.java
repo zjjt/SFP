@@ -19,7 +19,7 @@ public class ProcessConfigController {
     //CRUD
     @GetMapping
     public List<ProcessConfig> get(@RequestParam(name="name",required = false) String configName){
-        System.out.println("get process config API ---- called");
+        System.out.println("get process config API ---- called ");
         if(configName!=null){
             var l=new ArrayList<ProcessConfig>();
             l.add(processConfigService.get(configName));

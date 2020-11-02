@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/widgets.dart';
@@ -23,6 +24,8 @@ class _LoginPageState extends State<LoginPage> {
   bool isErrorMsg = false;
   AuthBloc authBloc;
   NavBloc navBloc;
+  DataBloc dataBloc;
+  AlertBloc alertBloc;
   AnimateEntranceBloc animateBloc;
   String message = "Please enter your credentials above";
   @override
@@ -31,7 +34,9 @@ class _LoginPageState extends State<LoginPage> {
     // ignore: close_sinks
     authBloc = context.bloc<AuthBloc>();
     navBloc = context.bloc<NavBloc>();
+    dataBloc = context.bloc<DataBloc>();
     animateBloc = context.bloc<AnimateEntranceBloc>();
+    alertBloc = context.bloc<AlertBloc>();
     //launching entrence animation
     animateBloc.add(EnteringPage());
     showPassword = true;
@@ -81,152 +86,201 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 50.0),
-                  Container(
-                    padding: Responsive.isMobile(context)
-                        ? const EdgeInsets.symmetric(horizontal: 30.0)
-                        : const EdgeInsets.all(0),
-                    child: BlocListener<AuthBloc, AuthState>(
-                      listener: (context, state) {
-                        Utils.log("state status is ${state.status}");
-                        switch (state.status) {
-                          case AuthStatus.unknown:
-                            setState(() {
-                              isErrorMsg = false;
-                              message = "Please enter your credentials above";
-                            });
-                            break;
-                          case AuthStatus.authenticated:
-                            //here we redirect to another page
-                            setState(() {
-                              isErrorMsg = false;
-                              message = "welcome dear staff member";
-                            });
-                            Timer(Duration(milliseconds: 100), () {
-                              animateBloc.add(LeavingPage());
-                              Timer(Duration(milliseconds: 500), () {
-                                if (state.user.role == "ADMIN") {
-                                  navBloc.add(GoAdmin());
-                                  //TO REMOVE AFTER CREATING THE PAGE
-                                  animateBloc.add(EnteringPage());
-                                } else if (state.user.role == "VALIDATOR") {
-                                } else {
-                                  navBloc.add(GoConfig());
-                                }
+                  BlocListener<DataBloc, DataState>(
+                    listener: (context, state) {
+                      if (state is FileLoaded) {
+                        Timer(Duration(milliseconds: 100), () {
+                          animateBloc.add(LeavingPage());
+                          Timer(Duration(milliseconds: 500), () {
+                            navBloc.add(GoResult());
+                          });
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: Responsive.isMobile(context)
+                          ? const EdgeInsets.symmetric(horizontal: 30.0)
+                          : const EdgeInsets.all(0),
+                      child: BlocListener<AuthBloc, AuthState>(
+                        listener: (context, state) {
+                          Utils.log("state status is ${state.status}");
+                          switch (state.status) {
+                            case AuthStatus.unknown:
+                              setState(() {
+                                isErrorMsg = false;
+                                message = "Please enter your credentials above";
                               });
-                            });
-                            break;
-                          case AuthStatus.loading:
-                            //here we switch state of the login button
-                            setState(() {
-                              isErrorMsg = false;
-                              message =
-                                  "Please wait while we process your informations";
-                            });
-                            break;
-                          case AuthStatus.unauthenticated:
-                            setState(() {
-                              isErrorMsg = true;
-                              message = state.errorMsg ??
-                                  "Please verify your credentials.";
-                            });
-                            break;
-                        }
-                      },
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              validator: (mail) {
-                                if (!EmailValidator.validate(mail)) {
-                                  return "Please fill in a proper email id";
-                                }
-                                return null;
-                              },
-                              controller: emailController,
-                              decoration: InputDecoration(
-                                suffixIcon: Icon(
-                                  Icons.person_outline,
-                                  color: Assets.ubaRedColor,
-                                ),
-                                labelText: "Email",
-                                labelStyle: TextStyle(
-                                  color: Assets.ubaRedColor,
-                                  fontSize: 15.0,
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
+                              break;
+                            case AuthStatus.authenticated:
+                              //here we redirect to another page
+                              setState(() {
+                                isErrorMsg = false;
+                                message = "welcome dear staff member";
+                              });
+                              Timer(Duration(milliseconds: 100), () {
+                                animateBloc.add(LeavingPage());
+                                Timer(Duration(milliseconds: 500), () {
+                                  if (state.user.role == "ADMIN") {
+                                    navBloc.add(GoAdmin());
+                                    //TO REMOVE AFTER CREATING THE PAGE
+                                    animateBloc.add(EnteringPage());
+                                  } else if (state.user.role == "VALIDATOR" ||
+                                      state.user.role == "CONTROLLER") {
+                                    Utils.log(
+                                        "the user connected is ${state.user.role}");
+                                    //here we redirect directly to the result page for validation
+                                    //after checking the processid via the password generated
+                                    alertBloc.add(ShowAlert(
+                                      whatToShow: Container(
+                                        height: 200,
+                                        width: 200,
+                                        color: Colors.white,
+                                        padding: EdgeInsets.fromLTRB(
+                                            24.0, 0.0, 24.0, 24.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Center(
+                                              child: SpinKitRing(
+                                                  color: Assets.ubaRedColor,
+                                                  size: 80.0),
+                                            ),
+                                            SizedBox(height: 10.0),
+                                            Text(
+                                              "Please wait...",
+                                              textAlign: TextAlign.center,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      isDoc: false,
+                                      title: Container(),
+                                      actions: [],
+                                    ));
+                                    dataBloc.add(FetchFilesToValidate(
+                                        authBloc.user.fileIdToValidate));
+                                  } else {
+                                    navBloc.add(GoConfig());
+                                  }
+                                });
+                              });
+                              break;
+                            case AuthStatus.loading:
+                              //here we switch state of the login button
+                              setState(() {
+                                isErrorMsg = false;
+                                message =
+                                    "Please wait while we process your informations";
+                              });
+                              break;
+                            case AuthStatus.unauthenticated:
+                              setState(() {
+                                isErrorMsg = true;
+                                message = state.errorMsg ??
+                                    "Please verify your credentials.";
+                              });
+                              break;
+                          }
+                        },
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                validator: (mail) {
+                                  if (!EmailValidator.validate(mail)) {
+                                    return "Please fill in a proper email id";
+                                  }
+                                  return null;
+                                },
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  suffixIcon: Icon(
+                                    Icons.person_outline,
                                     color: Assets.ubaRedColor,
+                                  ),
+                                  labelText: "Email",
+                                  labelStyle: TextStyle(
+                                    color: Assets.ubaRedColor,
+                                    fontSize: 15.0,
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Assets.ubaRedColor,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 20.0),
-                            TextFormField(
-                              onFieldSubmitted: (event) => _login(),
-                              obscureText: showPassword,
-                              controller: passwordController,
-                              validator: (password) {
-                                if (password.isEmpty) {
-                                  return 'Please fill in your password before submitting the form';
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    showPassword
-                                        ? Icons.visibility
-                                        : Icons.visibility_off_outlined,
-                                    color: Assets.ubaRedColor,
+                              SizedBox(height: 20.0),
+                              TextFormField(
+                                onFieldSubmitted: (event) => _login(),
+                                obscureText: showPassword,
+                                controller: passwordController,
+                                validator: (password) {
+                                  if (password.isEmpty) {
+                                    return 'Please fill in your password before submitting the form';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      showPassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off_outlined,
+                                      color: Assets.ubaRedColor,
+                                    ),
+                                    onPressed: () => setState(
+                                        () => showPassword = !showPassword),
+                                    tooltip: showPassword
+                                        ? "Show password"
+                                        : "Hide password",
                                   ),
-                                  onPressed: () => setState(
-                                      () => showPassword = !showPassword),
-                                  tooltip: showPassword
-                                      ? "Show password"
-                                      : "Hide password",
-                                ),
-                                labelText: "Password",
-                                labelStyle: TextStyle(
-                                  color: Assets.ubaRedColor,
-                                  fontSize: 15.0,
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
+                                  labelText: "Password",
+                                  labelStyle: TextStyle(
                                     color: Assets.ubaRedColor,
+                                    fontSize: 15.0,
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Assets.ubaRedColor,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 40.0),
-                            Container(
-                              width: appB.width * 0.5,
-                              height: 40.0,
-                              child: BlocBuilder<AuthBloc, AuthState>(
-                                  builder: (context, state) {
-                                return RaisedButton(
-                                  onPressed: _login,
-                                  color: Assets.ubaRedColor,
-                                  hoverColor: Colors.black,
-                                  textColor: Colors.white,
-                                  child: state.status == AuthStatus.loading
-                                      ? CircularProgressIndicator(
-                                          backgroundColor: Colors.white,
-                                        )
-                                      : Text("Log in",
-                                          style: const TextStyle(fontSize: 16)),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ),
-                                );
-                              }),
-                            ),
-                            SizedBox(height: 40.0),
-                            Text(message,
-                                style: TextStyle(
-                                    color:
-                                        isErrorMsg ? Colors.red : Colors.grey)),
-                          ],
+                              SizedBox(height: 40.0),
+                              Container(
+                                width: appB.width * 0.5,
+                                height: 40.0,
+                                child: BlocBuilder<AuthBloc, AuthState>(
+                                    builder: (context, state) {
+                                  return RaisedButton(
+                                    onPressed: _login,
+                                    color: Assets.ubaRedColor,
+                                    hoverColor: Colors.black,
+                                    textColor: Colors.white,
+                                    child: state.status == AuthStatus.loading
+                                        ? CircularProgressIndicator(
+                                            backgroundColor: Colors.white,
+                                          )
+                                        : Text("Log in",
+                                            style:
+                                                const TextStyle(fontSize: 16)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                  );
+                                }),
+                              ),
+                              SizedBox(height: 40.0),
+                              Text(message,
+                                  style: TextStyle(
+                                      color: isErrorMsg
+                                          ? Colors.red
+                                          : Colors.grey)),
+                            ],
+                          ),
                         ),
                       ),
                     ),

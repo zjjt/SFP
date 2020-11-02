@@ -1,4 +1,93 @@
 package com.ubagroup.superfileprocessor.core.entity;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+
+import java.util.List;
+import java.util.Map;
+
 public class ProcessControlValidation {
+    @Id
+    private String id;
+    @Indexed(unique = true)
+    private String configName;
+    private String initiatorId;
+    /**
+     * a list of files submitted as attachments the format of the whole object is a list of maps
+     *
+     */
+    private List<Map<String,Object>> addedFiles;
+    /**
+     * a list of the different validators id and the current validation status in the form of a {"usermailid":"validationstatus"}.
+     * The different status allowed are:
+     * OK,REJECTED,STANDBY
+     * OK means ok for transmission
+     * REJECTED triggers a popup on the frontend to enter the rejection motives and this notifies the INITIATOR user who can decide
+     * to restart or retract the current file uploaded.If he does then we delete the processValidation by its id and recreate a new one
+     * we also update the VALIDATORS if he requests to
+     * STANDBY is the default status
+     */
+    private Map<String,String> validators;
+    private Map<String,String> validatorMotives;
+
+    public ProcessControlValidation(String configName, String initiatorId, List<Map<String,Object>> addedFiles, Map<String, String> validators, Map<String, String> validatorMotives) {
+        this.configName = configName;
+        this.initiatorId = initiatorId;
+        this.addedFiles = addedFiles;
+        this.validators = validators;
+        this.validatorMotives = validatorMotives;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ProcessControlValidation:[id:%s\nconfigName:%s\n,initiatorId:%s\nvalidators:%s\n]",id,configName,initiatorId,validators);
+    }
+
+    public Map<String, String> getValidatorMotives() {
+        return validatorMotives;
+    }
+
+    public void setValidatorMotives(Map<String, String> validatorMotives) {
+        this.validatorMotives = validatorMotives;
+    }
+
+    public String getInitiatorId() {
+        return initiatorId;
+    }
+
+    public void setInitiatorId(String initiatorId) {
+        this.initiatorId = initiatorId;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Map<String, String> getValidators() {
+        return validators;
+    }
+
+    public void setValidators(Map<String, String> validators) {
+        this.validators = validators;
+    }
+
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
+    }
+
+    public List<Map<String,Object>> getAddedFiles() {
+        return addedFiles;
+    }
+
+    public void setAddedFiles(List<Map<String,Object>> addedFiles) {
+        this.addedFiles = addedFiles;
+    }
 }

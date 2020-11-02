@@ -1,11 +1,10 @@
 package com.ubagroup.superfileprocessor.api.controller;
 
 import com.ubagroup.superfileprocessor.core.entity.LogEntry;
+import com.ubagroup.superfileprocessor.core.entity.ProcessControlValidation;
 import com.ubagroup.superfileprocessor.core.entity.ProcessValidation;
 import com.ubagroup.superfileprocessor.core.entity.User;
-import com.ubagroup.superfileprocessor.core.service.LogEntryService;
-import com.ubagroup.superfileprocessor.core.service.ProcessValidationService;
-import com.ubagroup.superfileprocessor.core.service.UserService;
+import com.ubagroup.superfileprocessor.core.service.*;
 import com.ubagroup.superfileprocessor.utils.Utils;
 import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
@@ -15,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
@@ -31,9 +28,16 @@ public class UserController {
     private LogEntryService logEntryService;
     @Autowired
     private ProcessValidationService processValidationService;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private ProcessControlValidationService processControlValidationService;
     @Value("#{'${application.mode}'}")
-
     private String appmode;
+    @Value("#{'${smtp.host}'}")
+    private String mailHost;
+    @Value("#{'${application.host}'}")
+    private String appLink;
 
     @GetMapping
     public List<User> getAll() {
@@ -58,62 +62,111 @@ public class UserController {
         var m = new HashMap<String, Object>();
         List<LogEntry> log = new ArrayList<>();
         List<User> userList = new ArrayList<>();
+        List<File> pj=new ArrayList<>();
 
-        for (int i = 0; i < usermailtocreate.size(); i++) {
-            var mail = usermailtocreate.get(i);
-            //we check if the username is a valid email
-            if (!Utils.isValidEmail(username) && !Utils.isValidEmail(mail)) {
-                m.put("errors", true);
-                m.put("message", "please enter a correct email address");
-                m.put("users", new ArrayList<User>());
-                return m;
-            }
-            List<User> listUsers;
-
-            listUsers = userService.get(mail);
-            if (listUsers.isEmpty() || listUsers.contains(null) || (listUsers.size() > 0 && listUsers.get(i).getRole().equalsIgnoreCase("INITIATOR")) && !role.isEmpty()) {//TESTED
-                //we couldnt find the user in the db and we couldnt get a list of roles
-                //so we generate a OTP
-                int randomPin = (int) (Math.random() * 9000) + 1000;
-                String otp = String.valueOf(randomPin);
-                User user = new User(mail, otp, fileIdToValidate, role, userId);
-                System.out.println(user);
-                var thisUser = userService.storeUser(user);
-                //We immediately insert him in the validation process for the current config for this particular user who
-                //initiated the file processing
-                ProcessValidation processValidation = processValidationService.getOne(configName, userId);
-                if (processValidation==null) {
-                    var map = new HashMap<String, String>();
-                    map.put(thisUser.getId(), "STANDBY");
-                    var listOfAttachments=new ArrayList<Map<String,Object>>();
-                    if(attachments!=null){
-                        System.out.println("some files are joined as attachments "+attachments.size());
-                        for (int j=0;j<attachments.size();j++) {
-                            var addedF=new HashMap<String,Object>();
-                            addedF.put("filename", filenames.get(j));
-                            addedF.put("binary",new Binary(BsonBinarySubType.BINARY,attachments.get(j).getBytes()));
-                            System.out.println("f is "+filenames.get(j)+"\n content of addedF "+addedF);
-                            listOfAttachments.add(addedF);
-                        }
-                    }
-                    System.out.println("length of list of attachments "+listOfAttachments.size());
-                    processValidation = new ProcessValidation(configName, userId, listOfAttachments, map, null);
-                    processValidationService.saveOne(processValidation);
-                } else {
-                    //here we add the user to the current map of validators
-                    var validationMap = processValidation.getValidators();
-                    validationMap.put(thisUser.getId(), "STANDBY");
-                    processValidation.setValidators(validationMap);
-                    processValidationService.saveOne(processValidation);
+            for (int i = 0; i < usermailtocreate.size(); i++) {
+                var mail = usermailtocreate.get(i);
+                //we check if the username is a valid email
+                if (!Utils.isValidEmail(username) && !Utils.isValidEmail(mail)) {
+                    m.put("errors", true);
+                    m.put("message", "please enter a correct email address");
+                    m.put("users", new ArrayList<User>());
+                    return m;
                 }
+                List<User> listUsers;
 
-                userList.add(user);
-                log.add(new LogEntry(username + "|" + request.getRemoteAddr(), "created user " + usermailtocreate + " with OTP " + otp + " in db with role " + role));
-                logEntryService.saveLogs(log);
+                listUsers = userService.get(mail);
+                if (listUsers.isEmpty() || listUsers.contains(null) || (listUsers.size() > 0 && listUsers.get(i).getRole().equalsIgnoreCase("INITIATOR")) && !role.isEmpty()) {//TESTED
+                    //we couldnt find the user in the db and we couldnt get a list of roles
+                    //so we generate a OTP
+                    int randomPin = (int) (Math.random() * 9000) + 1000;
+                    String otp = String.valueOf(randomPin);
+                    User user = new User(mail, otp, fileIdToValidate, role, userId);
+                    System.out.println(user);
+                    var thisUser = userService.storeUser(user);
+                    //We immediately insert him in the validation process for the current config for this particular user who
+                    //initiated the file processing
+                    var processValidation =role.equalsIgnoreCase("VALIDATOR")?processValidationService.getOne(configName, userId):role.equalsIgnoreCase("CONTROLLER")?processControlValidationService.getOne(configName, userId):null;
+                    if (processValidation==null) {
+                        var map = new HashMap<String, String>();
+                        map.put(thisUser.getId(), "STANDBY");
+                        var listOfAttachments=new ArrayList<Map<String,Object>>();
+                        if(attachments!=null){
+                            System.out.println("some files are joined as attachments "+attachments.size());
+                            for (int j=0;j<attachments.size();j++) {
+                                var addedF=new HashMap<String,Object>();
+                                addedF.put("filename", filenames.get(j));
+                                addedF.put("binary",new Binary(BsonBinarySubType.BINARY,attachments.get(j).getBytes()));
+                                System.out.println("f is "+filenames.get(j)+"\n content of addedF "+addedF);
+                                listOfAttachments.add(addedF);
+                                if(pj.size()<attachments.size()){
+                                    //here we create the files that would be sent via mail as attachements
+                                    final String DEFAULT_DIR = new File("").getAbsolutePath();
+                                    InputStream initialStream = attachments.get(j).getInputStream();
+                                    byte[] buffer = new byte[initialStream.available()];
+                                    initialStream.read(buffer);
+                                    File theFile = new File(DEFAULT_DIR+"/"+filenames.get(j));
+                                    try(OutputStream os=new FileOutputStream(theFile)){
+                                        os.write(buffer);
+                                    }
+                                    pj.add(theFile);
+                                }
+                            }
+                        }
+                        System.out.println("length of list of attachments "+listOfAttachments.size());
+                        processValidation =role.equalsIgnoreCase("VALIDATOR")? new ProcessValidation(configName, userId, listOfAttachments, map, null):role.equalsIgnoreCase("CONTROLLER")?new ProcessControlValidation(configName, userId, listOfAttachments, map, null):null;
+                        if(role.equalsIgnoreCase("VALIDATOR")){
+                            processValidationService.saveOne((ProcessValidation) processValidation);
+                        }else if(role.equalsIgnoreCase("CONTROLLER")){
+                            processControlValidationService.saveOne((ProcessControlValidation) processValidation);
+                        }
+                    } else {
+                        //here we add the user to the current map of validators by downcasting to get the proper type we wish to update
+                        var validationMap =role.equalsIgnoreCase("VALIDATOR")? ((ProcessValidation)processValidation).getValidators():role.equalsIgnoreCase("CONTROLLER")?((ProcessControlValidation)processValidation).getValidators():null;
+                        validationMap.put(thisUser.getId(), "STANDBY");
+                        if(role.equalsIgnoreCase("VALIDATOR")){
+                            ((ProcessValidation)processValidation).setValidators(validationMap);
+                            processValidationService.saveOne((ProcessValidation)processValidation);
+                        }else if(role.equalsIgnoreCase("CONTROLLER")){
+                            ((ProcessControlValidation)processValidation).setValidators(validationMap);
+                            processControlValidationService.saveOne((ProcessControlValidation)processValidation);
+
+                        }
 
 
+                    }
+
+                    userList.add(user);
+
+                    //Send the notifications via mail
+                    String subject="";
+                    String message="";
+                    List<String> to=new ArrayList<>();
+                    to.add(user.getUsername());
+
+                    if(role.equalsIgnoreCase("VALIDATOR")){
+                        subject="THERE ARE SOME FILES NEEDING YOUR APPROVAL FOR THE "+configName+" CONFIGURATION";
+                        message="Dear user,<br/> You have been appointed as VALIDATOR for the file id "+fileIdToValidate+" of the "+configName+" file processing configuration.<br/><br/>The application is available <a href=\""+appLink+"\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>"+user.getUsername()+"</b><br/>Password: <b>"+user.getPassword()+"</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
+                        System.out.println("Mail sent for a validator\n\n"+message);
+
+//                        if(mailService.sendMail(subject,to,"simplefileprocessor@ubagroup.com",new ArrayList<>(),new ArrayList<>(),message,mailHost)){
+//                            log.add(new LogEntry(username + "|" + request.getRemoteAddr(), "created user " + user.getUsername() + " with OTP " + user.getPassword() + " in db with role " + role+" and a mail has been sent to the created user to notice him."));
+//                            logEntryService.saveLogs(log);
+//                        }
+
+                    }else if(role.equalsIgnoreCase("CONTROLLER")){
+                        subject="THERE ARE SOME FILES NEEDING TO BE CONTROLLED FOR THE "+configName+" CONFIGURATION";
+                        message="Dear user,<br/> You have been appointed as CONTROLLER for the file id "+fileIdToValidate+" of the "+configName+" file processing configuration.<br/><br/>The application is available <a href=\""+appLink+"\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>"+user.getUsername()+"</b><br/>Password: <b>"+user.getPassword()+"</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
+                        System.out.println("length of to is "+pj.size());
+                        System.out.println("Mail sent for a controller\n\n"+message);
+//                        if(mailService.sendMail(subject,to,"simplefileprocessor@ubagroup.com",new ArrayList<>(),pj,message,mailHost)){
+//                            log.add(new LogEntry(username + "|" + request.getRemoteAddr(), "created user " + user.getUsername() + " with OTP " + user.getPassword() + " in db with role " + role+" and a mail has been sent to the created user to notice him."));
+//                            logEntryService.saveLogs(log);
+//                        }
+                    }
+
+                }
             }
-        }
 
         m.put("errors", false);
         m.put("message", "user list created successfully");
@@ -121,6 +174,27 @@ public class UserController {
 
         return m;
 
+    }
+
+    @PostMapping("/getvalidatorusernames")
+    public Map<String,Object> getUserWithId(@RequestParam(value = "ids[]") List<String> ids){
+        System.out.println("get usernames for the ids "+ids);
+        List<String> usernames=new ArrayList<>();
+        var m = new HashMap<String, Object>();
+        for(int i=0;i<ids.size();i++){
+            var user=userService.getById(ids.get(i));
+            usernames.add(user.get().getUsername());
+        }
+        if(Objects.nonNull(usernames)){
+            m.put("errors", false);
+            m.put("message", "found list of usernames validators");
+            m.put("usernames", usernames);
+            return m;
+        }
+        m.put("errors", true);
+        m.put("message", "an error occured");
+        m.put("usernames", new ArrayList<>());
+        return m;
     }
 
     @GetMapping("/with")
@@ -224,8 +298,26 @@ public class UserController {
                                 m.put("users", listUsers);
                                 return m;
                             }
+                        }else{
+                            //if it gets here that means the user entered a password that has been generated for a particular file
+                            listUsers = userService.get(usernameOrRole);
+                            if (listUsers.isEmpty() || listUsers.contains(null)) {
+                                log.add(new LogEntry(usernameOrRole + "|" + request.getRemoteAddr(), "tried to log in but wasnt found in the database nor in the AD"));
+                                logEntryService.saveLogs(log);
+                                m.put("errors", true);
+                                m.put("message", "user " + usernameOrRole + " not found");
+                                m.put("users", listUsers);
+                                return m;
+                            }else{
+                                log.add(new LogEntry(usernameOrRole + "|" + request.getRemoteAddr(), "has logged in successfully"));
+                                logEntryService.saveLogs(log);
+                                m.put("errors", false);
+                                m.put("message", "user " + usernameOrRole + "logged in successfully");
+                                m.put("users", listUsers);
+                                return m;
+                            }
                         }
-                        break;
+
                 }
 
             } else {

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:sfp/src/blocs/blocs.dart';
+import 'package:sfp/string_extensions.dart';
+import 'package:sfp/utils.dart';
 
 import '../../assets.dart';
 
 class ValidatingProcess extends StatefulWidget {
-  final String whoViewThis;
+  final String whichProcess;
 
-  const ValidatingProcess({Key key, this.whoViewThis}) : super(key: key);
+  const ValidatingProcess({Key key, this.whichProcess}) : super(key: key);
   @override
   _ValidatingProcessState createState() => _ValidatingProcessState();
 }
@@ -29,14 +31,32 @@ class _ValidatingProcessState extends State<ValidatingProcess>
   @override
   Widget build(BuildContext context) {
     Size appB = Size(MediaQuery.of(context).size.width, 80.0);
-    double progress = dataBloc.validationProgress;
+    double progress = widget.whichProcess == "CONTROLLER"
+        ? dataBloc.validationControlProgress
+        : widget.whichProcess == "VALIDATOR"
+            ? dataBloc.validationProgress
+            : 0;
+    var validatorMap = widget.whichProcess == "VALIDATOR"
+        ? dataBloc.currentValidation.validators
+        : widget.whichProcess == "CONTROLLER"
+            ? dataBloc.currentControlValidation.validators
+            : {};
+    var validatorMotivesMap = widget.whichProcess == "VALIDATOR"
+        ? dataBloc.currentValidation.validatorMotives
+        : widget.whichProcess == "CONTROLLER"
+            ? dataBloc.currentControlValidation.validatorMotives
+            : {};
+    Utils.log("validator map\n $validatorMap");
     return Container(
       width: appB.width * 0.5,
+      margin:
+          EdgeInsets.only(top: widget.whichProcess == "VALIDATOR" ? 20.0 : 0.0),
       height: 260.0,
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
-          Text("Compliance Validations status",
+          Text(
+              "${widget.whichProcess.capitalize1stLetter()}'s Compliance Validations status",
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 30.0,
@@ -44,8 +64,13 @@ class _ValidatingProcessState extends State<ValidatingProcess>
           SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
+              shrinkWrap: true,
               scrollDirection: Axis.horizontal,
-              itemCount: dataBloc.currentValidation.validators.keys.length,
+              itemCount: widget.whichProcess == "VALIDATOR"
+                  ? dataBloc.currentValidation.validators.keys.length
+                  : widget.whichProcess == "CONTROLLER"
+                      ? dataBloc.currentControlValidation.validators.keys.length
+                      : 0,
               itemBuilder: (BuildContext context, int index) => Container(
                 width: 100.0,
                 height: 150.0,
@@ -53,24 +78,28 @@ class _ValidatingProcessState extends State<ValidatingProcess>
                 child: Column(
                   children: [
                     IconButton(
-                      icon: Icon(dataBloc.currentValidation.validators[dataBloc
-                                  .currentValidation.validators.keys
-                                  .toList()[index]] ==
+                      iconSize: 50,
+                      icon: Icon(validatorMap[
+                                  validatorMap.keys.toList()[index]] ==
                               "REJECTED"
                           ? Icons.highlight_off
-                          : dataBloc.currentValidation.validators[dataBloc
-                                      .currentValidation.validators.keys
-                                      .toList()[index]] ==
+                          : validatorMap[validatorMap.keys.toList()[index]] ==
                                   "OK"
                               ? Icons.done
                               : Icons.hourglass_empty_outlined),
                       onPressed: () {},
-                      tooltip: dataBloc.currentValidation.validators[dataBloc
-                          .currentValidation.validators.keys
-                          .toList()[index]],
+                      tooltip:
+                          "${validatorMap[validatorMap.keys.toList()[index]]}\n\n${validatorMotivesMap != null ? validatorMotivesMap[validatorMap.keys.toList()[index]] : ""}",
                     ),
                     SizedBox(height: 5.0),
-                    Text(dataBloc.validatorsName.values.toList()[index]),
+                    Text(
+                        widget.whichProcess == "VALIDATOR"
+                            ? dataBloc.validatorsName.values.toList()[index]
+                            : widget.whichProcess == "CONTROLLER"
+                                ? dataBloc.controllersName.values
+                                    .toList()[index]
+                                : "",
+                        style: const TextStyle(fontSize: 10.0)),
                   ],
                 ),
               ),

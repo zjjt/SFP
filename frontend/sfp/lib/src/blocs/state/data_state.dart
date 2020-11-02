@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sfp/src/models/models.dart';
 import 'package:sfp/src/models/process_config_model.dart';
 import 'package:sfp/src/models/process_validation_model.dart';
 import 'package:sfp/utils.dart';
@@ -73,7 +74,17 @@ class UsersCreated extends DataState {
 
 class ValidationProcessLoaded extends DataState {
   final ProcessValidationModel processValidation;
-  const ValidationProcessLoaded(this.processValidation);
+  final ProcessControlValidationModel processControlValidation;
+  final String type;
+  const ValidationProcessLoaded(
+      {this.processValidation, this.processControlValidation, this.type});
+}
+
+class ValidationUpdated extends DataState {}
+
+class ValidationUpdateFailed extends DataState {
+  final message;
+  const ValidationUpdateFailed(this.message);
 }
 
 class AllFilesDiscarded extends DataState {}

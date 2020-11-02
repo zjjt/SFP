@@ -53,10 +53,10 @@ public class ProcessedFileController {
     @GetMapping("/get-in-process")
     public Map<String, Object> getProcessingFiles(@RequestParam(value = "uid",required = false) String userId,
                                                   @RequestParam(value = "configname",required = false) String configName,
-                                                  @RequestParam(value = "fileId",required = false) String fileId) {
-        System.out.println("getting list of current files in processing for the uid " + userId + " for the config " + configName);
+                                                  @RequestParam(value = "fileId",required = false ) String fileId) {
+        System.out.println("getting list of current files in processing for the uid " + userId + " for the config " + configName +" with file id "+fileId);
         List<ProcessedFile> files = processedFileService.getAll(false, false, true, false,
-                new Date(0), new Date(0), new Date(0), userId, configName,fileId);
+                new Date(0), new Date(0), new Date(0), Objects.isNull(userId)?"":userId, Objects.isNull(configName)?"":configName,Objects.isNull(fileId)?"":fileId);
         var m = new HashMap<String, Object>();
         m.put("errors", false);
         m.put("message", " " + files.size() + " found");

@@ -15,13 +15,16 @@ com\ubagroup\superfileprocessor\core\repository\model\DbFieldsTranslation.class
 com\ubagroup\superfileprocessor\core\entity\LogEntry.class
 com\ubagroup\superfileprocessor\core\utils\ExcelProcessor.class
 com\ubagroup\superfileprocessor\core\repository\model\Line.class
+com\ubagroup\superfileprocessor\core\utils\Utils.class
 com\ubagroup\superfileprocessor\core\entity\ProcessValidation.class
 com\ubagroup\superfileprocessor\core\processors\Processors.class
 com\ubagroup\superfileprocessor\core\repository\oracle\Queries.class
+com\ubagroup\superfileprocessor\core\entity\ProcessControlValidation.class
 com\ubagroup\superfileprocessor\core\service\UserService.class
 com\ubagroup\superfileprocessor\core\repository\mongodb\LogEntryRepository.class
 com\ubagroup\superfileprocessor\core\service\ProcessValidationService.class
 com\ubagroup\superfileprocessor\core\service\LogEntryService.class
+com\ubagroup\superfileprocessor\core\service\ProcessControlValidationService.class
 com\ubagroup\superfileprocessor\core\service\ProcessConfigInterface.class
 com\ubagroup\superfileprocessor\core\service\ProcessTypeService.class
 com\ubagroup\superfileprocessor\core\entity\ProcessConfig.class
@@ -31,7 +34,9 @@ com\ubagroup\superfileprocessor\core\service\MailService.class
 com\ubagroup\superfileprocessor\core\service\UserInterface.class
 com\ubagroup\superfileprocessor\core\repository\model\InputFile.class
 com\ubagroup\superfileprocessor\core\repository\mongodb\ProcessConfigRepository.class
+com\ubagroup\superfileprocessor\core\repository\mongodb\ProcessControlValidationRepository.class
 com\ubagroup\superfileprocessor\core\service\ProcessConfigService.class
 com\ubagroup\superfileprocessor\core\entity\ProcessedFile.class
 com\ubagroup\superfileprocessor\core\utils\OracleDBConfig.class
 com\ubagroup\superfileprocessor\core\repository\mongodb\ProcessValidationRepository.class
+com\ubagroup\superfileprocessor\core\service\ProcessControlValidationInterface.class

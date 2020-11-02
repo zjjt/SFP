@@ -137,6 +137,120 @@
             "CODE_LP": "+210/+282/+283/+284",
             "COMPTE_FINCON": "6311009526299001",
             "LABEL": "charges patronales"
+        },
+        {
+            "COMPTE_LP": "6423",
+            "COMPTE_FINCON": "6420009526299008",
+            "LABEL": "charges cmu"
+        },
+        {
+            "COMPTE_LP": "33241",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3324009526299001",
+            "LABEL": "rémunérations dues"
+        },
+        {
+            "COMPTE_LP": "3321211",
+            "CODE_LP": "IS",
+            "COMPTE_FINCON": "3321009526299012",
+            "LABEL": "IS"
+        },
+        {
+            "COMPTE_LP": "3321212",
+            "CODE_LP": "CN",
+            "COMPTE_FINCON": "3321009526299012",
+            "LABEL": "cn"
+        },
+        {
+            "COMPTE_LP": "3321213",
+            "CODE_LP": "IGR",
+            "COMPTE_FINCON": "3321009526299012",
+            "LABEL": "igr"
+        },
+        {
+            "COMPTE_LP": "332122",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3321009526299023",
+            "LABEL": "crn salariés"
+        },
+        {
+            "COMPTE_LP": "3321231",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3321009526299012",
+            "LABEL": "charges patronales is"
+        },
+        {
+            "COMPTE_LP": "3321232",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3321009526299024",
+            "LABEL": "charges patronales ta"
+        },
+        {
+            "COMPTE_LP": "3321233",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3321009526299024",
+            "LABEL": "charges patronales fpc"
+        },
+        {
+            "COMPTE_LP": "3321234",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3321009526299025",
+            "LABEL": "charges patronales fpc regul"
+        },
+        {
+            "COMPTE_LP": "332211",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3322009526299001",
+            "LABEL": "cnps salariés"
+        },
+        {
+            "COMPTE_LP": "332212",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "3322009526299001",
+            "LABEL": "cnps employeur"
+        },
+        {
+            "COMPTE_LP": "33242",
+            "CODE_LP": "+3821",
+            "COMPTE_FINCON": "3825009526299006",
+            "LABEL": "provisions congés payés"
+        },
+        {
+            "COMPTE_LP": "5111",
+            "CODE_LP": "NA",
+            "COMPTE_FINCON": "5110009526299001",
+            "LABEL": "prov retraite et séparation"
+        },
+        {
+            "COMPTE_LP": "33195",
+            "CODE_LP": "1502",
+            "COMPTE_FINCON": "3311009526299028",
+            "LABEL": "avance scolarité"
+        },
+        {
+            "COMPTE_LP": "382500",
+            "CODE_LP": "633",
+            "COMPTE_FINCON": "3825009526299005",
+            "LABEL": "monetisation status car"
+        },
+        {
+            "COMPTE_LP": "33194",
+            "CODE_LP": "+632/-660",
+            "COMPTE_FINCON": "3824009526299007",
+            "LABEL": "Charges de personnel à payer sur congés"
+        },
+        {
+            "COMPTE_LP": "33196",
+            "CODE_LP": "631",
+            "COMPTE_FINCON": "3311009526299008",
+            "LABEL": "avance treizième mois "
+        },
+        {
+            "COMPTE_LP": "33193",
+            "CODE_LP": "+630/+761/+1501/+1056",
+            "COMPTE_FINCON": "3311009526299006",
+            "LABEL": "avance sur salaires"
         }
     ]
 }
+

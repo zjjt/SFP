@@ -9,7 +9,11 @@ import 'package:sfp/src/widgets/file_upload_val_web.dart';
 import 'package:sfp/utils.dart';
 
 class ValidationSteps extends StatefulWidget {
-  ValidationSteps({Key key}) : super(key: key);
+  final String defaultRole;
+  ValidationSteps({
+    Key key,
+    this.defaultRole,
+  }) : super(key: key);
 
   @override
   _ValidationStepsState createState() => _ValidationStepsState();
@@ -41,6 +45,7 @@ class _ValidationStepsState extends State<ValidationSteps> {
         listKey: _listKey,
         initialItems: <int>[_validatorNumber],
         removedItemBuilder: _buildRemovedItem);
+    validationRole = widget.defaultRole;
   }
 
   @override

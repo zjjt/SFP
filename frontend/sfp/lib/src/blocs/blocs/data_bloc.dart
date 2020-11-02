@@ -12,16 +12,20 @@ class DataBloc extends Bloc<DataEvent, DataState> {
   List<ProcessConfigModel> processConfigs;
   List<ProcessedFileModel> processedFiles;
   Map<String, String> validatorsName;
+  Map<String, String> controllersName;
   ProcessConfigModel currentConfig;
+  String currentConfigName = "";
   ProcessValidationModel currentValidation;
+  ProcessControlValidationModel currentControlValidation;
   double validationProgress = 0;
+  double validationControlProgress = 0;
   Map<String, dynamic> popupValues = {};
 
   DataBloc(this.repo) : super(DataInitial());
 
-  double _calculateProgress() {
+  double _calculateProgress(Map<String, dynamic> validat) {
     double p = 0;
-    Map<String, dynamic> validations = currentValidation.validators;
+    Map<String, dynamic> validations = validat;
     if (validations != null || validations.isNotEmpty) {
       int nbrValidators = validations.keys.length;
       int nbrValidated = 0;
@@ -45,7 +49,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     if (event is FetchConfigs) {
       try {
         yield DataLoading();
-        final configs = await repo.fetchConfig();
+        final configs = await repo.fetchConfig("");
         processConfigs = configs;
         yield ConfigLoaded(configs);
       } on NetWorkException {
@@ -60,6 +64,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
 
     if (event is SelectConfig) {
       currentConfig = processConfigs[event.configPosition];
+      currentConfigName = currentConfig.configName;
       Utils.log("selected config is $currentConfig");
       yield ConfigSelected(currentConfig);
     }
@@ -104,18 +109,43 @@ class DataBloc extends Bloc<DataEvent, DataState> {
     }
 
     if (event is GetValidationProcess) {
+      //here we first try to check if there exists a CONTROLLER validation process first
+      // and after we look for a VALIDATOR validation process
       yield DataLoading();
       try {
-        final val = await repo.getCurrentValidationProcess(
-            event.initiatorId, event.configName);
-        Utils.log(val["processValidation"]);
-        if (val["processValidation"] != null) {
+        //Getting Controllers
+        final valC = await repo.getCurrentValidationProcess(
+            event.initiatorId, event.configName, "CONTROLLER");
+        Utils.log(valC["processValidation"]);
+        if (valC["processValidation"] != null) {
+          controllersName = {};
+          currentControlValidation =
+              ProcessControlValidationModel.fromJSON(valC["processValidation"]);
+          validationControlProgress =
+              _calculateProgress(currentControlValidation.validators);
+          var names = await repo.getValidatorNames(
+              currentControlValidation.validators.keys.toList(), "CONTROLLER");
+          if (names['usernames'].length > 0) {
+            for (int i = 0;
+                i < currentControlValidation.validators.keys.toList().length;
+                i++) {
+              controllersName.putIfAbsent(
+                  currentControlValidation.validators.keys.toList()[i],
+                  () => names['usernames'][i]);
+            }
+          }
+        }
+        //Getting validators
+        final valP = await repo.getCurrentValidationProcess(
+            event.initiatorId, event.configName, "VALIDATOR");
+        Utils.log(valP["processValidation"]);
+        if (valP["processValidation"] != null) {
           validatorsName = {};
           currentValidation =
-              ProcessValidationModel.fromJSON(val["processValidation"]);
-          validationProgress = _calculateProgress();
-          var names = await repo
-              .getValidatorNames(currentValidation.validators.keys.toList());
+              ProcessValidationModel.fromJSON(valP["processValidation"]);
+          validationProgress = _calculateProgress(currentValidation.validators);
+          var names = await repo.getValidatorNames(
+              currentValidation.validators.keys.toList(), "VALIDATOR");
           if (names['usernames'].length > 0) {
             for (int i = 0;
                 i < currentValidation.validators.keys.toList().length;
@@ -126,9 +156,14 @@ class DataBloc extends Bloc<DataEvent, DataState> {
             }
           }
         }
-        if (currentValidation != null) {
-          yield ValidationProcessLoaded(currentValidation);
-        }
+        yield ValidationProcessLoaded(
+            processValidation: currentValidation,
+            processControlValidation: currentControlValidation,
+            type: currentControlValidation != null
+                ? "CONTROLLER"
+                : currentValidation != null
+                    ? "VALIDATOR"
+                    : "CONTROLLER");
       } on NetWorkException {
         yield DataFailure("No internet connection");
       }
@@ -182,19 +217,42 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       Utils.log("processed files number ${processedFiles.length}");
       yield FileLoaded(fcount: processedFiles.length);
     }
+
     if (event is FetchFilesToValidate) {
       final m =
           await repo.fetchCurrentProcessingFilesToValidate(event.fileProcessId);
       processedFiles = [];
+      final conf = await repo.fetchConfig(m['fichiers'][0]['configName']);
+      if (conf.length > 0) {
+        currentConfig = conf.first;
+      }
       for (int i = 0; i < m['fichiers'].length; i++) {
         Utils.log(m['fichiers'].length);
         Utils.log(m['fichiers'][i]['configName']);
+        currentConfigName = m['fichiers'][i]['configName'];
         var pf = ProcessedFileModel.fromJSON(m['fichiers'][i]);
         processedFiles.add(pf);
       }
       Utils.log("processed files number ${processedFiles.length}");
       yield FileLoaded(fcount: processedFiles.length);
     }
+
+    if (event is UpdateValidation) {
+      yield DataLoading();
+      final m = await repo.updateValidation(
+          event.validatorId,
+          event.validation,
+          event.validationType,
+          event.configName,
+          event.initiatorId,
+          event.rejectionMotive);
+      if (m['errors']) {
+        yield ValidationUpdateFailed(m['message']);
+      } else {
+        yield ValidationUpdated();
+      }
+    }
+
     if (event is DoFileUpload) {
       yield FileUploading();
       try {

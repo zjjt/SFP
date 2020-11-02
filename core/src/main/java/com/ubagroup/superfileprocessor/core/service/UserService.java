@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserInterface {
@@ -15,6 +17,12 @@ public class UserService implements UserInterface {
     @Override
     public List<User> getAll() {
         return userRepository.findAll();
+    }
+    @Override
+    public Optional<User> getById(String id){
+        var user=userRepository.findById(id);
+
+        return user;
     }
 
     @Override
