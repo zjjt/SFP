@@ -108,11 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                                   navBloc.add(GoAdmin());
                                   //TO REMOVE AFTER CREATING THE PAGE
                                   animateBloc.add(EnteringPage());
-                                } else if (state.user.validations != null &&
-                                    state.user.validations.isNotEmpty) {
-                                  navBloc.add(GoValidate());
-                                  //TO REMOVE AFTER CREATING THE PAGE
-                                  animateBloc.add(EnteringPage());
+                                } else if (state.user.role == "VALIDATOR") {
                                 } else {
                                   navBloc.add(GoConfig());
                                 }

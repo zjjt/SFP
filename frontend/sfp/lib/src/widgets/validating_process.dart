@@ -32,7 +32,7 @@ class _ValidatingProcessState extends State<ValidatingProcess>
     double progress = dataBloc.validationProgress;
     return Container(
       width: appB.width * 0.5,
-      height: 200.0,
+      height: 260.0,
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
@@ -47,27 +47,30 @@ class _ValidatingProcessState extends State<ValidatingProcess>
               scrollDirection: Axis.horizontal,
               itemCount: dataBloc.currentValidation.validators.keys.length,
               itemBuilder: (BuildContext context, int index) => Container(
-                width: 70.0,
-                height: 100.0,
+                width: 100.0,
+                height: 150.0,
                 margin: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   children: [
                     IconButton(
-                        icon: Icon(dataBloc.currentValidation.validators[
-                                    dataBloc.currentValidation.validators.keys
-                                        .toList()[index]] ==
-                                "REJECTED"
-                            ? Icons.highlight_off
-                            : dataBloc.currentValidation.validators[dataBloc
-                                        .currentValidation.validators.keys
-                                        .toList()[index]] ==
-                                    "OK"
-                                ? Icons.done
-                                : Icons.hourglass_empty_outlined),
-                        onPressed: () {}),
+                      icon: Icon(dataBloc.currentValidation.validators[dataBloc
+                                  .currentValidation.validators.keys
+                                  .toList()[index]] ==
+                              "REJECTED"
+                          ? Icons.highlight_off
+                          : dataBloc.currentValidation.validators[dataBloc
+                                      .currentValidation.validators.keys
+                                      .toList()[index]] ==
+                                  "OK"
+                              ? Icons.done
+                              : Icons.hourglass_empty_outlined),
+                      onPressed: () {},
+                      tooltip: dataBloc.currentValidation.validators[dataBloc
+                          .currentValidation.validators.keys
+                          .toList()[index]],
+                    ),
                     SizedBox(height: 5.0),
-                    Text(dataBloc.currentValidation.validators.keys
-                        .toList()[index]),
+                    Text(dataBloc.validatorsName.values.toList()[index]),
                   ],
                 ),
               ),
@@ -76,6 +79,8 @@ class _ValidatingProcessState extends State<ValidatingProcess>
           SizedBox(height: 10),
           FlutterSlider(
             disabled: true,
+            min: 0,
+            max: 100.0,
             values: [progress],
             trackBar: FlutterSliderTrackBar(
               activeDisabledTrackBarColor:
@@ -119,6 +124,7 @@ class _ValidatingProcessState extends State<ValidatingProcess>
                   FlutterSliderHatchMarkLabel(percent: 100, label: Text('Ok'))
                 ]),
           ),
+          SizedBox(height: 40),
         ],
       ),
     );

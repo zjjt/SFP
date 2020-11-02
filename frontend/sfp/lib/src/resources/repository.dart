@@ -42,6 +42,18 @@ class Repository {
     return del;
   }
 
+  Future<Map<String, dynamic>> deleteValidationProcess(
+      String configName, String initiatorId) async {
+    var del;
+    try {
+      del = await netProvider.deleteValidationProcess(configName, initiatorId);
+    } on NetWorkException {
+      Utils.log("couldnt reach the api ${del.message}");
+      return null;
+    }
+    return del;
+  }
+
   Future<Map<String, dynamic>> uploadFiles(List<dynamic> files,
       String configName, String userId, String extension) async {
     var fup;
@@ -108,6 +120,17 @@ class Repository {
       return null;
     }
     return val;
+  }
+
+  Future<Map<String, dynamic>> getValidatorNames(List<String> ids) async {
+    var names;
+    try {
+      names = await netProvider.getValidatorNames(ids);
+    } on NetWorkException {
+      Utils.log("couldnt reach the api ${names.message}");
+      return null;
+    }
+    return names;
   }
 
   Future<List<String>> downloadFilesPath(

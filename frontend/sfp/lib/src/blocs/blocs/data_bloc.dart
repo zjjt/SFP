@@ -11,9 +11,11 @@ class DataBloc extends Bloc<DataEvent, DataState> {
   final Repository repo;
   List<ProcessConfigModel> processConfigs;
   List<ProcessedFileModel> processedFiles;
+  Map<String, String> validatorsName;
   ProcessConfigModel currentConfig;
   ProcessValidationModel currentValidation;
-  double validationProgress;
+  double validationProgress = 0;
+  Map<String, dynamic> popupValues = {};
 
   DataBloc(this.repo) : super(DataInitial());
 
@@ -49,6 +51,11 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       } on NetWorkException {
         yield DataFailure("No internet connection");
       }
+    }
+
+    if (event is SetTotalValues) {
+      popupValues = event.values;
+      yield TotalValuesSet();
     }
 
     if (event is SelectConfig) {
@@ -101,8 +108,27 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       try {
         final val = await repo.getCurrentValidationProcess(
             event.initiatorId, event.configName);
-        currentValidation = val["processValidation"];
-        validationProgress = _calculateProgress();
+        Utils.log(val["processValidation"]);
+        if (val["processValidation"] != null) {
+          validatorsName = {};
+          currentValidation =
+              ProcessValidationModel.fromJSON(val["processValidation"]);
+          validationProgress = _calculateProgress();
+          var names = await repo
+              .getValidatorNames(currentValidation.validators.keys.toList());
+          if (names['usernames'].length > 0) {
+            for (int i = 0;
+                i < currentValidation.validators.keys.toList().length;
+                i++) {
+              validatorsName.putIfAbsent(
+                  currentValidation.validators.keys.toList()[i],
+                  () => names['usernames'][i]);
+            }
+          }
+        }
+        if (currentValidation != null) {
+          yield ValidationProcessLoaded(currentValidation);
+        }
       } on NetWorkException {
         yield DataFailure("No internet connection");
       }
@@ -113,10 +139,25 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         //removing from local state variable
         event.files.forEach((element) => processedFiles.remove(element));
         if (processedFiles.isEmpty) {
+          try {
+            await repo.deleteFilesById(event.files);
+            if (currentValidation != null) {
+              await repo.deleteValidationProcess(
+                  currentConfig.configName, event.initiatorId);
+              currentValidation = null;
+            }
+          } on NetWorkException {
+            yield DataFailure("No internet connection");
+          }
           yield AllFilesDiscarded();
         } else {
           try {
             var r = await repo.deleteFilesById(event.files);
+            if (currentValidation != null) {
+              await repo.deleteValidationProcess(
+                  currentConfig.configName, event.initiatorId);
+              currentValidation = null;
+            }
             yield FilesDiscarded(message: r['message'], errors: r['errors']);
           } on NetWorkException {
             yield DataFailure("No internet connection");

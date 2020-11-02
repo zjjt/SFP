@@ -10,7 +10,7 @@ class AlertState extends Equatable {
   final Widget whatToShow;
   final bool isDoc;
   final Uint8List doc;
-  final String title;
+  final Widget title;
   final List<Widget> actions;
   final Alignment alignement;
 
@@ -24,7 +24,7 @@ class AlertState extends Equatable {
       this.alignement});
   const AlertState.closed() : this._();
   const AlertState.opened(Widget whatToShow, bool isDoc, Uint8List doc,
-      String title, List<Widget> actions, Alignment alignement)
+      Widget title, List<Widget> actions, Alignment alignement)
       : this._(
             status: AlertDialogStatus.opened,
             whatToShow: whatToShow,

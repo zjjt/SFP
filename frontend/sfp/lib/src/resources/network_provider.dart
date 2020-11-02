@@ -45,6 +45,22 @@ class NetworkProvider {
     }
   }
 
+  Future<Map<String, dynamic>> getValidatorNames(List<String> ids) async {
+    Utils.log(
+        'in network provider trying to get the list of usernames for the list of ids $ids');
+    FormData formData = FormData.fromMap({
+      "ids": ids,
+    });
+    var response =
+        await dio.post('$backend/user/getvalidatorusernames', data: formData);
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> createUsersWithRole(
       String username,
       String userId,
@@ -57,21 +73,23 @@ class NetworkProvider {
         'in network provider trying to create a user list as $role on the backend');
     List<MultipartFile> filesM = [];
     List<String> filenames = [];
-    for (var i = 0; i < files.length; i++) {
-      if (files[i] is File) {
-        filesM.add(MultipartFile.fromBytes(files[i].readAsBytesSync(),
-            filename: basename(files[i].path),
-            contentType: MediaType.parse("multipart/form-data")));
-        filenames.add(basename(files[i].path));
-      } else {
-        filesM.add(MultipartFile.fromBytes(
-            await Utils.convertHtmlFileToBytes(files[i]),
-            filename: files[i].name,
-            contentType: MediaType.parse("multipart/form-data")));
-        filenames.add(files[i].name);
+    if (files != null) {
+      for (var i = 0; i < files.length; i++) {
+        if (files[i] is File) {
+          filesM.add(MultipartFile.fromBytes(files[i].readAsBytesSync(),
+              filename: basename(files[i].path),
+              contentType: MediaType.parse("multipart/form-data")));
+          filenames.add(basename(files[i].path));
+        } else {
+          filesM.add(MultipartFile.fromBytes(
+              await Utils.convertHtmlFileToBytes(files[i]),
+              filename: files[i].name,
+              contentType: MediaType.parse("multipart/form-data")));
+          filenames.add(files[i].name);
+        }
       }
+      Utils.log("length of files is ${filesM.length}");
     }
-    Utils.log("length of files is ${filesM.length}");
 
     FormData formData = FormData.fromMap({
       "username": username,
@@ -88,6 +106,23 @@ class NetworkProvider {
         data: formData, onSendProgress: (int sent, int total) {
       Utils.log("$sent/$total");
     });
+
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteValidationProcess(
+      String configName, String initiatorId) async {
+    Utils.log(
+        'in network provider trying to delete the validation process from backend for config $configName and initiator id $initiatorId');
+    FormData formData = FormData.fromMap(
+        {"configName": configName, "initiatorId": initiatorId});
+    var response =
+        await dio.post("$backend/validation/deleteValidation", data: formData);
 
     if (response.statusCode == 200) {
       var data = response.data;

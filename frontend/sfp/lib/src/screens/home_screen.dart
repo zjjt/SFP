@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {bool isAlertUp = false,
       BuildContext context,
       Widget leWidget,
-      String title = '',
+      Widget title,
       List<Widget> actions,
       Alignment alignement,
       bool isDoc,
@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     }
                   },
                   child: AlertDialog(
-                    title: Text(title),
+                    title: title,
                     content: PdfViewer(
                       controller: _pdfController,
                     ),
@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           } else {
             Utils.log('no document here to show');
             return AlertDialog(
-              title: Text(title),
+              title: title,
               content: leWidget,
               actions: actions,
             );

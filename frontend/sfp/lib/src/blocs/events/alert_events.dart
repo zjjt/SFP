@@ -13,7 +13,7 @@ class ShowAlert extends AlertEvent {
   final Widget whatToShow;
   final bool isDoc;
   final Uint8List doc;
-  final String title;
+  final Widget title;
   final List<Widget> actions;
   final Alignment alignement;
 
@@ -24,7 +24,8 @@ class ShowAlert extends AlertEvent {
       this.title,
       this.actions,
       this.alignement});
-  List<Object> get props => [whatToShow];
+  List<Object> get props =>
+      [whatToShow, isDoc, doc, title, actions, alignement];
 }
 
 class CloseAlert extends AlertEvent {}

@@ -78,6 +78,8 @@ class ValidationProcessLoaded extends DataState {
 
 class AllFilesDiscarded extends DataState {}
 
+class TotalValuesSet extends DataState {}
+
 class DataFailure extends DataState {
   final String _message;
   const DataFailure(this._message);

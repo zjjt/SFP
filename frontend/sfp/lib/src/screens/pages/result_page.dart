@@ -32,6 +32,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   FToast ftoast;
   DocBloc docBloc;
   int currentPage, totalPages;
+  var firstTotalValue, secondTotalValue;
   List<Uint8List> docInitial, docGenerated;
   @override
   void initState() {
@@ -47,6 +48,14 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     ftoast = FToast();
     ftoast.init(context);
     alertBloc.add(CloseAlert());
+    //if(dataBloc.processedFiles.isNotEmpty)
+    dataBloc.add(GetValidationProcess(
+        configName: dataBloc.currentConfig.configName,
+        initiatorId: authBloc.user.role == "INITIATOR"
+            ? authBloc.user.id
+            : authBloc.user.role == "VALIDATOR"
+                ? authBloc.user.creatorId
+                : authBloc.user.id));
     //launching entrence animation
     animateBloc.add(EnteringPage());
     docBloc.add(ResetDoc());
@@ -68,7 +77,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   //   });
   // }
 
-  List<Uint8List> _buildDocument(String whichOne) {
+  List<Uint8List> _buildDocument(Map<String, dynamic> map) {
     List<Uint8List> docs = [];
     for (int i = 0; i < dataBloc.processedFiles.length; i++) {
       Utils.log("clear document");
@@ -81,8 +90,8 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   : 50 * pdfDart.PdfPageFormat.cm,
               marginAll: 0.5 * pdfDart.PdfPageFormat.cm),
           build: (pw.Context context) {
-            return _buildPdf(dataBloc.processedFiles[i], whichOne,
-                dataBloc.currentConfig.configName);
+            return _buildPdf(dataBloc.processedFiles[i], map['which'],
+                dataBloc.currentConfig.configName, map['dataBloc']);
           }));
       var doc = pdf.save();
       docs.add(doc);
@@ -90,10 +99,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     return docs;
   }
 
-  static List<pw.Widget> _buildPdf(
-      ProcessedFileModel file, String which, String configName) {
+  static List<pw.Widget> _buildPdf(ProcessedFileModel file, String which,
+      String configName, DataBloc dataBloc) {
     pw.Widget retour = pw.Container();
-    Utils.log('building th pdf for $which');
+    Utils.log('building th pdf for $which is dataBloc set ${dataBloc != null}');
     switch (configName) {
       case "CANAL":
         switch (which) {
@@ -594,6 +603,8 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               }),
             ));
             //Content
+            int sumD = 0;
+            int sumC = 0;
             tableLignes.addAll(List.generate(file.fileLines.length, (index) {
               return pw.TableRow(
                 children: List.generate(headerList.length, (i) {
@@ -605,7 +616,22 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
                     if (file.fileLines[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
-                      //Utils.log("indeed they match");
+                      Utils.log(
+                          "header is ${headerListInitial[i]} file.fileLines[index]['ligne']['TRAN_TYPE~6'] == D? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "D"} : file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==C? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "C"} ");
+                      //Summing the differents amounts in the file
+                      if (headerListInitial[i] == "TRAN_TYPE~6" &&
+                          file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==
+                              "D") {
+                        sumD += int.parse(
+                            file.fileLines[index]['ligne']['AMOUNT~3']);
+                        Utils.log("somme debit is $sumD");
+                      } else if (headerListInitial[i] == "TRAN_TYPE~6" &&
+                          file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==
+                              "C") {
+                        sumC += int.parse(
+                            file.fileLines[index]['ligne']['AMOUNT~3']);
+                        Utils.log("somme debit is $sumC");
+                      }
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
@@ -622,6 +648,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               );
               //return pw.TableRow();
             }));
+
+            dataBloc
+                .add(SetTotalValues({"totalDebit": sumD, "totalCredit": sumC}));
+
             retour = pw.Table(
               border: pw.TableBorder(
                   top: true, left: true, right: true, bottom: true),
@@ -871,17 +901,26 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       child: Text("CLOSE")),
                                 )
                               ],
-                              title: 'Original file $windex'));
+                              title: Expanded(
+                                  child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [Text('Original file $windex')],
+                              ))));
                           _showToast(kIsWeb
                               ? "Use the mouse wheel to zoom in or out on the area of interest"
                               : "Pinch with your fingers to zoom in or out of the document");
                         } else {
                           _showToast(
                               "Please wait while we are building the file");
-                          Timer(Duration(milliseconds: 500), () {
-                            setState(() async {
-                              docInitial =
-                                  await compute(_buildDocument, "original");
+                          Timer(Duration(milliseconds: 500), () async {
+                            var map = {
+                              "which": "original",
+                              "dataBloc": dataBloc,
+                            };
+                            var docI = await compute(_buildDocument, map);
+                            setState(() {
+                              docInitial = docI;
                               _showToast(
                                   "The file is now ready.Tap the button to view it");
                             });
@@ -939,17 +978,114 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       child: Text("CLOSE")),
                                 )
                               ],
-                              title: 'Generated file $windex'));
+                              title: Container(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Text('Generated file $windex'),
+                                    Spacer(),
+                                    dataBloc.currentConfig.configName == "CANAL"
+                                        ? Container(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                RichText(
+                                                  text: TextSpan(
+                                                      text:
+                                                          'Total amount debited: ',
+                                                      style: const TextStyle(color: Colors.black),
+                                                      children: [
+                                                        TextSpan(
+                                                            text:
+                                                                '${dataBloc.popupValues['totalDebited']}')
+                                                      ]),
+                                                ),
+                                                SizedBox(width: 20.0),
+                                                RichText(
+                                                  text: TextSpan(
+                                                      text:
+                                                          'Total amount left to debit: ',
+                                                      style: const TextStyle(color: Colors.black),
+                                                      children: [
+                                                        TextSpan(
+                                                            text:
+                                                                '${dataBloc.popupValues['totalLeftDebit']}')
+                                                      ]),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : dataBloc.currentConfig.configName ==
+                                                "SAGE"
+                                            ? Container(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    RichText(
+                                                      text: TextSpan(
+                                                          text:
+                                                              'Total amount debited: ',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                          children: [
+                                                            TextSpan(
+                                                                text:
+                                                                    '${dataBloc.popupValues['totalDebit']}',
+                                                                style: const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold))
+                                                          ]),
+                                                    ),
+                                                    SizedBox(width: 20.0),
+                                                    RichText(
+                                                      text: TextSpan(
+                                                          text:
+                                                              'Total amount credited: ',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                          children: [
+                                                            TextSpan(
+                                                                text:
+                                                                    '${dataBloc.popupValues['totalCredit']}',
+                                                                style: const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold))
+                                                          ]),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : Container()
+                                  ],
+                                ),
+                              )));
                           _showToast(kIsWeb
                               ? "Use the mouse wheel to zoom in or out on the area of interest"
                               : "Pinch with your fingers to zoom in or out of the document");
                         } else {
                           _showToast(
                               "Please wait while we are building the file");
-                          Timer(Duration(milliseconds: 500), () {
-                            setState(() async {
-                              docInitial =
-                                  await compute(_buildDocument, "generated");
+                          Timer(Duration(milliseconds: 500), () async {
+                            var map = {
+                              "which": "generated",
+                              "dataBloc": dataBloc
+                            };
+                            Utils.log(
+                                "content of context is ${context != null}");
+                            var docG = await compute(_buildDocument, map);
+                            setState(() {
+                              docGenerated = docG;
                               _showToast(
                                   "The file is now ready.Tap the button to view it");
                             });
@@ -992,23 +1128,27 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   tooltip: "Discard this file ?",
                   icon: Icon(Icons.highlight_off),
                   onPressed: () => alertBloc.add(ShowAlert(
-                    title: "Discard this file ?",
+                    title: Text("Discard this file ?"),
                     whatToShow: Text(
-                        "Do you really want to discard this file ? the file will be removed from the processing pipeline."),
+                        "Do you really want to discard this file ? the file along with any ongoing validation will be removed from the processing pipeline."),
                     actions: [
                       FlatButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text("CANCEL",
-                                  style:
-                                      const TextStyle(color: Colors.black)))),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "CANCEL",
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                        ),
+                      ),
                       FlatButton(
                           onPressed: () {
                             Utils.log("i index $i");
                             Navigator.of(context).pop();
                             dataBloc.add(DiscardFiles(
-                                files: [dataBloc.processedFiles[--windex]]));
+                                files: [dataBloc.processedFiles[--windex]],
+                                initiatorId: authBloc.user.id));
                           },
                           child: Container(
                               padding: const EdgeInsets.all(8.0),
@@ -1147,6 +1287,34 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                     ),
                                     FlatButton(
                                       onPressed: () {
+                                        alertBloc.add(ShowAlert(
+                                          whatToShow: Container(
+                                            height: 200,
+                                            width: 200,
+                                            color: Colors.white,
+                                            padding: EdgeInsets.fromLTRB(
+                                                24.0, 0.0, 24.0, 24.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Center(
+                                                  child: SpinKitRing(
+                                                      color: Assets.ubaRedColor,
+                                                      size: 80.0),
+                                                ),
+                                                SizedBox(height: 10.0),
+                                                Text(
+                                                  "Please wait...",
+                                                  textAlign: TextAlign.center,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          isDoc: false,
+                                          title: Container(),
+                                          actions: [],
+                                        ));
                                         dataBloc.add(SubmitApprovalChain());
                                       },
                                       child: Container(
@@ -1154,7 +1322,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                           child: Text("SEND NOTIFICATION")),
                                     ),
                                   ],
-                                  title: 'Create the approval chain'));
+                                  title: Text('Create the approval chain')));
                               _showToast(
                                   "Add or remove validators email ids. Each of them will be notified to approve of the file");
                             },
@@ -1246,6 +1414,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         setState(() {
                           Utils.log("updating file list UI");
                         });
+                      }
+                      if (state is ValidationProcessLoaded) {
+                        setState(() {});
                       }
                     },
                     child: Container(

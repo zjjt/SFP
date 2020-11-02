@@ -83,7 +83,7 @@ class FileUploadValidatorWebState extends State<FileUploadValidatorWeb>
           SizedBox(height: 20.0),
           Text(
             noFiles < 1
-                ? "Only files with the extension ${dataBloc.currentConfig.fileTypeAndSizeInMB['type']} are supported"
+                ? "Select the files you wish to join to the approval process"
                 : "$noFiles selected",
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),

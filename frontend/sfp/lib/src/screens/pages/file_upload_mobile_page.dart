@@ -272,7 +272,7 @@ class _FileUploadMobilePageState extends State<FileUploadMobilePage>
                                               ],
                                             ),
                                           ),
-                                          title: '',
+                                          title: Container(),
                                           actions: [],
                                         ));
                                       });

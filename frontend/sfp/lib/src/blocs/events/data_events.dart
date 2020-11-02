@@ -88,6 +88,12 @@ class DownloadFiles extends DataEvent {
 
 class DiscardFiles extends DataEvent {
   final List<ProcessedFileModel> files;
-  const DiscardFiles({this.files});
-  List<Object> get props => [files];
+  final String initiatorId;
+  const DiscardFiles({this.files, this.initiatorId});
+  List<Object> get props => [files, initiatorId];
+}
+
+class SetTotalValues extends DataEvent {
+  final Map<String, dynamic> values;
+  const SetTotalValues(this.values);
 }

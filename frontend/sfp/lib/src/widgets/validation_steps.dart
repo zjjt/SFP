@@ -25,6 +25,9 @@ class _ValidationStepsState extends State<ValidationSteps> {
   DataBloc dataBloc;
   AuthBloc authBloc;
   AlertBloc alertBloc;
+  String validationRole = "CONTROLLER";
+  String radioMsg =
+      "The files generated will be sent via email to the controllers you choose";
   @override
   void initState() {
     // TODO: implement initState
@@ -46,6 +49,21 @@ class _ValidationStepsState extends State<ValidationSteps> {
     super.dispose();
     _emailCtrl.forEach((element) {
       element.dispose();
+    });
+  }
+
+  void _setRole(String value) {
+    var msg = "";
+    if (value == "CONTROLLER") {
+      msg =
+          "The files generated will be sent via email to the controllers you choose\n along with the files you join here";
+    } else if (value == "VALIDATOR") {
+      msg =
+          "Only the files you join here will be sent to the validators you choose";
+    }
+    setState(() {
+      validationRole = value;
+      radioMsg = msg;
     });
   }
 
@@ -128,12 +146,13 @@ class _ValidationStepsState extends State<ValidationSteps> {
                 processingId: dataBloc.processedFiles.first.processingId,
                 mailOfUsers: listOfMail,
                 files: _filesUploadKey.currentState.files,
-                role: "VALIDATORS",
+                role: validationRole, //"VALIDATOR",
                 configName: dataBloc.currentConfig.configName));
           } else {
             dataBloc.add(PutFormInStandBy());
           }
         } else if (state is UsersCreated) {
+          Navigator.of(context).pop();
           alertBloc.add(CloseAlert());
           Timer(Duration(milliseconds: 200), () {
             alertBloc.add(ShowAlert(
@@ -157,7 +176,7 @@ class _ValidationStepsState extends State<ValidationSteps> {
                   ),
                 ),
                 isDoc: false,
-                title: '',
+                title: Container(),
                 actions: [
                   FlatButton(
                       onPressed: () {
@@ -201,10 +220,69 @@ class _ValidationStepsState extends State<ValidationSteps> {
               height: 300,
               child: Form(
                 key: _formKey,
-                child: AnimatedList(
-                    key: _listKey,
-                    initialItemCount: _list.length,
-                    itemBuilder: _buildItem),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Container(
+                            child: Row(
+                              children: [
+                                Radio(
+                                  activeColor: Assets.ubaRedColor,
+                                  groupValue: validationRole,
+                                  value: "CONTROLLER",
+                                  hoverColor: Colors.red,
+                                  onChanged: (value) {
+                                    Utils.log(
+                                        'creating validation chain for CONTROLLER');
+                                    _setRole(value);
+                                  },
+                                  //selected: false,
+                                ),
+                                SizedBox(width: 10.0),
+                                Text("CONTROLLER",
+                                    style: const TextStyle(color: Colors.grey))
+                              ],
+                            ),
+                          ),
+                          Container(
+                            child: Row(
+                              children: [
+                                Radio(
+                                  activeColor: Assets.ubaRedColor,
+                                  groupValue: validationRole,
+                                  value: "VALIDATOR",
+                                  hoverColor: Colors.red,
+                                  onChanged: (value) {
+                                    Utils.log(
+                                        'creating validation chain for VALIDATOR');
+                                    _setRole(value);
+                                  },
+                                  //selected: false,
+                                ),
+                                SizedBox(width: 10.0),
+                                Text("VALIDATOR",
+                                    style: const TextStyle(color: Colors.grey))
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      radioMsg,
+                      textAlign: TextAlign.center,
+                    ),
+                    Expanded(
+                      child: AnimatedList(
+                          key: _listKey,
+                          initialItemCount: _list.length,
+                          itemBuilder: _buildItem),
+                    )
+                  ],
+                ),
               ),
             ),
             SizedBox(height: 5.0),

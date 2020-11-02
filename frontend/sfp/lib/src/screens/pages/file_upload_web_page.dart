@@ -268,7 +268,7 @@ class _FileUploadWebPageState extends State<FileUploadWebPage>
                                             ),
                                           ),
                                           isDoc: false,
-                                          title: '',
+                                          title: Container(),
                                           actions: [],
                                         ));
                                       });

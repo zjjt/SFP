@@ -98,7 +98,7 @@ class _SelectConfigPageState extends State<SelectConfigPage>
                 ),
               ),
               isDoc: false,
-              title: '',
+              title: Container(),
               actions: [],
             ));
             dataBloc.add(FetchFilesForConfig(
