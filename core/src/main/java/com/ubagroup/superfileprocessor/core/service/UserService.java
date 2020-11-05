@@ -50,4 +50,7 @@ public class UserService implements UserInterface {
     public void deleteUser(User user) {
         userRepository.delete(user);
     }
+    public void deleteUserById(String userId){userRepository.deleteById(userId);}
+    public void deleteAllByCreatorId(String userId){userRepository.deleteAllByCreatorId(userId);}
+
 }

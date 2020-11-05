@@ -150,6 +150,18 @@
             "LABEL": "rémunérations dues"
         },
         {
+            "COMPTE_LP": "332200",
+            "CODE_LP": "+321/-650",
+            "COMPTE_FINCON": "3322009526299002",
+            "LABEL": "crrae à reverser"
+        },
+        {
+            "COMPTE_LP": "3310",
+            "CODE_LP": "637",
+            "COMPTE_FINCON": "3311009526299042",
+            "LABEL": "AVANCE AVANTAGE EN NATURE"
+        },
+        {
             "COMPTE_LP": "3321211",
             "CODE_LP": "IS",
             "COMPTE_FINCON": "3321009526299012",

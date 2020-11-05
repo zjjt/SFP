@@ -35,7 +35,17 @@ public class ProcessValidationController {
 
             if(validation.equalsIgnoreCase("REJECTED")){
                 var motives=p.getValidatorMotives();
+                if(Objects.isNull(motives)){
+                    motives=new HashMap<String,String>();
+                }
                 motives.put(validatorId,rejectionMotive);
+                p.setValidatorMotives(motives);
+            }else{
+                var motives=p.getValidatorMotives();
+                if(Objects.isNull(motives)){
+                    motives=new HashMap<String,String>();
+                }
+                motives.put(validatorId,"");
                 p.setValidatorMotives(motives);
             }
             if(processControlValidationService.saveOne(p)){
@@ -57,7 +67,17 @@ public class ProcessValidationController {
             p.setValidators(validatorMap);
             if(validation.equalsIgnoreCase("REJECTED")){
                 var motives=p.getValidatorMotives();
+                if(Objects.isNull(motives)){
+                    motives=new HashMap<String,String>();
+                }
                 motives.put(validatorId,rejectionMotive);
+                p.setValidatorMotives(motives);
+            }else{
+                var motives=p.getValidatorMotives();
+                if(Objects.isNull(motives)){
+                    motives=new HashMap<String,String>();
+                }
+                motives.put(validatorId,"");
                 p.setValidatorMotives(motives);
             }
             if(processValidationService.saveOne(p)){

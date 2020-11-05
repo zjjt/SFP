@@ -613,7 +613,16 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
             //Content
             int sumD = 0;
             int sumC = 0;
+            int nbLigne = 0;
             tableLignes.addAll(List.generate(file.fileLines.length, (index) {
+              //Summing the differents amounts in the file
+              if (file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "D") {
+                sumD += int.parse(file.fileLines[index]['ligne']['AMOUNT~3']);
+                Utils.log("somme debit is $sumD");
+              } else if (file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "C") {
+                sumC += int.parse(file.fileLines[index]['ligne']['AMOUNT~3']);
+                Utils.log("somme credit is $sumC");
+              }
               return pw.TableRow(
                 children: List.generate(headerList.length, (i) {
                   //match with the appropriate header
@@ -624,22 +633,8 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     //  "in map currently ${file.inFile[index]['ligne'].keys.toList()[i]} and in cell is ${headerListInitial[i]}");
                     if (file.fileLines[index]['ligne'].keys.toList()[i] ==
                         headerListInitial[i]) {
-                      Utils.log(
-                          "header is ${headerListInitial[i]} file.fileLines[index]['ligne']['TRAN_TYPE~6'] == D? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "D"} : file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==C? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "C"} ");
-                      //Summing the differents amounts in the file
-                      if (headerListInitial[i] == "TRAN_TYPE~6" &&
-                          file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==
-                              "D") {
-                        sumD += int.parse(
-                            file.fileLines[index]['ligne']['AMOUNT~3']);
-                        Utils.log("somme debit is $sumD");
-                      } else if (headerListInitial[i] == "TRAN_TYPE~6" &&
-                          file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==
-                              "C") {
-                        sumC += int.parse(
-                            file.fileLines[index]['ligne']['AMOUNT~3']);
-                        Utils.log("somme debit is $sumC");
-                      }
+                      // Utils.log(
+                      //    "header is ${headerListInitial[i]} file.fileLines[index]['ligne']['TRAN_TYPE~6'] == D? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "D"} : file.fileLines[index]['ligne']['TRAN_TYPE~6'] ==C? ${file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "C"} ");
                       return pw.Container(
                         padding: const pw.EdgeInsets.all(2.0),
                         child: pw.Text(
@@ -652,13 +647,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     return pw.Text("");
                   }
                   //return pw.Text("canal");
+
+                  nbLigne += index;
                 }),
               );
               //return pw.TableRow();
             }));
 
-            dataBloc
-                .add(SetTotalValues({"totalDebit": sumD, "totalCredit": sumC}));
+            dataBloc.add(SetTotalValues({
+              "totalDebit": sumD,
+              "totalCredit": sumC,
+              "totalLigne": nbLigne
+            }));
 
             retour = pw.Table(
               border: pw.TableBorder(
@@ -909,12 +909,11 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       child: Text("CLOSE")),
                                 )
                               ],
-                              title: Expanded(
-                                  child: Row(
+                              title: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [Text('Original file $windex')],
-                              ))));
+                              )));
                           _showToast(kIsWeb
                               ? "Use the mouse wheel to zoom in or out on the area of interest"
                               : "Pinch with your fingers to zoom in or out of the document");
@@ -1023,6 +1022,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                                 '${dataBloc.popupValues['totalLeftDebit']}')
                                                       ]),
                                                 ),
+                                                SizedBox(width: 20.0),
+                                                RichText(
+                                                  text: TextSpan(
+                                                      text:
+                                                          'Total number of lines: ',
+                                                      style: const TextStyle(color: Colors.black),
+                                                      children: [
+                                                        TextSpan(
+                                                            text:
+                                                                '${dataBloc.popupValues['totalLigne']}')
+                                                      ]),
+                                                ),
                                               ],
                                             ),
                                           )
@@ -1068,6 +1079,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold))
+                                                          ]),
+                                                    ),
+                                                    SizedBox(width: 20.0),
+                                                    RichText(
+                                                      text: TextSpan(
+                                                          text:
+                                                              'Total number of lines: ',
+                                                          style: const TextStyle(color: Colors.black),
+                                                          children: [
+                                                            TextSpan(
+                                                                text:
+                                                                    '${dataBloc.popupValues['totalLigne']}')
                                                           ]),
                                                     ),
                                                   ],
@@ -1134,34 +1157,36 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   color: Colors.black,
                   tooltip: "Discard this file ?",
                   icon: Icon(Icons.highlight_off),
-                  onPressed: () => alertBloc.add(ShowAlert(
-                    title: Text("Discard this file ?"),
-                    whatToShow: Text(
-                        "Do you really want to discard this file ? the file along with any ongoing validation will be removed from the processing pipeline."),
-                    actions: [
-                      FlatButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "CANCEL",
-                            style: const TextStyle(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                      FlatButton(
-                          onPressed: () {
-                            Utils.log("i index $i");
-                            Navigator.of(context).pop();
-                            dataBloc.add(DiscardFiles(
-                                files: [dataBloc.processedFiles[--windex]],
-                                initiatorId: authBloc.user.id));
-                          },
-                          child: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text("DISCARD IT")))
-                    ],
-                  )),
+                  onPressed: authBloc.user.role != "INITIATOR"
+                      ? null
+                      : () => alertBloc.add(ShowAlert(
+                            title: Text("Discard this file ?"),
+                            whatToShow: Text(
+                                "Do you really want to discard this file ? the file along with any ongoing validation will be removed from the processing pipeline."),
+                            actions: [
+                              FlatButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "CANCEL",
+                                    style: const TextStyle(color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                              FlatButton(
+                                  onPressed: () {
+                                    Utils.log("i index $i");
+                                    Navigator.of(context).pop();
+                                    dataBloc.add(DiscardFiles(files: [
+                                      dataBloc.processedFiles[--windex]
+                                    ], initiatorId: authBloc.user.id));
+                                  },
+                                  child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text("DISCARD IT")))
+                            ],
+                          )),
                 )
               ],
             ),
@@ -1206,23 +1231,56 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         authBloc.user.id &&
                     dataBloc.currentConfig.functionnalityTypes
                         .contains("CONTROL") //Initiator when validation started
-                ? RaisedButton(
-                    onPressed: dataBloc.validationProgress == 100 &&
-                            dataBloc.validationControlProgress == 100
-                        ? () => Utils.log("can send the file to destinataire")
-                        : null,
-                    color: Assets.ubaRedColor,
-                    hoverColor: Colors.black,
-                    textColor: Colors.white,
-                    child: Text(
-                      "Send File",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                ? Container(
+                    width: MediaQuery.of(context).orientation ==
+                            Orientation.portrait
+                        ? appB.width
+                        : appB.width * 0.20,
+                    height: 40.0,
+                    child: RaisedButton(
+                      onPressed: dataBloc.validationProgress == 100 &&
+                              dataBloc.validationControlProgress == 100
+                          ? () {
+                              alertBloc.add(ShowAlert(
+                                  whatToShow: FinalSending(),
+                                  isDoc: false,
+                                  doc: null,
+                                  actions: [
+                                    FlatButton(
+                                      onPressed: () {
+                                        alertBloc.add(CloseAlert());
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text("CLOSE")),
+                                    ),
+                                    FlatButton(
+                                      onPressed: () {
+                                        dataBloc.add(StartFinalMailProcedure());
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text("SEND MAIL")),
+                                    ),
+                                  ],
+                                  title: Text('Send the final email')));
+                              _showToast(
+                                  "Add or remove validators email ids. Each of them will be sent the final mail");
+                            }
+                          : null,
+                      color: Assets.ubaRedColor,
+                      hoverColor: Colors.black,
+                      textColor: Colors.white,
+                      child: Text(
+                        "Send File",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                     ),
                   )
                 : (dataBloc.currentValidation != null ||
@@ -1230,9 +1288,20 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         dataBloc.currentControlValidation.initiatorId !=
                             authBloc.user.id &&
                         dataBloc.currentConfig.functionnalityTypes
-                            .contains("VALIDATIONS") // Controllers Validators
+                            .contains("VALIDATIONS") &&
+                        ((dataBloc.currentControlValidation != null &&
+                                dataBloc.currentControlValidation
+                                        .validators[authBloc.user.id] !=
+                                    "OK") ||
+                            (dataBloc.currentValidation != null &&
+                                dataBloc.currentValidation
+                                        .validators[authBloc.user.id] !=
+                                    "OK")) &&
+                        (dataBloc.validationProgress < 100 ||
+                            dataBloc.validationControlProgress <
+                                100) // Controllers Validators
                     ? Container(
-                        width: 500,
+                        width: 1000,
                         child: ButtonBar(
                           alignment: MainAxisAlignment.spaceEvenly,
                           mainAxisSize: MainAxisSize.max,
@@ -1241,19 +1310,19 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               width: MediaQuery.of(context).orientation ==
                                       Orientation.portrait
                                   ? appB.width
-                                  : appB.width * 0.5,
+                                  : appB.width * 0.20,
                               height: 40.0,
                               child: RaisedButton(
                                 onPressed: () {
                                   alertBloc.add(ShowAlert(
                                     title: Text("Are you sure ?"),
                                     whatToShow: Container(
-                                      height: 300,
+                                      height: 150,
                                       child: Column(
                                         children: [
                                           Text(
                                               "You have decided to reject the current file(s) processed.Would you please state the reason in the field below ?"),
-                                          SizedBox(height: 20.0),
+                                          SizedBox(height: 10.0),
                                           TextField(
                                               controller: _rejectionController,
                                               maxLines: 5,
@@ -1326,11 +1395,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
+                            SizedBox(height: 20.0),
                             Container(
                               width: MediaQuery.of(context).orientation ==
                                       Orientation.portrait
                                   ? appB.width
-                                  : appB.width * 0.5,
+                                  : appB.width * 0.20,
                               height: 40.0,
                               child: RaisedButton(
                                 onPressed: () {
@@ -1361,176 +1431,173 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                       )
                     : (dataBloc.currentValidation == null ||
                                 dataBloc.currentControlValidation == null) &&
-                            dataBloc.currentConfig.functionnalityTypes.contains(
-                                "VALIDATIONS") //Initiator when validation hasnt started yet
-                        ? RaisedButton(
-                            onPressed: () {
-                              if (dataBloc.currentControlValidation == null) {
-                                alertBloc.add(ShowAlert(
-                                    whatToShow: ValidationSteps(
-                                        defaultRole: "CONTROLLER"),
-                                    isDoc: false,
-                                    doc: null,
-                                    actions: [
-                                      FlatButton(
-                                        onPressed: () {
-                                          alertBloc.add(CloseAlert());
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("CLOSE")),
+                            dataBloc.currentConfig.functionnalityTypes
+                                .contains("VALIDATIONS") &&
+                            authBloc.user.role ==
+                                "INITIATOR" //Initiator when validation hasnt started yet
+                        ? Container(
+                            width: MediaQuery.of(context).orientation ==
+                                    Orientation.portrait
+                                ? appB.width
+                                : appB.width * 0.20,
+                            height: 40.0,
+                            child: RaisedButton(
+                              onPressed: () {
+                                if (dataBloc.currentControlValidation == null) {
+                                  alertBloc.add(ShowAlert(
+                                      whatToShow: ValidationSteps(
+                                          defaultRole: "CONTROLLER"),
+                                      isDoc: false,
+                                      doc: null,
+                                      actions: [
+                                        FlatButton(
+                                          onPressed: () {
+                                            alertBloc.add(CloseAlert());
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("CLOSE")),
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            dataBloc.add(SubmitApprovalChain());
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("SEND NOTIFICATION")),
+                                        ),
+                                      ],
+                                      title:
+                                          Text('Create the approval chain')));
+                                  _showToast(
+                                      "Add or remove controllers email ids. Each of them will be notified to approve of the file");
+                                } else if (dataBloc.validationControlProgress ==
+                                        100 &&
+                                    dataBloc.currentValidation == null) {
+                                  alertBloc.add(ShowAlert(
+                                      whatToShow: ValidationSteps(
+                                        defaultRole: "VALIDATOR",
                                       ),
-                                      FlatButton(
-                                        onPressed: () {
-                                          alertBloc.add(ShowAlert(
-                                            whatToShow: Container(
-                                              height: 200,
-                                              width: 200,
-                                              color: Colors.white,
-                                              padding: EdgeInsets.fromLTRB(
-                                                  24.0, 0.0, 24.0, 24.0),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Center(
-                                                    child: SpinKitRing(
-                                                        color:
-                                                            Assets.ubaRedColor,
-                                                        size: 80.0),
-                                                  ),
-                                                  SizedBox(height: 10.0),
-                                                  Text(
-                                                    "Please wait...",
-                                                    textAlign: TextAlign.center,
-                                                  )
-                                                ],
+                                      isDoc: false,
+                                      doc: null,
+                                      actions: [
+                                        FlatButton(
+                                          onPressed: () {
+                                            alertBloc.add(CloseAlert());
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("CLOSE")),
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            alertBloc.add(ShowAlert(
+                                              whatToShow: Container(
+                                                height: 200,
+                                                width: 200,
+                                                color: Colors.white,
+                                                padding: EdgeInsets.fromLTRB(
+                                                    24.0, 0.0, 24.0, 24.0),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Center(
+                                                      child: SpinKitRing(
+                                                          color: Assets
+                                                              .ubaRedColor,
+                                                          size: 80.0),
+                                                    ),
+                                                    SizedBox(height: 10.0),
+                                                    Text(
+                                                      "Please wait...",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    )
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            isDoc: false,
-                                            title: Container(),
-                                            actions: [],
-                                          ));
-                                          dataBloc.add(SubmitApprovalChain());
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("SEND NOTIFICATION")),
-                                      ),
-                                    ],
-                                    title: Text('Create the approval chain')));
-                                _showToast(
-                                    "Add or remove controllers email ids. Each of them will be notified to approve of the file");
-                              } else if (dataBloc.validationControlProgress ==
-                                      100 &&
-                                  dataBloc.currentValidation == null) {
-                                alertBloc.add(ShowAlert(
-                                    whatToShow: ValidationSteps(
-                                      defaultRole: "VALIDATOR",
-                                    ),
-                                    isDoc: false,
-                                    doc: null,
-                                    actions: [
-                                      FlatButton(
-                                        onPressed: () {
-                                          alertBloc.add(CloseAlert());
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("CLOSE")),
-                                      ),
-                                      FlatButton(
-                                        onPressed: () {
-                                          alertBloc.add(ShowAlert(
-                                            whatToShow: Container(
-                                              height: 200,
-                                              width: 200,
-                                              color: Colors.white,
-                                              padding: EdgeInsets.fromLTRB(
-                                                  24.0, 0.0, 24.0, 24.0),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Center(
-                                                    child: SpinKitRing(
-                                                        color:
-                                                            Assets.ubaRedColor,
-                                                        size: 80.0),
-                                                  ),
-                                                  SizedBox(height: 10.0),
-                                                  Text(
-                                                    "Please wait...",
-                                                    textAlign: TextAlign.center,
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                            isDoc: false,
-                                            title: Container(),
-                                            actions: [],
-                                          ));
-                                          dataBloc.add(SubmitApprovalChain());
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("SEND NOTIFICATION")),
-                                      ),
-                                    ],
-                                    title: Text('Create the approval chain')));
-                                _showToast(
-                                    "Add or remove validators email ids. Each of them will be notified to approve of the file");
-                              } else {
-                                alertBloc.add(ShowAlert(
-                                    whatToShow: Text(
-                                        "Some approvals are still required to move forward !"),
-                                    isDoc: false,
-                                    doc: null,
-                                    actions: [
-                                      FlatButton(
-                                        onPressed: () {
-                                          alertBloc.add(CloseAlert());
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("CLOSE")),
-                                      ),
-                                    ]));
-                              }
-                            },
-                            color: Assets.ubaRedColor,
-                            hoverColor: Colors.black,
-                            textColor: Colors.white,
-                            child: Text(
-                              "Submit for review",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                              isDoc: false,
+                                              title: Container(),
+                                              actions: [],
+                                            ));
+                                            dataBloc.add(SubmitApprovalChain());
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("SEND NOTIFICATION")),
+                                        ),
+                                      ],
+                                      title:
+                                          Text('Create the approval chain')));
+                                  _showToast(
+                                      "Add or remove validators email ids. Each of them will be notified to approve of the file");
+                                } else {
+                                  alertBloc.add(ShowAlert(
+                                      whatToShow: Text(
+                                          "Some approvals are still required to move forward !"),
+                                      isDoc: false,
+                                      doc: null,
+                                      actions: [
+                                        FlatButton(
+                                          onPressed: () {
+                                            alertBloc.add(CloseAlert());
+                                          },
+                                          child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text("CLOSE")),
+                                        ),
+                                      ]));
+                                }
+                              },
+                              color: Assets.ubaRedColor,
+                              hoverColor: Colors.black,
+                              textColor: Colors.white,
+                              child: Text(
+                                "Submit for review",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.0),
+                              ),
                             ),
                           )
-                        : RaisedButton(
-                            //last button which download files
-                            onPressed:
-                                dataBloc.processedFiles.first.processingStatus
-                                    ? _downloadFiles
-                                    : null,
-                            color: Colors.black,
-                            textColor: Colors.white,
-                            child: Text(
-                              "Download files",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                          );
+                        : dataBloc.currentConfigName == "CANAL"
+                            ? Container(
+                                width: MediaQuery.of(context).orientation ==
+                                        Orientation.portrait
+                                    ? appB.width
+                                    : appB.width * 0.20,
+                                height: 40.0,
+                                child: RaisedButton(
+                                  //last button which download files
+                                  onPressed: dataBloc
+                                          .processedFiles.first.processingStatus
+                                      ? _downloadFiles
+                                      : null,
+                                  color: Colors.black,
+                                  textColor: Colors.white,
+                                  child: Text(
+                                    "Download files",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ),
+                                ),
+                              )
+                            : Container();
           },
         ),
       ),

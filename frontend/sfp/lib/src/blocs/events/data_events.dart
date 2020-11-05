@@ -42,6 +42,19 @@ class SelectConfig extends DataEvent {
   List<Object> get props => [configPosition];
 }
 
+class StartFinalMailProcedure extends DataEvent {}
+
+class SendFinalMail extends DataEvent {
+  final String configName;
+  final String username;
+  final String userId;
+  final String to;
+  final List<String> enCopie;
+  final List<String> processingIds;
+  const SendFinalMail(this.configName, this.username, this.userId, this.to,
+      this.enCopie, this.processingIds);
+}
+
 class DoFileUpload extends DataEvent {
   final files;
   final String userId;

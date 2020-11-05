@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sfp/assets.dart';
 import 'package:sfp/src/blocs/blocs.dart';
 import 'package:sfp/src/widgets/file_upload_val_web.dart';
@@ -93,8 +94,9 @@ class _ValidationStepsState extends State<ValidationSteps> {
     _emailCtrl.add(TextEditingController());
     Utils.log(
         "adding 1 textController from _buildItem emailCtrllength: ${_emailCtrl.length} elementList length: ${_list.length}");
-    return _ValidatorField(
+    return ValidatorField(
         animation: animation,
+        label: "Validator Email Id",
         item: _list[index],
         textEditingController: _emailCtrl[index]);
   }
@@ -109,8 +111,9 @@ class _ValidationStepsState extends State<ValidationSteps> {
     Utils.log(
         "removing 1 textController from _buildRemovedItem length: ${_emailCtrl.length}");
 
-    return _ValidatorField(
+    return ValidatorField(
         animation: animation,
+        label: "Validator Email Id",
         item: _list.length,
         textEditingController: _emailCtrl.last);
   }
@@ -145,6 +148,30 @@ class _ValidationStepsState extends State<ValidationSteps> {
           Utils.log(
               "\n number of attachement files is ${_filesUploadKey.currentState.noFiles}");
           if (_formKey.currentState.validate()) {
+            alertBloc.add(ShowAlert(
+              whatToShow: Container(
+                height: 200,
+                width: 200,
+                color: Colors.white,
+                padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: SpinKitRing(color: Assets.ubaRedColor, size: 80.0),
+                    ),
+                    SizedBox(height: 10.0),
+                    Text(
+                      "Please wait...",
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+              ),
+              isDoc: false,
+              title: Container(),
+              actions: [],
+            ));
             dataBloc.add(CreateUserWithRole(
                 username: authBloc.user.username,
                 userId: authBloc.user.id,
@@ -311,13 +338,15 @@ class _ValidationStepsState extends State<ValidationSteps> {
   }
 }
 
-class _ValidatorField extends StatelessWidget {
+class ValidatorField extends StatelessWidget {
   final Animation<double> animation;
   final int item;
+  final String label;
   final TextEditingController textEditingController;
-  const _ValidatorField(
+  const ValidatorField(
       {@required this.animation,
       @required this.item,
+      @required this.label,
       @required this.textEditingController})
       : assert(animation != null),
         assert(item != null && item >= 0);
@@ -341,7 +370,7 @@ class _ValidatorField extends StatelessWidget {
               Icons.person_outline,
               color: Assets.ubaRedColor,
             ),
-            labelText: "Validator Email Id $item",
+            labelText: "$label $item",
             labelStyle: TextStyle(
               color: Assets.ubaRedColor,
               fontSize: 15.0,

@@ -18,7 +18,7 @@ public class MailService {
         String bodySoap = "";
         String tagSoap= "";
          bodySoap=_buildFinalSoapEnveloppe(attachments.isEmpty()?false:true,from,_addRecipientsSoap(to,attachments.isEmpty()?false:true),_addRecipientsSoap(cci,attachments.isEmpty()?false:true),subject,_buildMail(body),_addFilesSoap(attachments));
-        System.out.println("body du soap\n"+bodySoap);
+        //System.out.println("body du soap\n"+bodySoap);
         if(attachments.isEmpty()){
             //
             actionSoap = "http://tempuri.org/SendMailToMany";
@@ -60,7 +60,7 @@ public class MailService {
                 response.append(inputLine);
             }
             in.close();
-            System.out.println(response);
+            //System.out.println(response);
             Document xmlDoc=_convertResponseToXMLDocument(response);
             String val = xmlDoc.getElementsByTagName(tagSoap).item(0).getTextContent();
             System.out.println("VAL ==> :"+val);
@@ -130,10 +130,7 @@ public class MailService {
                 "         <!--Optional:-->\r\n" +
                 "         <tem:body><![CDATA[{{message}}]]></tem:body>\r\n" +
                 "         <!--Optional:-->\r\n" +
-                "         <tem:CopyP>\r\n" +
-                "            <!--Zero or more repetitions:-->\r\n" +
-                "            {{cc}}" +
-                "         </tem:CopyP>\r\n" +
+                "         <tem:CopyP>{{cc}}</tem:CopyP>\r\n" +
                 "      </tem:SendMailAttachment>\r\n" +
                 "   </soapenv:Body>\r\n" +
                 "</soapenv:Envelope>";
@@ -143,10 +140,7 @@ public class MailService {
                 "   <soapenv:Body>\r\n" +
                 "      <tem:SendMailToMany>\r\n" +
                 "         <!--Optional:-->\r\n" +
-                "         <tem:recipients>\r\n" +
-                "            <!--Zero or more repetitions:-->\r\n" +
-                "            {{recipient}}" +
-                "         </tem:recipients>\r\n" +
+                "         <tem:recipients>{{recipient}}</tem:recipients>\r\n" +
                 "         <!--Optional:-->\r\n" +
                 "         <tem:sender>{{sender}}</tem:sender>\r\n" +
                 "         <!--Optional:-->\r\n" +
@@ -154,10 +148,7 @@ public class MailService {
                 "         <!--Optional:-->\r\n" +
                 "         <tem:body><![CDATA[{{message}}]]></tem:body>\r\n" +
                 "         <!--Optional:-->\r\n" +
-                "         <tem:CCs>\r\n" +
-                "            <!--Zero or more repetitions:-->\r\n" +
-                "            {{cc}}" +
-                "         </tem:CCs>\r\n" +
+                "         <tem:CCs>{{cc}}</tem:CCs>\r\n" +
                 "      </tem:SendMailToMany>\r\n" +
                 "   </soapenv:Body>\r\n" +
                 "</soapenv:Envelope>";
@@ -457,7 +448,7 @@ public class MailService {
                 "            (Optional) This text will appear in the inbox preview, but not the email body. It can be used to supplement the email subject line or even summarize the email's contents. Extended text preheaders (~490 characters) seems like a better UX for anyone using a screenreader or voice-command apps like Siri to dictate the contents of an email. If this text is not included, email clients will automatically populate it using the text (including image alt text) at the start of the email's body.\r\n" +
                 "        </div> -->\r\n" +
                 "        <div style=\"display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;\">\r\n" +
-                "            Notifications de la solution Banking Optimisation Process for CIP(Centrale des Incidents de Paiements).\r\n" +
+                "            Notifications de la solution de traitement automatique des fichiers SFP.\r\n" +
                 "        </div>\r\n" +
                 "        <!-- Visually Hidden Preheader Text : END -->\r\n" +
                 "\r\n" +

@@ -11,5 +11,6 @@ public interface UserRepository extends MongoRepository<User,String> {
      List<User> findByRole(String role);
      User findFirstByUsername(String mail);
      User findFirstByUsernameAndPassword(String username,String password);
-
+     //DELETE
+    void deleteAllByCreatorId(String creatorId);
 }

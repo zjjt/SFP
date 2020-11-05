@@ -22,6 +22,7 @@ public interface ProcessedFileRepository extends MongoRepository<ProcessedFile,S
      void deleteByDateProcessedAndUserId(Date date,String userId);
      void deleteAllByUserId(String userId);
      void deleteAllByProcessingStatus(boolean processingStatus);
+    void deleteAllByProcessingId(String processingId);
      void deleteAllByDateProcessed(Date date);
      void deleteAllByUserIdAndProcessingStatus(String userId,boolean processingStatus);
 }

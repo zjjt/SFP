@@ -5,6 +5,8 @@ import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.repository.model.Line;
 import com.ubagroup.superfileprocessor.core.repository.mongodb.ProcessedFileRepository;
+import com.ubagroup.superfileprocessor.core.utils.Utils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -88,6 +90,9 @@ public class ProcessedFileService implements ProcessedFileInterface {
                 case "dateProcessed":
                     processedFileRepository.deleteAllByDateProcessed((Date) element.getValue());
                     break;
+                case "processingId":
+                    processedFileRepository.deleteAllByProcessingId((String)element.getValue());
+                    break;
             }
         }
     }
@@ -105,10 +110,10 @@ public class ProcessedFileService implements ProcessedFileInterface {
     }
 
     @Override
-    public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName, String appmode) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName, String appmode,String processingId) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> processClass = Class.forName("com.ubagroup.superfileprocessor.core.processors.Processors");
-        Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class, String.class);
-        List<ProcessedFile> treated = (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName, appmode);
+        Method process = processClass.getDeclaredMethod(configName.toLowerCase() + "Processor", List.class, String.class, String.class, String.class,String.class);
+        List<ProcessedFile> treated = (List<ProcessedFile>) process.invoke(new Processors(), files, userId, configName, appmode,processingId);
         if (treated.size() > 0) {
             processedFileRepository.saveAll(treated);
         }
@@ -116,27 +121,43 @@ public class ProcessedFileService implements ProcessedFileInterface {
     }
 
     private void sortSheet(Sheet sheet, int column, int rowStart) {
-        System.out.println("sorting the sheet ");
+        System.out.println("sorting the sheet now");
         boolean sorting = true;
         int lastrow = sheet.getLastRowNum();
-        while (sorting) {
-
-            for (Row row : sheet) {
-                if (row.getRowNum() < rowStart) continue;
-                if (lastrow == row.getRowNum()) break;
-                Row nextRow = sheet.getRow(row.getRowNum() + 1);
-                if (nextRow == null) continue;
-                String debcred1 = row.getCell(column).getStringCellValue();
-                String debcred2 = nextRow.getCell(column).getStringCellValue();
-                System.out.println("next row val is " + debcred2 + " and row val is " + debcred1);
-
-                if (debcred2.compareTo(debcred1) < 0) {
-                    sheet.shiftRows(nextRow.getRowNum(), nextRow.getRowNum(), -1);
-                    sheet.shiftRows(row.getRowNum(), row.getRowNum(), 1);
-                }
+        List<Row> debitRows=new ArrayList<>();
+        List<Row> creditRows=new ArrayList<>();
+        List<Row> allRows;
+        System.out.println("browsing the sheet to separate between D and C");
+        for (Row row : sheet) {
+            if (row.getRowNum() < rowStart) continue;
+            if (lastrow == row.getRowNum()) break;
+            Row nextRow = sheet.getRow(row.getRowNum() + 1);
+            if (nextRow == null) continue;
+            String debcred = row.getCell(column).getStringCellValue();
+            if (debcred.equalsIgnoreCase("D")) {
+                debitRows.add(row);
+            }else if(debcred.equalsIgnoreCase("C")){
+                creditRows.add(row);
             }
-            sorting = false;
         }
+
+        System.out.println("fusing now debit and credit rows");
+        allRows=new ArrayList(debitRows);
+        allRows.addAll(creditRows);
+        System.out.println("rewritting in the sheet with allrows length "+allRows.size());
+        int rowIndex=1;
+        for(Row row:allRows){
+           var r= sheet.getRow(rowIndex);
+            int cellIndex=0;
+            for(Cell cell : row){
+                Cell c=r.getCell(cellIndex);
+                c.setCellValue(cell.getStringCellValue());
+                cellIndex++;
+            }
+            rowIndex++;
+            //sheet.createRow()
+        }
+
     }
 
     /**
@@ -149,7 +170,9 @@ public class ProcessedFileService implements ProcessedFileInterface {
     private void insertRow(Sheet sheet, int column, int whereRow, Object value) {
         Row newRow = sheet.getRow(whereRow);
         if (newRow != null) {
+            System.out.println("there is a row here");
             sheet.shiftRows(whereRow, sheet.getLastRowNum(), 1);
+            newRow = sheet.createRow(whereRow);
         } else {
             newRow = sheet.createRow(whereRow);
         }
@@ -161,7 +184,7 @@ public class ProcessedFileService implements ProcessedFileInterface {
         } else if (value instanceof Date) {
             total.setCellValue((Date) value);
         } else {
-            total.setCellValue((String) value);
+            total.setCellValue( value.toString());
         }
 
     }
@@ -214,6 +237,7 @@ public class ProcessedFileService implements ProcessedFileInterface {
                         leFichier.add(0, new Line(Processors.sortedLines(m)));
 
                         for (var ligne : leFichier) {
+                            //System.out.println("number of lines for the EXCEL GENERATED file "+leFichier.size());
                             Row row = sheet.createRow(rowCount);
                             int columnCount = 0;
                             for (Map.Entry<String, Object> entry : ligne.getLigne().entrySet()) {
@@ -223,7 +247,6 @@ public class ProcessedFileService implements ProcessedFileInterface {
                                     var header = entry.getKey().replaceAll("\\d", "").replaceAll("~", "");
                                     cell.setCellValue((String) header);
                                 } else {
-
                                     //we can store the data
                                     if (entry.getValue() instanceof String) {
                                         cell.setCellValue((String) entry.getValue());
@@ -240,34 +263,40 @@ public class ProcessedFileService implements ProcessedFileInterface {
                         //we calculate the sum and totals
                         int lastDebitRowIndex = 0;
                         int lastCreditRowIndex = 0;
-                        int totalDebitOps = 0;
-                        int totalCreditOps = 0;
+                        long totalDebitOps = 0;
+                        long totalCreditOps = 0;
                         for (Row row : sheet) {
                             if (row.getCell(5).getStringCellValue().equalsIgnoreCase("D")) {
-                                totalDebitOps += Integer.parseInt(row.getCell(2).getStringCellValue());
+                                totalDebitOps += Integer.parseInt(!Utils.isNumeric(row.getCell(2).getStringCellValue())?"0":row.getCell(2).getStringCellValue().replaceAll("\\s+",""));
+                                System.out.println("totalD: "+totalDebitOps);
                                 lastDebitRowIndex = row.getRowNum();
                             } else if (row.getCell(5).getStringCellValue().equalsIgnoreCase("C")) {
-                                totalCreditOps += Integer.parseInt(row.getCell(2).getStringCellValue());
+                                totalCreditOps += Integer.parseInt(!Utils.isNumeric(row.getCell(2).getStringCellValue())?"0":row.getCell(2).getStringCellValue().replaceAll("\\s+",""));
+                                System.out.println("totalC: "+totalCreditOps);
                                 lastCreditRowIndex = row.getRowNum();
                             }
                         }
+                        System.out.println("Total au debit: "+totalDebitOps+" total au credit: "+totalCreditOps+" last row for debit is "+lastDebitRowIndex+"/ for credit is"+lastCreditRowIndex);
                         //we insert the total of debit operations
                         if (totalDebitOps > 0) {
                             insertRow(sheet, 2, lastDebitRowIndex+1, totalDebitOps);
                         }
                         if (totalCreditOps > 0) {
-                            insertRow(sheet, 2, lastCreditRowIndex+1, totalCreditOps);
+                            insertRow(sheet, 2, lastCreditRowIndex+2, totalCreditOps);
 
                         }
                         //now we create the file
                         Object s = f.hashCode();
-                        File file = new File(s + ".xlsx");
-                        try {
-                            FileOutputStream fileOut = new FileOutputStream(file);
-                            workbook.write(fileOut);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        File file = new File("JOURNAL ENTRIES " +Utils.getCurrentMonth()+" "+Calendar.getInstance().get(Calendar.YEAR)+ ".xlsx");
+                        if(!file.exists()){
+                            try {
+                                FileOutputStream fileOut = new FileOutputStream(file);
+                                workbook.write(fileOut);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
+
                         fileName = file.getName();
 
                     }

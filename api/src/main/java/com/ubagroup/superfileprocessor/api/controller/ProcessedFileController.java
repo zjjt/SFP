@@ -3,6 +3,7 @@ package com.ubagroup.superfileprocessor.api.controller;
 import com.ubagroup.superfileprocessor.core.entity.ProcessedFile;
 import com.ubagroup.superfileprocessor.core.processors.Processors;
 import com.ubagroup.superfileprocessor.core.service.ProcessedFileService;
+import com.ubagroup.superfileprocessor.core.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
@@ -110,7 +111,7 @@ public class ProcessedFileController {
             long start = Instant.now().toEpochMilli();
 
             try {
-                treatedFiles = processedFileService.processFiles(files, userId, configName, appmode);
+                treatedFiles = processedFileService.processFiles(files, userId, configName, appmode, Utils.getRandomString(8));
                 //the files have been processed and now we need to read from the db and save into db
             } catch (ClassNotFoundException e) {
                 long end = Instant.now().toEpochMilli();

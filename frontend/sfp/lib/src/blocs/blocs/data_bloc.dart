@@ -69,6 +69,30 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       yield ConfigSelected(currentConfig);
     }
 
+    if (event is StartFinalMailProcedure) {
+      yield FinalMailProcedureStarted();
+    }
+
+    if (event is SendFinalMail) {
+      try {
+        yield DataLoading();
+        var mailsent = await repo.sendFinalMail(
+            event.configName,
+            event.username,
+            event.userId,
+            event.to,
+            event.enCopie,
+            event.processingIds);
+        if (mailsent) {
+          yield FinalMailSent();
+        } else {
+          yield FinalMailNotSent();
+        }
+      } on NetWorkException {
+        yield DataFailure("No internet connection");
+      }
+    }
+
     if (event is DownloadFiles) {
       try {
         List<String> urlList =

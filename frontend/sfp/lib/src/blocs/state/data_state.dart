@@ -82,6 +82,12 @@ class ValidationProcessLoaded extends DataState {
 
 class ValidationUpdated extends DataState {}
 
+class FinalMailProcedureStarted extends DataState {}
+
+class FinalMailSent extends DataState {}
+
+class FinalMailNotSent extends DataState {}
+
 class ValidationUpdateFailed extends DataState {
   final message;
   const ValidationUpdateFailed(this.message);

@@ -36,14 +36,14 @@ import java.util.stream.IntStream;
  */
 public class Processors {
 
-    public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName, String appmode) {
+    public List<ProcessedFile> canalProcessor(List<MultipartFile> files, String userId, String configName, String appmode,String processingId) {
         List<ProcessedFile> treatedFiles = new ArrayList<>();
         System.out.println("in canal+ processor processing " + files.size() + " files for " + configName + " with userId " + userId);
         files.stream()
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial filein binary format in mongo
-                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
+                    ProcessedFile f = new ProcessedFile(processingId,null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(), null);
                     List<Line> lignesInitiales = readTXT(file, configName);
                     for (var l : lignesInitiales) {
                         l.removeKey("process_done~18");
@@ -96,14 +96,14 @@ public class Processors {
 
     //this method processes an Excel file list via multithreading
 
-    public List<ProcessedFile> sageProcessor(List<MultipartFile> files, String userId, String configName, String appmode) {
+    public List<ProcessedFile> sageProcessor(List<MultipartFile> files, String userId, String configName, String appmode,String processingId) {
         List<ProcessedFile> treatedFiles = new ArrayList<>();
         System.out.println("in sage processor processing " + files.size() + " files for " + configName + " with userId " + userId);
         files.stream()
                 .parallel()
                 .forEach((file) -> {
                     //first we create a new instance of processedFile so that we can store the initial file in binary format in mongo
-                    ProcessedFile f = new ProcessedFile( Utils.getRandomString(8),null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
+                    ProcessedFile f = new ProcessedFile( processingId,null,null, userId, configName, false, false, false, new Date(0), new Date(0), new Date(0), null);
 
                     try {
                         System.out.println("original filename is " + file.getOriginalFilename());
@@ -606,6 +606,18 @@ public class Processors {
                     "            \"LABEL\": \"rémunérations dues\"\n" +
                     "        },\n" +
                     "        {\n" +
+                    "            \"COMPTE_LP\": \"332200\",\n" +
+                    "            \"CODE_LP\": \"+321/-650\",\n" +
+                    "            \"COMPTE_FINCON\": \"3322009526299002\",\n" +
+                    "            \"LABEL\": \"crrae à reverser\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"COMPTE_LP\": \"3310\",\n" +
+                    "            \"CODE_LP\": \"637\",\n" +
+                    "            \"COMPTE_FINCON\": \"3311009526299042\",\n" +
+                    "            \"LABEL\": \"AVANCE AVANTAGE EN NATURE\"\n" +
+                    "        },\n" +
+                    "        {\n" +
                     "            \"COMPTE_LP\": \"3321211\",\n" +
                     "            \"CODE_LP\": \"IS\",\n" +
                     "            \"COMPTE_FINCON\": \"3321009526299012\",\n" +
@@ -719,8 +731,8 @@ public class Processors {
                     JSONObject json=(JSONObject) rows.get(index);
                     Map<String,Object>m=new HashMap<>();
                     if(lines.get(i).getLigne().get("COMPTE_LP~4").equals(json.get("COMPTE_LP"))
-                            &&(!lines.get(i).getLigne().get("STATUS~5").equals("")
-                            && !lines.get(i).getLigne().get("ENCODAGE~6").equals("")) ){
+                            /*&&(!lines.get(i).getLigne().get("STATUS~5").equals("")
+                            && !lines.get(i).getLigne().get("ENCODAGE~6").equals("")) */){
                         //we have found the account in the journal we get
                         m.put("LINENO~0",Integer.toString(i));
                         m.put("NAME~1",json.get("LABEL"));

@@ -59,6 +59,26 @@ class NetworkProvider {
     }
   }
 
+  Future<bool> sendFinalMail(String configName, String username, String userId,
+      String to, List<String> enCopie, List<String> processingIds) async {
+    Utils.log("in network provider tryng to send the final email ");
+    FormData formData = FormData.fromMap({
+      "configName": configName,
+      "username": username,
+      "userId": userId,
+      "to": to,
+      "copie": enCopie,
+      "processingId": processingIds
+    });
+    var response = await dio.post('$backend/user/sendmail', data: formData);
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data;
+    } else {
+      throw NetWorkException();
+    }
+  }
+
   Future<Map<String, dynamic>> getCurrentValidationProcess(
       String initiatorId, String configName, String whichValidator) async {
     Utils.log(

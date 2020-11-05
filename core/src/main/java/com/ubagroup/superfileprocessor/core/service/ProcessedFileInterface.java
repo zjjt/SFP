@@ -14,5 +14,5 @@ public interface ProcessedFileInterface {
     void delete(Map<String,Object> arg);
     boolean saveProcessedFile(List<ProcessedFile> files);
     List<String> generateFilePaths(String configName, String userId);
-    List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName,String appmode) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException;
+    List<ProcessedFile> processFiles(List<MultipartFile> files, String userId, String configName,String appmode,String processingId) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException;
 }

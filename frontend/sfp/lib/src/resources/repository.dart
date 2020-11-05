@@ -33,6 +33,23 @@ class Repository {
     }
   }
 
+  Future<bool> sendFinalMail(String configName, String username, String userId,
+      String to, List<String> enCopie, List<String> processingIds) async {
+    try {
+      return await netProvider.sendFinalMail(
+        configName,
+        username,
+        userId,
+        to,
+        enCopie,
+        processingIds,
+      );
+    } on NetWorkException {
+      Utils.log("couldnt reach the api");
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> fetchUsers(
       String username, String password) async {
     var users;
