@@ -616,11 +616,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
             int nbLigne = 0;
             tableLignes.addAll(List.generate(file.fileLines.length, (index) {
               //Summing the differents amounts in the file
+              nbLigne += index;
               if (file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "D") {
-                sumD += int.parse(file.fileLines[index]['ligne']['AMOUNT~3']);
+                sumD += int.parse(
+                    Utils.isNumeric(file.fileLines[index]['ligne']['AMOUNT~3'])
+                        ? file.fileLines[index]['ligne']['AMOUNT~3']
+                        : "0");
                 Utils.log("somme debit is $sumD");
               } else if (file.fileLines[index]['ligne']['TRAN_TYPE~6'] == "C") {
-                sumC += int.parse(file.fileLines[index]['ligne']['AMOUNT~3']);
+                sumC += int.parse(
+                    Utils.isNumeric(file.fileLines[index]['ligne']['AMOUNT~3'])
+                        ? file.fileLines[index]['ligne']['AMOUNT~3']
+                        : "0");
                 Utils.log("somme credit is $sumC");
               }
               return pw.TableRow(
@@ -647,8 +654,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                     return pw.Text("");
                   }
                   //return pw.Text("canal");
-
-                  nbLigne += index;
                 }),
               );
               //return pw.TableRow();
@@ -1044,7 +1049,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                       MainAxisAlignment
                                                           .spaceBetween,
                                                   children: [
-                                                    RichText(
+                                                    /*RichText(
                                                       text: TextSpan(
                                                           text:
                                                               'Total amount debited: ',
@@ -1092,7 +1097,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                                                 text:
                                                                     '${dataBloc.popupValues['totalLigne']}')
                                                           ]),
-                                                    ),
+                                                    ),*/
                                                   ],
                                                 ),
                                               )
@@ -1485,6 +1490,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                       actions: [
                                         FlatButton(
                                           onPressed: () {
+                                            Navigator.of(context).pop();
                                             alertBloc.add(CloseAlert());
                                           },
                                           child: Container(
@@ -1494,36 +1500,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                                         ),
                                         FlatButton(
                                           onPressed: () {
-                                            alertBloc.add(ShowAlert(
-                                              whatToShow: Container(
-                                                height: 200,
-                                                width: 200,
-                                                color: Colors.white,
-                                                padding: EdgeInsets.fromLTRB(
-                                                    24.0, 0.0, 24.0, 24.0),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Center(
-                                                      child: SpinKitRing(
-                                                          color: Assets
-                                                              .ubaRedColor,
-                                                          size: 80.0),
-                                                    ),
-                                                    SizedBox(height: 10.0),
-                                                    Text(
-                                                      "Please wait...",
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              isDoc: false,
-                                              title: Container(),
-                                              actions: [],
-                                            ));
                                             dataBloc.add(SubmitApprovalChain());
                                           },
                                           child: Container(

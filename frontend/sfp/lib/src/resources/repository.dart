@@ -79,7 +79,12 @@ class Repository {
       String configName, String initiatorId) async {
     var del;
     try {
-      del = await netProvider.deleteValidationProcess(configName, initiatorId);
+      del = await netProvider.deleteValidationProcess(
+          configName, initiatorId, "CONTROLLER");
+      if (del != null) {
+        del = await netProvider.deleteValidationProcess(
+            configName, initiatorId, "VALIDATOR");
+      }
     } on NetWorkException {
       Utils.log("couldnt reach the api ${del.message}");
       return null;

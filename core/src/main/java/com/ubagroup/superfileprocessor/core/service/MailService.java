@@ -17,7 +17,7 @@ public class MailService {
         String actionSoap ="";
         String bodySoap = "";
         String tagSoap= "";
-         bodySoap=_buildFinalSoapEnveloppe(attachments.isEmpty()?false:true,from,_addRecipientsSoap(to,attachments.isEmpty()?false:true),_addRecipientsSoap(cci,attachments.isEmpty()?false:true),subject,_buildMail(body),_addFilesSoap(attachments));
+         bodySoap=_buildFinalSoapEnveloppe(attachments.isEmpty()?false:true,from,_addRecipientsSoap(to,attachments.isEmpty()?false:true),_addRecipientsSoapCC(cci,attachments.isEmpty()?false:true),subject,_buildMail(body),_addFilesSoap(attachments));
         //System.out.println("body du soap\n"+bodySoap);
         if(attachments.isEmpty()){
             //
@@ -177,7 +177,16 @@ public class MailService {
             }
         }		return strz;
     }
-
+    private  String _addRecipientsSoapCC(List<String> recipients,boolean withFiles) {
+        String strz ="";
+        for(String str : recipients) {
+            if(withFiles){
+                strz+="<tem:string>"+StringEscapeUtils.escapeXml(str)+"</tem:string>\r\n";
+            }else{
+                strz+="<tem:string>"+StringEscapeUtils.escapeXml(str)+"</tem:string>\r\n";
+            }
+        }		return strz;
+    }
     private  String _addFilesSoap(List<File> files) throws IOException {
         String str = "";
         if(files.size()>0) {

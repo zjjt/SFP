@@ -100,6 +100,7 @@ public class UserController {
             userService.deleteAllByCreatorId(userId);
             //here we remove the user from the dataBase
             userService.deleteUserById(userId);
+            System.out.println("mail has been sent returning true now");
             return true;
         }
         return false;
@@ -220,7 +221,7 @@ public class UserController {
 
                 if (role.equalsIgnoreCase("VALIDATOR")) {
                     subject = "THERE ARE SOME FILES NEEDING YOUR APPROVAL FOR THE " + configName + " CONFIGURATION";
-                    message = "Dear user,<br/> You have been appointed as VALIDATOR for the file id " + fileIdToValidate + " of the " + configName + " file processing configuration.<br/><br/>The application is available <a href=\"http://" + InetAddress.getLocalHost().getHostAddress()+":"+appPort+"\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>" + user.getUsername() + "</b><br/>Password: <b>" + user.getPassword() + "</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
+                    message = "Dear user,<br/> You have been appointed as VALIDATOR for the file id " + fileIdToValidate + " of the " + configName + " file processing configuration.<br/><br/>The application is available <a href=\"http://" + /*InetAddress.getLocalHost().getHostAddress()*/"10.67.1.74"+":"+appPort+"\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>" + user.getUsername() + "</b><br/>Password: <b>" + user.getPassword() + "</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
                     System.out.println("Mail sent for a validator\n\n" + message);
 
                     if (mailService.sendMail(subject, to, "simplefileprocessor@ubagroup.com", new ArrayList<>(), pj, message, mailHost)) {
@@ -233,7 +234,7 @@ public class UserController {
 
                 } else if (role.equalsIgnoreCase("CONTROLLER")) {
                     subject = "THERE ARE SOME FILES NEEDING TO BE CONTROLLED FOR THE " + configName + " CONFIGURATION";
-                    message = "Dear user,<br/> You have been appointed as CONTROLLER for the file id " + fileIdToValidate + " of the " + configName + " file processing configuration.<br/><br/>The application is available <a href=\"http://" + InetAddress.getLocalHost().getHostAddress() +":"+appPort+ "\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>" + user.getUsername() + "</b><br/>Password: <b>" + user.getPassword() + "</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
+                    message = "Dear user,<br/> You have been appointed as CONTROLLER for the file id " + fileIdToValidate + " of the " + configName + " file processing configuration.<br/><br/>The application is available <a href=\"http://" + /*InetAddress.getLocalHost().getHostAddress()*/"10.67.1.74" +":"+appPort+ "\">here</a><br/>Please find below your credentials<br/><br/>Username: <b>" + user.getUsername() + "</b><br/>Password: <b>" + user.getPassword() + "</b><br/><br/>Your credentials are only valid for this particular file.<br/><br/>Regards.";
                     System.out.println("length of to is " + pj.size());
                     System.out.println("Mail sent for a controller\n\n" + message);
                     if (mailService.sendMail(subject, to, "simplefileprocessor@ubagroup.com", new ArrayList<>(), pj, message, mailHost)) {

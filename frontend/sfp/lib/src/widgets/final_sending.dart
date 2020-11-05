@@ -156,8 +156,10 @@ class _FinalSendingState extends State<FinalSending> {
             dataBloc.add(PutFormInStandBy());
           }
         } else if (state is FinalMailSent) {
+          Utils.log("the final mail has been sent");
           Navigator.of(context).pop();
           alertBloc.add(CloseAlert());
+
           Timer(Duration(milliseconds: 200), () {
             alertBloc.add(ShowAlert(
                 whatToShow: Container(

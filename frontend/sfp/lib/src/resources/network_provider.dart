@@ -164,11 +164,14 @@ class NetworkProvider {
   }
 
   Future<Map<String, dynamic>> deleteValidationProcess(
-      String configName, String initiatorId) async {
+      String configName, String initiatorId, String validatorType) async {
     Utils.log(
         'in network provider trying to delete the validation process from backend for config $configName and initiator id $initiatorId');
-    FormData formData = FormData.fromMap(
-        {"configName": configName, "initiatorId": initiatorId});
+    FormData formData = FormData.fromMap({
+      "configName": configName,
+      "initiatorId": initiatorId,
+      "validatorType": validatorType
+    });
     var response =
         await dio.post("$backend/validation/deleteValidation", data: formData);
 

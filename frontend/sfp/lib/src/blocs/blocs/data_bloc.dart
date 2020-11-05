@@ -83,7 +83,9 @@ class DataBloc extends Bloc<DataEvent, DataState> {
             event.to,
             event.enCopie,
             event.processingIds);
+        Utils.log("mailsent? $mailsent");
         if (mailsent) {
+          Utils.log("dispatching final mail sent");
           yield FinalMailSent();
         } else {
           yield FinalMailNotSent();
@@ -200,11 +202,10 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         if (processedFiles.isEmpty) {
           try {
             await repo.deleteFilesById(event.files);
-            if (currentValidation != null) {
-              await repo.deleteValidationProcess(
-                  currentConfig.configName, event.initiatorId);
-              currentValidation = null;
-            }
+            await repo.deleteValidationProcess(
+                currentConfig.configName, event.initiatorId);
+            currentValidation = null;
+            currentControlValidation = null;
           } on NetWorkException {
             yield DataFailure("No internet connection");
           }
